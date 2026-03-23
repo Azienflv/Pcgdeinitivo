@@ -88,25 +88,48 @@ button {
 }
 
 /* ========================= */
-/* 🎟️ VOUCHER ESTILO PRO */
+/* 🎟️ VOUCHER PRO + WATERMARK */
 /* ========================= */
 
 .voucher-container {
+  position: relative;
   background: #ffffff;
   color: #000;
   max-width: 600px;
   margin: auto;
-  padding: 25px;
+  padding: 20px;
   border-radius: 12px;
   font-family: Arial, sans-serif;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  overflow: hidden;
 }
 
-/* LOGO (ARREGLADO 🔥) */
+/* 🔥 MARCA DE AGUA PREMIUM */
+.voucher-container::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 350px;
+  height: 350px;
+  background: url("assets/logo.png") no-repeat center;
+  background-size: contain;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  opacity: 0.06; /* elegante */
+  pointer-events: none;
+}
+
+/* Mantener contenido arriba */
+.voucher-container * {
+  position: relative;
+  z-index: 1;
+}
+
+/* LOGO */
 .voucher-logo {
-  width: 140px;
+  width: 130px;
   display: block;
-  margin: 0 auto 15px;
+  margin: 0 auto 10px;
   object-fit: contain;
 }
 
@@ -114,50 +137,59 @@ button {
 .voucher-title {
   text-align: center;
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .voucher-subtitle {
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   color: gray;
+  font-size: 13px;
 }
 
 /* INFO */
 .voucher-info p {
-  margin: 6px 0;
-  font-size: 14px;
+  margin: 4px 0;
+  font-size: 13px;
 }
 
-/* PRECIO DESTACADO */
+/* PRECIO */
 .precio {
-  font-size: 18px;
-  margin-top: 10px;
+  font-size: 16px;
+  margin-top: 8px;
   font-weight: bold;
 }
 
-/* POLÍTICAS */
+/* POLÍTICAS COMPACTAS 🔥 */
 .voucher-policies {
-  font-size: 12px;
-  margin-top: 20px;
-  line-height: 1.4;
+  font-size: 11px;
+  margin-top: 10px;
+  line-height: 1.2;
 }
 
-/* BOTONES VOUCHER */
+.voucher-policies p {
+  margin: 3px 0;
+}
+
+.voucher-policies h4 {
+  margin: 5px 0;
+}
+
+/* BOTONES */
 .voucher-actions {
-  margin-top: 20px;
+  margin-top: 15px;
   text-align: center;
 }
 
 .voucher-actions button {
   margin: 5px;
-  padding: 10px 15px;
+  padding: 8px 12px;
   background: black;
   color: white;
   border-radius: 5px;
 }
 
-/* 🖨️ MODO IMPRESIÓN */
+/* 🖨️ PRINT PERFECTO */
 @media print {
   body {
     background: white;
@@ -173,5 +205,19 @@ button {
     box-shadow: none;
     margin: 0;
     width: 100%;
+    padding: 10px;
+  }
+
+  .voucher-container::before {
+    opacity: 0.05; /* más sutil en impresión */
+  }
+
+  .voucher-policies {
+    font-size: 10px;
+    line-height: 1.1;
+  }
+
+  .voucher-policies p {
+    margin: 2px 0;
   }
 }
