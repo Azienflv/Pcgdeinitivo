@@ -6,6 +6,7 @@ body {
   color: white;
 }
 
+/* SIDEBAR */
 .sidebar {
   width: 250px;
   height: 100vh;
@@ -24,8 +25,11 @@ body {
 .logo {
   text-align: center;
   margin-bottom: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
+/* MENU */
 .menu-item {
   display: block;
   padding: 15px;
@@ -43,6 +47,7 @@ body {
   color: white;
 }
 
+/* MAIN */
 .main {
   margin-left: 0;
   padding: 20px;
@@ -54,6 +59,7 @@ body {
   margin-left: 250px;
 }
 
+/* BOTÓN SIDEBAR */
 #toggleBtn {
   font-size: 20px;
   background: none;
@@ -62,6 +68,7 @@ body {
   cursor: pointer;
 }
 
+/* INPUTS */
 input {
   width: 100%;
   padding: 10px;
@@ -70,17 +77,101 @@ input {
   border: none;
 }
 
+/* BOTONES GENERALES */
 button {
   padding: 10px 15px;
   background: #2563eb;
   color: white;
   border: none;
   cursor: pointer;
+  border-radius: 5px;
 }
 
+/* ========================= */
+/* 🎟️ VOUCHER ESTILO PRO */
+/* ========================= */
+
+.voucher-container {
+  background: #ffffff;
+  color: #000;
+  max-width: 600px;
+  margin: auto;
+  padding: 25px;
+  border-radius: 12px;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* LOGO */
 .voucher-logo {
   width: 120px;
   display: block;
   margin: 0 auto 10px;
-  filter: grayscale(100%) brightness(0); /* blanco y negro */
+  filter: grayscale(100%) brightness(0);
+}
+
+/* TITULOS */
+.voucher-title {
+  text-align: center;
+  margin: 0;
+  font-size: 22px;
+}
+
+.voucher-subtitle {
+  text-align: center;
+  margin-bottom: 15px;
+  color: gray;
+}
+
+/* INFO */
+.voucher-info p {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+/* PRECIO DESTACADO */
+.precio {
+  font-size: 18px;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+/* POLÍTICAS */
+.voucher-policies {
+  font-size: 12px;
+  margin-top: 20px;
+  line-height: 1.4;
+}
+
+/* BOTONES VOUCHER */
+.voucher-actions {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.voucher-actions button {
+  margin: 5px;
+  padding: 10px 15px;
+  background: black;
+  color: white;
+  border-radius: 5px;
+}
+
+/* 🖨️ MODO IMPRESIÓN */
+@media print {
+  body {
+    background: white;
+  }
+
+  .sidebar,
+  #toggleBtn,
+  .voucher-actions {
+    display: none;
+  }
+
+  .voucher-container {
+    box-shadow: none;
+    margin: 0;
+    width: 100%;
+  }
 }
