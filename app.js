@@ -134,11 +134,10 @@ function mostrarReservas() {
   });
 
   tabla += "</table>";
-
   content.innerHTML = tabla;
 }
 
-// 🎟️ VOUCHER (CORREGIDO)
+// 🎟️ VOUCHER FINAL PRO
 function verVoucher(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
   let r = reservas[index];
@@ -146,7 +145,17 @@ function verVoucher(index) {
   content.innerHTML = `
     <div class="voucher-container">
 
-      <img src="assets/logo.png" class="voucher-logo">
+      <div style="text-align:center; margin-bottom:10px;">
+        <img src="assets/logo.png" class="voucher-logo">
+
+        <p style="margin:5px 0; font-size:13px;">
+          📞 +1 829-XXX-XXXX
+        </p>
+
+        <p style="margin:0; font-size:13px;">
+          📧 info@puntacanagoing.com
+        </p>
+      </div>
 
       <h2 class="voucher-title">Punta Cana Going TOURS</h2>
       <p class="voucher-subtitle">Tour Voucher</p>
@@ -169,12 +178,12 @@ function verVoucher(index) {
         <h4>Políticas de Cancelación y/o Reembolso</h4>
 
         <p>
-        a) Las cancelaciones son aceptadas con 48 hrs. antes del inicio del servicio y para recibir reembolso es necesario presentar el cupón original de la compra, de otra manera no habrá ningún tipo de reembolso.<br><br>
-        b) Para cancelaciones por enfermedad, el cliente deberá presentar un Certificado Médico expedido por el médico del hotel o por una clínica privada.<br><br>
-        c) No se aceptan cancelaciones ni cambios el mismo día de la actividad.<br><br>
-        d) No habrá reembolsos en caso de no presentarse a tiempo.<br><br>
-        e) No aplican reembolsos en paquetes o descuentos.<br><br>
-        f) No se aceptan cancelaciones para Cirque du Soleil.
+        a) Cancelaciones con 48 hrs de anticipación.<br><br>
+        b) Certificado médico requerido.<br><br>
+        c) No cambios el mismo día.<br><br>
+        d) No reembolso por no presentarse.<br><br>
+        e) No aplica en descuentos.<br><br>
+        f) No cancelaciones Cirque du Soleil.
         </p>
 
         <hr>
@@ -182,11 +191,11 @@ function verVoucher(index) {
         <h4>Cancellation & Refund Policies</h4>
 
         <p>
-        a) Cancellation/refund only with 48 hrs prior.<br><br>
-        b) Medical certificate required for illness.<br><br>
+        a) 48 hrs prior required.<br><br>
+        b) Medical certificate required.<br><br>
         c) No same-day changes.<br><br>
         d) No refunds for no-shows.<br><br>
-        e) No refunds on discounts/packages.<br><br>
+        e) No refunds on discounts.<br><br>
         f) No cancellations for Cirque du Soleil.
         </p>
       </div>
@@ -210,4 +219,3 @@ function eliminarReserva(index) {
     mostrarReservas();
   }
 }
-
