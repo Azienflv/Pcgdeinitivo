@@ -8,13 +8,13 @@ toggleBtn.addEventListener("click", () => {
   main.classList.toggle("shift");
 });
 
-// Menú activo + navegación
+// Menú + navegación
 const menuItems = document.querySelectorAll(".menu-item");
 const content = document.getElementById("content");
 
 menuItems.forEach(item => {
   item.addEventListener("click", () => {
-    // Activar selección visual
+    // Activar visual
     menuItems.forEach(i => i.classList.remove("active"));
     item.classList.add("active");
 
@@ -22,14 +22,13 @@ menuItems.forEach(item => {
 
     if (text === "Nueva Reserva") {
       loadForm();
+    } else if (text === "Reservas") {
+      mostrarReservas();
     }
-    if (text === "Reservas") {
-  mostrarReservas();
-}
   });
 });
 
-// Cargar formulario
+// FORMULARIO
 function loadForm() {
   content.innerHTML = `
     <h2>Nueva Reserva</h2>
@@ -57,7 +56,7 @@ function loadForm() {
     .addEventListener("submit", guardarReserva);
 }
 
-// Guardar reserva
+// GUARDAR
 function guardarReserva(e) {
   e.preventDefault();
 
@@ -79,10 +78,10 @@ function guardarReserva(e) {
 
   alert("Reserva guardada ✅");
 
-  // Limpiar formulario
   document.getElementById("reservaForm").reset();
 }
 
+// MOSTRAR RESERVAS
 function mostrarReservas() {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
 
@@ -125,4 +124,3 @@ function mostrarReservas() {
 
   content.innerHTML = tabla;
 }
-
