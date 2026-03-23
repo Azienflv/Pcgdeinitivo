@@ -23,6 +23,9 @@ menuItems.forEach(item => {
     if (text === "Nueva Reserva") {
       loadForm();
     }
+    if (text === "Reservas") {
+  mostrarReservas();
+}
   });
 });
 
@@ -79,3 +82,47 @@ function guardarReserva(e) {
   // Limpiar formulario
   document.getElementById("reservaForm").reset();
 }
+
+function mostrarReservas() {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+
+  if (reservas.length === 0) {
+    content.innerHTML = "<h2>No hay reservas aún</h2>";
+    return;
+  }
+
+  let tabla = `
+    <h2>Reservas</h2>
+    <table border="1" style="width:100%; border-collapse: collapse;">
+      <tr>
+        <th>Cliente</th>
+        <th>Hotel</th>
+        <th>Excursión</th>
+        <th>Adultos</th>
+        <th>Niños</th>
+        <th>Pickup</th>
+        <th>Fecha</th>
+        <th>Precio</th>
+      </tr>
+  `;
+
+  reservas.forEach(r => {
+    tabla += `
+      <tr>
+        <td>${r.cliente}</td>
+        <td>${r.hotel}</td>
+        <td>${r.excursion}</td>
+        <td>${r.adultos}</td>
+        <td>${r.ninos}</td>
+        <td>${r.pickup}</td>
+        <td>${r.fecha}</td>
+        <td>$${r.precio}</td>
+      </tr>
+    `;
+  });
+
+  tabla += "</table>";
+
+  content.innerHTML = tabla;
+}
+
