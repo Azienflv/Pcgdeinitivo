@@ -148,7 +148,7 @@ function verVoucher(index) {
 
       <img src="assets/logo.png" class="voucher-logo">
 
-      <h2 class="voucher-title">PCG TOURS</h2>
+      <h2 class="voucher-title">Punta Cana Going TOURS</h2>
       <p class="voucher-subtitle">Tour Voucher</p>
 
       <hr>
@@ -172,15 +172,10 @@ function verVoucher(index) {
 
         <p>
         a) Las cancelaciones son aceptadas con 48 hrs. antes del inicio del servicio y para recibir reembolso es necesario presentar el cupón original de la compra, de otra manera no habrá ningún tipo de reembolso.<br><br>
-
         b) Para cancelaciones por enfermedad, el cliente deberá presentar un Certificado Médico expedido por el médico del hotel o por una clínica privada.<br><br>
-
         c) No se aceptan cancelaciones ni cambios el mismo día de la actividad.<br><br>
-
         d) No habrá reembolsos en caso de no presentarse a tiempo.<br><br>
-
         e) No aplican reembolsos en paquetes o descuentos.<br><br>
-
         f) No se aceptan cancelaciones para Cirque du Soleil.
         </p>
 
