@@ -138,7 +138,7 @@ function mostrarReservas() {
   content.innerHTML = tabla;
 }
 
-// VOUCHER
+// 🎟️ VOUCHER (CORREGIDO)
 function verVoucher(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
   let r = reservas[index];
@@ -168,15 +168,34 @@ function verVoucher(index) {
       <hr>
 
       <div class="voucher-policies">
-        <h4>Políticas / Policies</h4>
+        <h4>Políticas de Cancelación y/o Reembolso</h4>
 
-        <p><strong>ES:</strong> Cancelaciones con 48 hrs de anticipación. 
-        No se aceptan cambios el mismo día. No hay reembolsos por no presentarse. 
-        No aplican reembolsos en promociones o paquetes.</p>
+        <p>
+        a) Las cancelaciones son aceptadas con 48 hrs. antes del inicio del servicio y para recibir reembolso es necesario presentar el cupón original de la compra, de otra manera no habrá ningún tipo de reembolso.<br><br>
 
-        <p><strong>EN:</strong> Cancellations must be made 48 hours in advance. 
-        No same-day changes. No refunds for no-shows. 
-        No refunds on discounted or package deals.</p>
+        b) Para cancelaciones por enfermedad, el cliente deberá presentar un Certificado Médico expedido por el médico del hotel o por una clínica privada.<br><br>
+
+        c) No se aceptan cancelaciones ni cambios el mismo día de la actividad.<br><br>
+
+        d) No habrá reembolsos en caso de no presentarse a tiempo.<br><br>
+
+        e) No aplican reembolsos en paquetes o descuentos.<br><br>
+
+        f) No se aceptan cancelaciones para Cirque du Soleil.
+        </p>
+
+        <hr>
+
+        <h4>Cancellation & Refund Policies</h4>
+
+        <p>
+        a) Cancellation/refund only with 48 hrs prior.<br><br>
+        b) Medical certificate required for illness.<br><br>
+        c) No same-day changes.<br><br>
+        d) No refunds for no-shows.<br><br>
+        e) No refunds on discounts/packages.<br><br>
+        f) No cancellations for Cirque du Soleil.
+        </p>
       </div>
 
       <div class="voucher-actions">
@@ -198,3 +217,4 @@ function eliminarReserva(index) {
     mostrarReservas();
   }
 }
+
