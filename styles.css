@@ -77,3 +77,10 @@ button {
   border: none;
   cursor: pointer;
 }
+
+.voucher-logo {
+  width: 120px;
+  display: block;
+  margin: 0 auto 10px;
+  filter: grayscale(100%) brightness(0); /* blanco y negro */
+}
