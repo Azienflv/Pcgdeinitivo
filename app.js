@@ -27,17 +27,8 @@ menuItems.forEach(item => {
   });
 });
 
-// =============================
-// 🔥 FORMULARIO AUTOMÁTICO
-// =============================
+// FORMULARIO
 function loadForm() {
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-
-  let opciones = `<option value="">Seleccionar excursión</option>`;
-  productos.forEach((p, index) => {
-    opciones += `<option value="${index}">${p.nombre}</option>`;
-  });
-
   content.innerHTML = `
     <h2>Nueva Reserva</h2>
 
@@ -48,10 +39,7 @@ function loadForm() {
       <input type="email" id="email" placeholder="Email" required>
 
       <input type="text" id="hotel" placeholder="Hotel" required>
-
-      <select id="excursion" required>
-        ${opciones}
-      </select>
+      <input type="text" id="excursion" placeholder="Excursión" required>
 
       <input type="number" id="adultos" placeholder="Adultos" min="1" required>
       <input type="number" id="ninos" placeholder="Niños" min="0">
@@ -60,60 +48,27 @@ function loadForm() {
       <input type="time" id="pickup" required>
 
       <input type="date" id="fecha" required>
-
-      <input type="number" id="precio" placeholder="Total" readonly>
+      <input type="number" id="precio" placeholder="Precio" required>
 
       <button type="submit">Guardar Reserva</button>
     </form>
   `;
-
-  // Eventos para calcular precio
-  document.getElementById("excursion").addEventListener("change", calcularTotal);
-  document.getElementById("adultos").addEventListener("input", calcularTotal);
-  document.getElementById("ninos").addEventListener("input", calcularTotal);
 
   document
     .getElementById("reservaForm")
     .addEventListener("submit", guardarReserva);
 }
 
-// =============================
-// 💰 CALCULAR TOTAL
-// =============================
-function calcularTotal() {
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-
-  let index = document.getElementById("excursion").value;
-  let adultos = parseInt(document.getElementById("adultos").value) || 0;
-  let ninos = parseInt(document.getElementById("ninos").value) || 0;
-
-  if (index === "") return;
-
-  let producto = productos[index];
-
-  let total =
-    adultos * parseFloat(producto.precioAdulto) +
-    ninos * parseFloat(producto.precioNino);
-
-  document.getElementById("precio").value = total;
-}
-
-// =============================
-// 💾 GUARDAR
-// =============================
+// GUARDAR
 function guardarReserva(e) {
   e.preventDefault();
-
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-  let index = document.getElementById("excursion").value;
-  let producto = productos[index];
 
   const reserva = {
     cliente: document.getElementById("cliente").value,
     telefono: document.getElementById("telefono").value,
     email: document.getElementById("email").value,
     hotel: document.getElementById("hotel").value,
-    excursion: producto.nombre,
+    excursion: document.getElementById("excursion").value,
     adultos: document.getElementById("adultos").value,
     ninos: document.getElementById("ninos").value || 0,
     pickup: document.getElementById("pickup").value,
@@ -130,9 +85,7 @@ function guardarReserva(e) {
   document.getElementById("reservaForm").reset();
 }
 
-// =============================
-// 📋 MOSTRAR RESERVAS
-// =============================
+// MOSTRAR RESERVAS
 function mostrarReservas() {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
 
@@ -184,9 +137,75 @@ function mostrarReservas() {
   content.innerHTML = tabla;
 }
 
-// =============================
-// 🗑️ ELIMINAR
-// =============================
+// 🎟️ VOUCHER FINAL PRO (COMPACTO)
+function verVoucher(index) {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  let r = reservas[index];
+
+  content.innerHTML = `
+    <div class="voucher-container">
+
+      <div style="text-align:center; margin-bottom:10px;">
+        <img src="assets/logo.png" class="voucher-logo">
+
+        <p style="margin:3px 0; font-size:12px;">
+          📞 +1 829-XXX-XXXX
+        </p>
+
+        <p style="margin:0; font-size:12px;">
+          📧 info@puntacanagoing.com
+        </p>
+      </div>
+
+      <h2 class="voucher-title">Punta Cana Going TOURS</h2>
+      <p class="voucher-subtitle">Tour Voucher</p>
+
+      <hr>
+
+      <div class="voucher-info">
+        <p><strong>Cliente:</strong> ${r.cliente}</p>
+        <p><strong>Hotel:</strong> ${r.hotel}</p>
+        <p><strong>Excursión:</strong> ${r.excursion}</p>
+        <p><strong>Adultos:</strong> ${r.adultos} | <strong>Niños:</strong> ${r.ninos}</p>
+        <p><strong>Pickup:</strong> ${r.pickup}</p>
+        <p><strong>Fecha:</strong> ${r.fecha}</p>
+        <p class="precio"><strong>Total:</strong> $${r.precio}</p>
+      </div>
+
+      <hr>
+
+      <div class="voucher-policies">
+        <h4>Políticas</h4>
+        <p>
+        a) Cancelaciones con 48 hrs.<br>
+        b) Certificado médico requerido.<br>
+        c) No cambios el mismo día.<br>
+        d) No reembolso por no presentarse.<br>
+        e) No aplica en descuentos.<br>
+        f) No cancelaciones Cirque du Soleil.
+        </p>
+
+        <h4>Policies</h4>
+        <p>
+        a) 48 hrs prior required.<br>
+        b) Medical certificate required.<br>
+        c) No same-day changes.<br>
+        d) No refunds for no-shows.<br>
+        e) No refunds on discounts.<br>
+        f) No cancellations for Cirque du Soleil.
+        </p>
+      </div>
+
+      <div class="voucher-actions">
+        <button onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button onclick="mostrarReservas()">⬅ Volver</button>
+      </div>
+
+    </div>
+  `;
+}
+
+// ELIMINAR
 function eliminarReserva(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
 
@@ -195,4 +214,35 @@ function eliminarReserva(index) {
     localStorage.setItem("reservas", JSON.stringify(reservas));
     mostrarReservas();
   }
+}
+
+function enviarWhatsApp(index) {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  let r = reservas[index];
+
+  // Limpiar número (quitar espacios o símbolos)
+  let telefono = r.telefono.replace(/\D/g, "");
+
+  // Si no tiene código país, agregamos RD +1
+  if (!telefono.startsWith("1")) {
+    telefono = "1" + telefono;
+  }
+
+  let mensaje = `Hola ${r.cliente} 👋
+
+Tu reserva está confirmada ✅
+
+📍 Excursión: ${r.excursion}
+🏨 Hotel: ${r.hotel}
+📅 Fecha: ${r.fecha}
+⏰ Pickup: ${r.pickup}
+
+👥 Adultos: ${r.adultos} | Niños: ${r.ninos}
+💰 Total: $${r.precio}
+
+Gracias por reservar con Punta Cana Going 🌴`;
+
+  let url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+  window.open(url, "_blank");
 }
