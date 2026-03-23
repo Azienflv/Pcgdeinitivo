@@ -38,6 +38,13 @@ function loadForm() {
       <input type="text" id="cliente" placeholder="Nombre del cliente" required><br><br>
       <input type="text" id="hotel" placeholder="Hotel" required><br><br>
       <input type="text" id="excursion" placeholder="Excursión" required><br><br>
+
+      <input type="number" id="adultos" placeholder="Adultos" required><br><br>
+      <input type="number" id="ninos" placeholder="Niños" required><br><br>
+
+      <label>Pick Up Time</label><br>
+      <input type="time" id="pickup" required><br><br>
+
       <input type="date" id="fecha" required><br><br>
       <input type="number" id="precio" placeholder="Precio" required><br><br>
 
@@ -56,6 +63,9 @@ function guardarReserva(e) {
     cliente: document.getElementById("cliente").value,
     hotel: document.getElementById("hotel").value,
     excursion: document.getElementById("excursion").value,
+    adultos: document.getElementById("adultos").value,
+    ninos: document.getElementById("ninos").value,
+    pickup: document.getElementById("pickup").value,
     fecha: document.getElementById("fecha").value,
     precio: document.getElementById("precio").value
   };
