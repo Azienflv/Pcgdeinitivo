@@ -35,6 +35,10 @@ function loadForm() {
 
     <form id="reservaForm">
       <input type="text" id="cliente" placeholder="Nombre del cliente" required><br><br>
+
+      <input type="tel" id="telefono" placeholder="Teléfono" required><br><br>
+      <input type="email" id="email" placeholder="Email" required><br><br>
+
       <input type="text" id="hotel" placeholder="Hotel" required><br><br>
       <input type="text" id="excursion" placeholder="Excursión" required><br><br>
 
@@ -62,6 +66,8 @@ function guardarReserva(e) {
 
   const reserva = {
     cliente: document.getElementById("cliente").value,
+    telefono: document.getElementById("telefono").value,
+    email: document.getElementById("email").value,
     hotel: document.getElementById("hotel").value,
     excursion: document.getElementById("excursion").value,
     adultos: document.getElementById("adultos").value,
@@ -95,6 +101,8 @@ function mostrarReservas() {
     <table border="1" style="width:100%; border-collapse: collapse;">
       <tr>
         <th>Cliente</th>
+        <th>Teléfono</th>
+        <th>Email</th>
         <th>Hotel</th>
         <th>Excursión</th>
         <th>Adultos</th>
@@ -102,13 +110,16 @@ function mostrarReservas() {
         <th>Pickup</th>
         <th>Fecha</th>
         <th>Precio</th>
+        <th>Acción</th>
       </tr>
   `;
 
-  reservas.forEach(r => {
+  reservas.forEach((r, index) => {
     tabla += `
       <tr>
         <td>${r.cliente}</td>
+        <td>${r.telefono}</td>
+        <td>${r.email}</td>
         <td>${r.hotel}</td>
         <td>${r.excursion}</td>
         <td>${r.adultos}</td>
@@ -116,6 +127,9 @@ function mostrarReservas() {
         <td>${r.pickup}</td>
         <td>${r.fecha}</td>
         <td>$${r.precio}</td>
+        <td>
+          <button onclick="eliminarReserva(${index})">❌</button>
+        </td>
       </tr>
     `;
   });
@@ -123,4 +137,16 @@ function mostrarReservas() {
   tabla += "</table>";
 
   content.innerHTML = tabla;
+}
+
+// ELIMINAR
+function eliminarReserva(index) {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+
+  if (confirm("¿Seguro que quieres eliminar esta reserva?")) {
+    reservas.splice(index, 1);
+    localStorage.setItem("reservas", JSON.stringify(reservas));
+
+    mostrarReservas();
+  }
 }
