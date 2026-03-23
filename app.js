@@ -33,22 +33,22 @@ function loadForm() {
     <h2>Nueva Reserva</h2>
 
     <form id="reservaForm">
-      <input type="text" id="cliente" placeholder="Nombre del cliente" required><br><br>
+      <input type="text" id="cliente" placeholder="Nombre del cliente" required>
 
-      <input type="tel" id="telefono" placeholder="Teléfono" required><br><br>
-      <input type="email" id="email" placeholder="Email" required><br><br>
+      <input type="tel" id="telefono" placeholder="Teléfono" required>
+      <input type="email" id="email" placeholder="Email" required>
 
-      <input type="text" id="hotel" placeholder="Hotel" required><br><br>
-      <input type="text" id="excursion" placeholder="Excursión" required><br><br>
+      <input type="text" id="hotel" placeholder="Hotel" required>
+      <input type="text" id="excursion" placeholder="Excursión" required>
 
-      <input type="number" id="adultos" placeholder="Adultos" min="1" required><br><br>
-      <input type="number" id="ninos" placeholder="Niños" min="0"><br><br>
+      <input type="number" id="adultos" placeholder="Adultos" min="1" required>
+      <input type="number" id="ninos" placeholder="Niños" min="0">
 
-      <label>Pick Up Time</label><br>
-      <input type="time" id="pickup" required><br><br>
+      <label>Pick Up Time</label>
+      <input type="time" id="pickup" required>
 
-      <input type="date" id="fecha" required><br><br>
-      <input type="number" id="precio" placeholder="Precio" required><br><br>
+      <input type="date" id="fecha" required>
+      <input type="number" id="precio" placeholder="Precio" required>
 
       <button type="submit">Guardar Reserva</button>
     </form>
@@ -137,7 +137,7 @@ function mostrarReservas() {
   content.innerHTML = tabla;
 }
 
-// 🎟️ VOUCHER FINAL PRO
+// 🎟️ VOUCHER FINAL PRO (COMPACTO)
 function verVoucher(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
   let r = reservas[index];
@@ -148,11 +148,11 @@ function verVoucher(index) {
       <div style="text-align:center; margin-bottom:10px;">
         <img src="assets/logo.png" class="voucher-logo">
 
-        <p style="margin:5px 0; font-size:13px;">
+        <p style="margin:3px 0; font-size:12px;">
           📞 +1 829-XXX-XXXX
         </p>
 
-        <p style="margin:0; font-size:13px;">
+        <p style="margin:0; font-size:12px;">
           📧 info@puntacanagoing.com
         </p>
       </div>
@@ -175,27 +175,23 @@ function verVoucher(index) {
       <hr>
 
       <div class="voucher-policies">
-        <h4>Políticas de Cancelación y/o Reembolso</h4>
-
+        <h4>Políticas</h4>
         <p>
-        a) Cancelaciones con 48 hrs de anticipación.<br><br>
-        b) Certificado médico requerido.<br><br>
-        c) No cambios el mismo día.<br><br>
-        d) No reembolso por no presentarse.<br><br>
-        e) No aplica en descuentos.<br><br>
+        a) Cancelaciones con 48 hrs.<br>
+        b) Certificado médico requerido.<br>
+        c) No cambios el mismo día.<br>
+        d) No reembolso por no presentarse.<br>
+        e) No aplica en descuentos.<br>
         f) No cancelaciones Cirque du Soleil.
         </p>
 
-        <hr>
-
-        <h4>Cancellation & Refund Policies</h4>
-
+        <h4>Policies</h4>
         <p>
-        a) 48 hrs prior required.<br><br>
-        b) Medical certificate required.<br><br>
-        c) No same-day changes.<br><br>
-        d) No refunds for no-shows.<br><br>
-        e) No refunds on discounts.<br><br>
+        a) 48 hrs prior required.<br>
+        b) Medical certificate required.<br>
+        c) No same-day changes.<br>
+        d) No refunds for no-shows.<br>
+        e) No refunds on discounts.<br>
         f) No cancellations for Cirque du Soleil.
         </p>
       </div>
