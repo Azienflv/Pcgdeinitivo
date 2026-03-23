@@ -155,8 +155,6 @@ function verVoucher(index) {
 
       <div class="voucher-info">
         <p><strong>Cliente:</strong> ${r.cliente}</p>
-        <p><strong>Teléfono:</strong> ${r.telefono}</p>
-        <p><strong>Email:</strong> ${r.email}</p>
         <p><strong>Hotel:</strong> ${r.hotel}</p>
         <p><strong>Excursión:</strong> ${r.excursion}</p>
         <p><strong>Adultos:</strong> ${r.adultos} | <strong>Niños:</strong> ${r.ninos}</p>
