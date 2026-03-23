@@ -215,3 +215,34 @@ function eliminarReserva(index) {
     mostrarReservas();
   }
 }
+
+function enviarWhatsApp(index) {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  let r = reservas[index];
+
+  // Limpiar número (quitar espacios o símbolos)
+  let telefono = r.telefono.replace(/\D/g, "");
+
+  // Si no tiene código país, agregamos RD +1
+  if (!telefono.startsWith("1")) {
+    telefono = "1" + telefono;
+  }
+
+  let mensaje = `Hola ${r.cliente} 👋
+
+Tu reserva está confirmada ✅
+
+📍 Excursión: ${r.excursion}
+🏨 Hotel: ${r.hotel}
+📅 Fecha: ${r.fecha}
+⏰ Pickup: ${r.pickup}
+
+👥 Adultos: ${r.adultos} | Niños: ${r.ninos}
+💰 Total: $${r.precio}
+
+Gracias por reservar con Punta Cana Going 🌴`;
+
+  let url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+  window.open(url, "_blank");
+}
