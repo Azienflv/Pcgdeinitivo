@@ -102,12 +102,12 @@ button {
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-/* LOGO */
+/* LOGO (ARREGLADO 🔥) */
 .voucher-logo {
-  width: 120px;
+  width: 140px;
   display: block;
-  margin: 0 auto 10px;
-  filter: grayscale(100%) brightness(0);
+  margin: 0 auto 15px;
+  object-fit: contain;
 }
 
 /* TITULOS */
