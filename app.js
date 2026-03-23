@@ -14,7 +14,6 @@ const content = document.getElementById("content");
 
 menuItems.forEach(item => {
   item.addEventListener("click", () => {
-    // Activar visual
     menuItems.forEach(i => i.classList.remove("active"));
     item.classList.add("active");
 
@@ -83,7 +82,6 @@ function guardarReserva(e) {
   localStorage.setItem("reservas", JSON.stringify(reservas));
 
   alert("Reserva guardada ✅");
-
   document.getElementById("reservaForm").reset();
 }
 
@@ -110,7 +108,7 @@ function mostrarReservas() {
         <th>Pickup</th>
         <th>Fecha</th>
         <th>Precio</th>
-        <th>Acción</th>
+        <th>Acciones</th>
       </tr>
   `;
 
@@ -128,6 +126,7 @@ function mostrarReservas() {
         <td>${r.fecha}</td>
         <td>$${r.precio}</td>
         <td>
+          <button onclick="verVoucher(${index})">📄</button>
           <button onclick="eliminarReserva(${index})">❌</button>
         </td>
       </tr>
@@ -139,6 +138,56 @@ function mostrarReservas() {
   content.innerHTML = tabla;
 }
 
+// VOUCHER
+function verVoucher(index) {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  let r = reservas[index];
+
+  content.innerHTML = `
+    <div class="voucher-container">
+
+      <img src="assets/logo.png" class="voucher-logo">
+
+      <h2 class="voucher-title">PCG TOURS</h2>
+      <p class="voucher-subtitle">Tour Voucher</p>
+
+      <hr>
+
+      <div class="voucher-info">
+        <p><strong>Cliente:</strong> ${r.cliente}</p>
+        <p><strong>Teléfono:</strong> ${r.telefono}</p>
+        <p><strong>Email:</strong> ${r.email}</p>
+        <p><strong>Hotel:</strong> ${r.hotel}</p>
+        <p><strong>Excursión:</strong> ${r.excursion}</p>
+        <p><strong>Adultos:</strong> ${r.adultos} | <strong>Niños:</strong> ${r.ninos}</p>
+        <p><strong>Pickup:</strong> ${r.pickup}</p>
+        <p><strong>Fecha:</strong> ${r.fecha}</p>
+        <p class="precio"><strong>Total:</strong> $${r.precio}</p>
+      </div>
+
+      <hr>
+
+      <div class="voucher-policies">
+        <h4>Políticas / Policies</h4>
+
+        <p><strong>ES:</strong> Cancelaciones con 48 hrs de anticipación. 
+        No se aceptan cambios el mismo día. No hay reembolsos por no presentarse. 
+        No aplican reembolsos en promociones o paquetes.</p>
+
+        <p><strong>EN:</strong> Cancellations must be made 48 hours in advance. 
+        No same-day changes. No refunds for no-shows. 
+        No refunds on discounted or package deals.</p>
+      </div>
+
+      <div class="voucher-actions">
+        <button onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button onclick="mostrarReservas()">⬅ Volver</button>
+      </div>
+
+    </div>
+  `;
+}
+
 // ELIMINAR
 function eliminarReserva(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
@@ -146,7 +195,6 @@ function eliminarReserva(index) {
   if (confirm("¿Seguro que quieres eliminar esta reserva?")) {
     reservas.splice(index, 1);
     localStorage.setItem("reservas", JSON.stringify(reservas));
-
     mostrarReservas();
   }
 }
