@@ -1,3 +1,4 @@
+// Sidebar toggle
 const sidebar = document.getElementById("sidebar");
 const main = document.getElementById("main");
 const toggleBtn = document.getElementById("toggleBtn");
@@ -7,20 +8,16 @@ toggleBtn.addEventListener("click", () => {
   main.classList.toggle("shift");
 });
 
+// Menú activo + navegación
 const menuItems = document.querySelectorAll(".menu-item");
-
-menuItems.forEach(item => {
-  item.addEventListener("click", () => {
-    menuItems.forEach(i => i.classList.remove("active"));
-    item.classList.add("active");
-  });
-});
-
-// Detectar menú
 const content = document.getElementById("content");
 
 menuItems.forEach(item => {
   item.addEventListener("click", () => {
+    // Activar selección visual
+    menuItems.forEach(i => i.classList.remove("active"));
+    item.classList.add("active");
+
     const text = item.textContent.trim();
 
     if (text === "Nueva Reserva") {
@@ -29,7 +26,7 @@ menuItems.forEach(item => {
   });
 });
 
-// Función para cargar formulario
+// Cargar formulario
 function loadForm() {
   content.innerHTML = `
     <h2>Nueva Reserva</h2>
@@ -39,8 +36,8 @@ function loadForm() {
       <input type="text" id="hotel" placeholder="Hotel" required><br><br>
       <input type="text" id="excursion" placeholder="Excursión" required><br><br>
 
-      <input type="number" id="adultos" placeholder="Adultos" required><br><br>
-      <input type="number" id="ninos" placeholder="Niños" required><br><br>
+      <input type="number" id="adultos" placeholder="Adultos" min="1" required><br><br>
+      <input type="number" id="ninos" placeholder="Niños" min="0"><br><br>
 
       <label>Pick Up Time</label><br>
       <input type="time" id="pickup" required><br><br>
@@ -52,10 +49,12 @@ function loadForm() {
     </form>
   `;
 
-  document.getElementById("reservaForm").addEventListener("submit", guardarReserva);
+  document
+    .getElementById("reservaForm")
+    .addEventListener("submit", guardarReserva);
 }
 
-// Guardar datos
+// Guardar reserva
 function guardarReserva(e) {
   e.preventDefault();
 
@@ -64,7 +63,7 @@ function guardarReserva(e) {
     hotel: document.getElementById("hotel").value,
     excursion: document.getElementById("excursion").value,
     adultos: document.getElementById("adultos").value,
-    ninos: document.getElementById("ninos").value,
+    ninos: document.getElementById("ninos").value || 0,
     pickup: document.getElementById("pickup").value,
     fecha: document.getElementById("fecha").value,
     precio: document.getElementById("precio").value
@@ -76,4 +75,7 @@ function guardarReserva(e) {
   localStorage.setItem("reservas", JSON.stringify(reservas));
 
   alert("Reserva guardada ✅");
+
+  // Limpiar formulario
+  document.getElementById("reservaForm").reset();
 }
