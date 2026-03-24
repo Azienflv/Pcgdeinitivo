@@ -419,3 +419,43 @@ function eliminarReserva(index) {
     mostrarReservas(); // refresca la tabla
   }
 }
+
+// =======================
+// 🎟️ VOUCHER
+// =======================
+function verVoucher(index) {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  let r = reservas[index];
+
+  content.innerHTML = `
+    <div class="voucher-container">
+
+      <div style="text-align:center; margin-bottom:10px;">
+        <img src="assets/logo.png" class="voucher-logo">
+        <p style="margin:3px 0; font-size:12px;">📞 +1 829-XXX-XXXX</p>
+        <p style="margin:0; font-size:12px;">📧 info@puntacanagoing.com</p>
+      </div>
+
+      <h2 class="voucher-title">Punta Cana Going TOURS</h2>
+      <p class="voucher-subtitle">Tour Voucher</p>
+
+      <hr>
+
+      <div class="voucher-info">
+        <p><strong>Cliente:</strong> ${r.cliente}</p>
+        <p><strong>Hotel:</strong> ${r.hotel}</p>
+        <p><strong>Excursión:</strong> ${r.excursion}</p>
+        <p><strong>Adultos:</strong> ${r.adultos} | <strong>Niños:</strong> ${r.ninos}</p>
+        <p><strong>Pickup:</strong> ${r.pickup || "-"}</p>
+        <p><strong>Fecha:</strong> ${r.fecha}</p>
+        <p class="precio"><strong>Total:</strong> $${r.precio}</p>
+      </div>
+
+      <div class="voucher-actions">
+        <button onclick="window.print()">🖨️ Imprimir</button>
+        <button onclick="mostrarReservas()">⬅ Volver</button>
+      </div>
+
+    </div>
+  `;
+}
