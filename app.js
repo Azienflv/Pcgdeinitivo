@@ -19,13 +19,9 @@ menuItems.forEach(item => {
 
     const text = item.textContent.trim();
 
-    if (text === "Nueva Reserva") {
-      loadForm();
-    } else if (text === "Reservas") {
-      mostrarReservas();
-    } else if (text === "Nuevo Producto") {
-      menuProductos();
-    }
+    if (text === "Nueva Reserva") loadForm();
+    else if (text === "Reservas") mostrarReservas();
+    else if (text === "Nuevo Producto") menuProductos();
   });
 });
 
@@ -40,9 +36,8 @@ function menuProductos() {
     <div style="display:flex; gap:10px; margin-bottom:20px;">
       <button onclick="loadProducto()">➕ Excursiones</button>
       <button onclick="editarProductos()">✏️ Editar Productos</button>
+      <button onclick="menuHoteles()">🏨 Hoteles</button>
     </div>
-
-    <p>Selecciona una opción</p>
   `;
 }
 
@@ -64,8 +59,7 @@ function loadProducto() {
     </form>
   `;
 
-  document
-    .getElementById("productoForm")
+  document.getElementById("productoForm")
     .addEventListener("submit", guardarProducto);
 }
 
@@ -89,7 +83,7 @@ function guardarProducto(e) {
 
 
 // =======================
-// ✏️ EDITAR PRODUCTOS (PRO 🔥)
+// ✏️ EDITAR PRODUCTOS
 // =======================
 function editarProductos() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
@@ -102,9 +96,7 @@ function editarProductos() {
     return;
   }
 
-  let html = `
-    <h2>Editar Productos</h2>
-  `;
+  let html = `<h2>Editar Productos</h2>`;
 
   productos.forEach((p, index) => {
     html += `
@@ -123,7 +115,6 @@ function editarProductos() {
   });
 
   html += `<button onclick="menuProductos()">⬅ Volver</button>`;
-
   content.innerHTML = html;
 }
 
@@ -135,7 +126,6 @@ function actualizarProducto(index) {
   productos[index].nino = parseFloat(document.getElementById(`nino-${index}`).value);
 
   localStorage.setItem("productos", JSON.stringify(productos));
-
   alert("Producto actualizado ✅");
 }
 
@@ -151,13 +141,119 @@ function eliminarProducto(index) {
 
 
 // =======================
+// 🏨 HOTELES (NUEVO 🔥)
+// =======================
+function menuHoteles() {
+  content.innerHTML = `
+    <h2>Hoteles</h2>
+
+    <button onclick="crearHotel()">➕ Crear Hotel</button>
+    <button onclick="verHoteles()">📋 Ver Hoteles</button>
+    <br><br>
+    <button onclick="menuProductos()">⬅ Volver</button>
+  `;
+}
+
+function crearHotel() {
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  let inputs = productos.map(p => `
+    <label>${p.nombre}</label>
+    <input type="time" id="pickup_${p.nombre}">
+  `).join("");
+
+  content.innerHTML = `
+    <h2>Nuevo Hotel</h2>
+
+    <form id="hotelForm">
+      <input type="text" id="nombreHotel" placeholder="Nombre del hotel" required>
+
+      <h4>Horarios por excursión</h4>
+      ${inputs}
+
+      <button type="submit">Guardar Hotel</button>
+      <button type="button" onclick="menuHoteles()">⬅ Volver</button>
+    </form>
+  `;
+
+  document.getElementById("hotelForm")
+    .addEventListener("submit", guardarHotel);
+}
+
+function guardarHotel(e) {
+  e.preventDefault();
+
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  let hotel = {
+    nombre: document.getElementById("nombreHotel").value,
+    pickups: {}
+  };
+
+  productos.forEach(p => {
+    hotel.pickups[p.nombre] =
+      document.getElementById(`pickup_${p.nombre}`).value || "";
+  });
+
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+  hoteles.push(hotel);
+
+  localStorage.setItem("hoteles", JSON.stringify(hoteles));
+
+  alert("Hotel guardado ✅");
+  menuHoteles();
+}
+
+function verHoteles() {
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+
+  if (hoteles.length === 0) {
+    content.innerHTML = `<h2>No hay hoteles</h2>`;
+    return;
+  }
+
+  let html = `<h2>Hoteles</h2>`;
+
+  hoteles.forEach((h, index) => {
+    html += `<h4>${h.nombre}</h4><ul>`;
+
+    for (let exc in h.pickups) {
+      html += `<li>${exc} → ${h.pickups[exc] || "Sin horario"}</li>`;
+    }
+
+    html += `</ul>
+      <button onclick="eliminarHotel(${index})">❌ Eliminar</button>
+      <hr>`;
+  });
+
+  html += `<button onclick="menuHoteles()">⬅ Volver</button>`;
+  content.innerHTML = html;
+}
+
+function eliminarHotel(index) {
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+
+  if (confirm("¿Eliminar hotel?")) {
+    hoteles.splice(index, 1);
+    localStorage.setItem("hoteles", JSON.stringify(hoteles));
+    verHoteles();
+  }
+}
+
+
+// =======================
 // 🧾 FORMULARIO RESERVA
 // =======================
 function loadForm() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
 
-  let opciones = productos.map(p => 
+  let opcionesExc = productos.map(p =>
     `<option value="${p.nombre}">${p.nombre}</option>`
+  ).join("");
+
+  let opcionesHoteles = hoteles.map(h =>
+    `<option value="${h.nombre}">${h.nombre}</option>`
   ).join("");
 
   content.innerHTML = `
@@ -169,18 +265,21 @@ function loadForm() {
       <input type="tel" id="telefono" placeholder="Teléfono" required>
       <input type="email" id="email" placeholder="Email" required>
 
-      <input type="text" id="hotel" placeholder="Hotel" required>
+      <select id="hotel" required>
+        <option value="">Seleccionar hotel</option>
+        ${opcionesHoteles}
+      </select>
 
       <select id="excursion" required>
         <option value="">Seleccionar excursión</option>
-        ${opciones}
+        ${opcionesExc}
       </select>
 
       <input type="number" id="adultos" placeholder="Adultos" min="1" required>
       <input type="number" id="ninos" placeholder="Niños" min="0">
 
       <label>Pick Up Time</label>
-      <input type="time" id="pickup" required>
+      <input type="time" id="pickup" readonly>
 
       <input type="date" id="fecha" required>
 
@@ -190,33 +289,40 @@ function loadForm() {
     </form>
   `;
 
-  document.getElementById("excursion").addEventListener("change", calcularPrecio);
-  document.getElementById("adultos").addEventListener("input", calcularPrecio);
-  document.getElementById("ninos").addEventListener("input", calcularPrecio);
+  document.getElementById("excursion").addEventListener("change", autoDatos);
+  document.getElementById("hotel").addEventListener("change", autoDatos);
+  document.getElementById("adultos").addEventListener("input", autoDatos);
+  document.getElementById("ninos").addEventListener("input", autoDatos);
 
-  document
-    .getElementById("reservaForm")
+  document.getElementById("reservaForm")
     .addEventListener("submit", guardarReserva);
 }
 
 
 // =======================
-// 💰 CALCULAR PRECIO
+// ⚡ AUTO PRECIO + PICKUP
 // =======================
-function calcularPrecio() {
+function autoDatos() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
 
-  let nombre = document.getElementById("excursion").value;
+  let exc = document.getElementById("excursion").value;
+  let hotelNombre = document.getElementById("hotel").value;
+
   let adultos = parseInt(document.getElementById("adultos").value) || 0;
   let ninos = parseInt(document.getElementById("ninos").value) || 0;
 
-  let producto = productos.find(p => p.nombre === nombre);
+  let producto = productos.find(p => p.nombre === exc);
+  let hotel = hoteles.find(h => h.nombre === hotelNombre);
 
-  if (!producto) return;
+  if (producto) {
+    let total = (adultos * producto.adulto) + (ninos * producto.nino);
+    document.getElementById("precio").value = total;
+  }
 
-  let total = (adultos * producto.adulto) + (ninos * producto.nino);
-
-  document.getElementById("precio").value = total;
+  if (hotel && hotel.pickups[exc]) {
+    document.getElementById("pickup").value = hotel.pickups[exc];
+  }
 }
 
 
@@ -246,100 +352,4 @@ function guardarReserva(e) {
 
   alert("Reserva guardada ✅");
   document.getElementById("reservaForm").reset();
-}
-
-
-// =======================
-// 📊 MOSTRAR RESERVAS
-// =======================
-function mostrarReservas() {
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-
-  if (reservas.length === 0) {
-    content.innerHTML = "<h2>No hay reservas aún</h2>";
-    return;
-  }
-
-  let tabla = `
-    <h2>Reservas</h2>
-    <table border="1" style="width:100%; border-collapse: collapse;">
-      <tr>
-        <th>Cliente</th>
-        <th>Excursión</th>
-        <th>Precio</th>
-        <th>Acciones</th>
-      </tr>
-  `;
-
-  reservas.forEach((r, index) => {
-    tabla += `
-      <tr>
-        <td>${r.cliente}</td>
-        <td>${r.excursion}</td>
-        <td>$${r.precio}</td>
-        <td>
-          <button onclick="verVoucher(${index})">📄</button>
-          <button onclick="eliminarReserva(${index})">❌</button>
-        </td>
-      </tr>
-    `;
-  });
-
-  tabla += "</table>";
-  content.innerHTML = tabla;
-}
-
-
-// =======================
-// 🎟️ VOUCHER
-// =======================
-function verVoucher(index) {
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-  let r = reservas[index];
-
-  content.innerHTML = `
-    <div class="voucher-container">
-
-      <div style="text-align:center; margin-bottom:10px;">
-        <img src="assets/logo.png" class="voucher-logo">
-        <p style="margin:3px 0; font-size:12px;">📞 +1 829-XXX-XXXX</p>
-        <p style="margin:0; font-size:12px;">📧 info@puntacanagoing.com</p>
-      </div>
-
-      <h2 class="voucher-title">Punta Cana Going TOURS</h2>
-      <p class="voucher-subtitle">Tour Voucher</p>
-
-      <hr>
-
-      <div class="voucher-info">
-        <p><strong>Cliente:</strong> ${r.cliente}</p>
-        <p><strong>Hotel:</strong> ${r.hotel}</p>
-        <p><strong>Excursión:</strong> ${r.excursion}</p>
-        <p><strong>Adultos:</strong> ${r.adultos} | <strong>Niños:</strong> ${r.ninos}</p>
-        <p><strong>Pickup:</strong> ${r.pickup}</p>
-        <p><strong>Fecha:</strong> ${r.fecha}</p>
-        <p class="precio"><strong>Total:</strong> $${r.precio}</p>
-      </div>
-
-      <div class="voucher-actions">
-        <button onclick="window.print()">🖨️ Imprimir</button>
-        <button onclick="mostrarReservas()">⬅ Volver</button>
-      </div>
-
-    </div>
-  `;
-}
-
-
-// =======================
-// ❌ ELIMINAR RESERVA
-// =======================
-function eliminarReserva(index) {
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-
-  if (confirm("¿Eliminar reserva?")) {
-    reservas.splice(index, 1);
-    localStorage.setItem("reservas", JSON.stringify(reservas));
-    mostrarReservas();
-  }
 }
