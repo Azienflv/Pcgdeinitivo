@@ -215,18 +215,70 @@ function mostrarReservas() {
 // =======================
 // 🎟️ VOUCHER
 // =======================
+// 🎟️ VOUCHER PRO RESTAURADO
 function verVoucher(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
   let r = reservas[index];
 
   content.innerHTML = `
     <div class="voucher-container">
-      <h2>${r.cliente}</h2>
-      <p>${r.excursion}</p>
-      <p>Total: $${r.precio}</p>
 
-      <button onclick="window.print()">🖨️ Imprimir</button>
-      <button onclick="mostrarReservas()">⬅ Volver</button>
+      <div style="text-align:center; margin-bottom:10px;">
+        <img src="assets/logo.png" class="voucher-logo">
+
+        <p style="margin:3px 0; font-size:12px;">
+          📞 +1 829-XXX-XXXX
+        </p>
+
+        <p style="margin:0; font-size:12px;">
+          📧 info@puntacanagoing.com
+        </p>
+      </div>
+
+      <h2 class="voucher-title">Punta Cana Going TOURS</h2>
+      <p class="voucher-subtitle">Tour Voucher</p>
+
+      <hr>
+
+      <div class="voucher-info">
+        <p><strong>Cliente:</strong> ${r.cliente}</p>
+        <p><strong>Hotel:</strong> ${r.hotel}</p>
+        <p><strong>Excursión:</strong> ${r.excursion}</p>
+        <p><strong>Adultos:</strong> ${r.adultos} | <strong>Niños:</strong> ${r.ninos}</p>
+        <p><strong>Pickup:</strong> ${r.pickup}</p>
+        <p><strong>Fecha:</strong> ${r.fecha}</p>
+        <p class="precio"><strong>Total:</strong> $${r.precio}</p>
+      </div>
+
+      <hr>
+
+      <div class="voucher-policies">
+        <h4>Políticas</h4>
+        <p>
+        a) Cancelaciones con 48 hrs.<br>
+        b) Certificado médico requerido.<br>
+        c) No cambios el mismo día.<br>
+        d) No reembolso por no presentarse.<br>
+        e) No aplica en descuentos.<br>
+        f) No cancelaciones Cirque du Soleil.
+        </p>
+
+        <h4>Policies</h4>
+        <p>
+        a) 48 hrs prior required.<br>
+        b) Medical certificate required.<br>
+        c) No same-day changes.<br>
+        d) No refunds for no-shows.<br>
+        e) No refunds on discounts.<br>
+        f) No cancellations for Cirque du Soleil.
+        </p>
+      </div>
+
+      <div class="voucher-actions">
+        <button onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button onclick="mostrarReservas()">⬅ Volver</button>
+      </div>
+
     </div>
   `;
 }
