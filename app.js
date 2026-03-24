@@ -89,7 +89,7 @@ function guardarProducto(e) {
 
 
 // =======================
-// ✏️ EDITAR PRODUCTOS
+// ✏️ EDITAR PRODUCTOS (PRO 🔥)
 // =======================
 function editarProductos() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
@@ -104,36 +104,39 @@ function editarProductos() {
 
   let html = `
     <h2>Editar Productos</h2>
-
-    <table border="1" style="width:100%; border-collapse: collapse;">
-      <tr>
-        <th>Excursión</th>
-        <th>Adulto</th>
-        <th>Niño</th>
-        <th>Acciones</th>
-      </tr>
   `;
 
   productos.forEach((p, index) => {
     html += `
-      <tr>
-        <td>${p.nombre}</td>
-        <td>$${p.adulto}</td>
-        <td>$${p.nino}</td>
-        <td>
-          <button onclick="eliminarProducto(${index})">❌</button>
-        </td>
-      </tr>
+      <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
+        
+        <input type="text" value="${p.nombre}" id="nombre-${index}">
+        <input type="number" value="${p.adulto}" id="adulto-${index}">
+        <input type="number" value="${p.nino}" id="nino-${index}">
+
+        <br><br>
+
+        <button onclick="actualizarProducto(${index})">💾 Guardar</button>
+        <button onclick="eliminarProducto(${index})">❌ Eliminar</button>
+      </div>
     `;
   });
 
-  html += `
-    </table>
-    <br>
-    <button onclick="menuProductos()">⬅ Volver</button>
-  `;
+  html += `<button onclick="menuProductos()">⬅ Volver</button>`;
 
   content.innerHTML = html;
+}
+
+function actualizarProducto(index) {
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  productos[index].nombre = document.getElementById(`nombre-${index}`).value;
+  productos[index].adulto = parseFloat(document.getElementById(`adulto-${index}`).value);
+  productos[index].nino = parseFloat(document.getElementById(`nino-${index}`).value);
+
+  localStorage.setItem("productos", JSON.stringify(productos));
+
+  alert("Producto actualizado ✅");
 }
 
 function eliminarProducto(index) {
@@ -288,7 +291,7 @@ function mostrarReservas() {
 
 
 // =======================
-// 🎟️ VOUCHER PRO
+// 🎟️ VOUCHER
 // =======================
 function verVoucher(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
