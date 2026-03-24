@@ -24,27 +24,43 @@ menuItems.forEach(item => {
     } else if (text === "Reservas") {
       mostrarReservas();
     } else if (text === "Nuevo Producto") {
-      loadProducto();
+      menuProductos();
     }
   });
 });
 
 
 // =======================
-// 📦 NUEVO PRODUCTO
+// 📦 MENÚ PRODUCTOS
+// =======================
+function menuProductos() {
+  content.innerHTML = `
+    <h2>Gestión de Productos</h2>
+
+    <div style="display:flex; gap:10px; margin-bottom:20px;">
+      <button onclick="loadProducto()">➕ Excursiones</button>
+      <button onclick="editarProductos()">✏️ Editar Productos</button>
+    </div>
+
+    <p>Selecciona una opción</p>
+  `;
+}
+
+
+// =======================
+// ➕ CREAR EXCURSIONES
 // =======================
 function loadProducto() {
   content.innerHTML = `
-    <h2>Nuevo Producto (Excursión)</h2>
+    <h2>Nueva Excursión</h2>
 
     <form id="productoForm">
       <input type="text" id="nombreExcursion" placeholder="Nombre de la excursión" required>
-
       <input type="number" id="precioAdulto" placeholder="Precio Adulto" required>
-
       <input type="number" id="precioNino" placeholder="Precio Niño" required>
 
       <button type="submit">Guardar Producto</button>
+      <button type="button" onclick="menuProductos()">⬅ Volver</button>
     </form>
   `;
 
@@ -69,6 +85,65 @@ function guardarProducto(e) {
 
   alert("Excursión guardada ✅");
   document.getElementById("productoForm").reset();
+}
+
+
+// =======================
+// ✏️ EDITAR PRODUCTOS
+// =======================
+function editarProductos() {
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  if (productos.length === 0) {
+    content.innerHTML = `
+      <h2>No hay productos aún</h2>
+      <button onclick="menuProductos()">⬅ Volver</button>
+    `;
+    return;
+  }
+
+  let html = `
+    <h2>Editar Productos</h2>
+
+    <table border="1" style="width:100%; border-collapse: collapse;">
+      <tr>
+        <th>Excursión</th>
+        <th>Adulto</th>
+        <th>Niño</th>
+        <th>Acciones</th>
+      </tr>
+  `;
+
+  productos.forEach((p, index) => {
+    html += `
+      <tr>
+        <td>${p.nombre}</td>
+        <td>$${p.adulto}</td>
+        <td>$${p.nino}</td>
+        <td>
+          <button onclick="eliminarProducto(${index})">❌</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `
+    </table>
+    <br>
+    <button onclick="menuProductos()">⬅ Volver</button>
+  `;
+
+  content.innerHTML = html;
+}
+
+function eliminarProducto(index) {
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  if (confirm("¿Eliminar este producto?")) {
+    productos.splice(index, 1);
+    localStorage.setItem("productos", JSON.stringify(productos));
+    editarProductos();
+  }
 }
 
 
@@ -123,7 +198,7 @@ function loadForm() {
 
 
 // =======================
-// 💰 CALCULAR PRECIO AUTO
+// 💰 CALCULAR PRECIO
 // =======================
 function calcularPrecio() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
@@ -213,9 +288,8 @@ function mostrarReservas() {
 
 
 // =======================
-// 🎟️ VOUCHER
+// 🎟️ VOUCHER PRO
 // =======================
-// 🎟️ VOUCHER PRO RESTAURADO
 function verVoucher(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
   let r = reservas[index];
@@ -225,14 +299,8 @@ function verVoucher(index) {
 
       <div style="text-align:center; margin-bottom:10px;">
         <img src="assets/logo.png" class="voucher-logo">
-
-        <p style="margin:3px 0; font-size:12px;">
-          📞 +1 829-XXX-XXXX
-        </p>
-
-        <p style="margin:0; font-size:12px;">
-          📧 info@puntacanagoing.com
-        </p>
+        <p style="margin:3px 0; font-size:12px;">📞 +1 829-XXX-XXXX</p>
+        <p style="margin:0; font-size:12px;">📧 info@puntacanagoing.com</p>
       </div>
 
       <h2 class="voucher-title">Punta Cana Going TOURS</h2>
@@ -250,32 +318,8 @@ function verVoucher(index) {
         <p class="precio"><strong>Total:</strong> $${r.precio}</p>
       </div>
 
-      <hr>
-
-      <div class="voucher-policies">
-        <h4>Políticas</h4>
-        <p>
-        a) Cancelaciones con 48 hrs.<br>
-        b) Certificado médico requerido.<br>
-        c) No cambios el mismo día.<br>
-        d) No reembolso por no presentarse.<br>
-        e) No aplica en descuentos.<br>
-        f) No cancelaciones Cirque du Soleil.
-        </p>
-
-        <h4>Policies</h4>
-        <p>
-        a) 48 hrs prior required.<br>
-        b) Medical certificate required.<br>
-        c) No same-day changes.<br>
-        d) No refunds for no-shows.<br>
-        e) No refunds on discounts.<br>
-        f) No cancellations for Cirque du Soleil.
-        </p>
-      </div>
-
       <div class="voucher-actions">
-        <button onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button onclick="window.print()">🖨️ Imprimir</button>
         <button onclick="mostrarReservas()">⬅ Volver</button>
       </div>
 
@@ -285,7 +329,7 @@ function verVoucher(index) {
 
 
 // =======================
-// ❌ ELIMINAR
+// ❌ ELIMINAR RESERVA
 // =======================
 function eliminarReserva(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
