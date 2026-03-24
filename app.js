@@ -359,3 +359,63 @@ function guardarReserva(e) {
   alert("Reserva guardada ✅");
   document.getElementById("reservaForm").reset();
 }
+
+
+// =======================
+// 📊 MOSTRAR RESERVAS
+// =======================
+function mostrarReservas() {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+
+  if (reservas.length === 0) {
+    content.innerHTML = "<h2>No hay reservas aún</h2>";
+    return;
+  }
+
+  let tabla = `
+    <h2>Reservas</h2>
+    <table border="1" style="width:100%; border-collapse: collapse;">
+      <tr>
+        <th>Cliente</th>
+        <th>Hotel</th>
+        <th>Excursión</th>
+        <th>Pickup</th>
+        <th>Fecha</th>
+        <th>Precio</th>
+        <th>Acciones</th>
+      </tr>
+  `;
+
+  reservas.forEach((r, index) => {
+    tabla += `
+      <tr>
+        <td>${r.cliente}</td>
+        <td>${r.hotel}</td>
+        <td>${r.excursion}</td>
+        <td>${r.pickup || "-"}</td>
+        <td>${r.fecha}</td>
+        <td>$${r.precio}</td>
+        <td>
+          <button onclick="verVoucher(${index})">📄</button>
+          <button onclick="eliminarReserva(${index})">❌</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  tabla += "</table>";
+  content.innerHTML = tabla;
+}
+
+// =======================
+// ❌ ELIMINAR RESERVA
+// =======================
+function eliminarReserva(index) {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+
+  if (confirm("¿Seguro que quieres eliminar esta reserva?")) {
+    reservas.splice(index, 1);
+    localStorage.setItem("reservas", JSON.stringify(reservas));
+    mostrarReservas(); // refresca la tabla
+  }
+}
