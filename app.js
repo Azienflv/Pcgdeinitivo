@@ -25,6 +25,12 @@ menuItems.forEach(item => {
   });
 });
 
+// =======================
+// 🔑 UTILIDAD (ANTI BUG)
+// =======================
+function safeId(text) {
+  return text.replace(/\s+/g, "_").toLowerCase();
+}
 
 // =======================
 // 📦 MENÚ PRODUCTOS
@@ -40,7 +46,6 @@ function menuProductos() {
     </div>
   `;
 }
-
 
 // =======================
 // ➕ CREAR EXCURSIONES
@@ -81,7 +86,6 @@ function guardarProducto(e) {
   document.getElementById("productoForm").reset();
 }
 
-
 // =======================
 // ✏️ EDITAR PRODUCTOS
 // =======================
@@ -101,13 +105,10 @@ function editarProductos() {
   productos.forEach((p, index) => {
     html += `
       <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
-        
         <input type="text" value="${p.nombre}" id="nombre-${index}">
         <input type="number" value="${p.adulto}" id="adulto-${index}">
         <input type="number" value="${p.nino}" id="nino-${index}">
-
         <br><br>
-
         <button onclick="actualizarProducto(${index})">💾 Guardar</button>
         <button onclick="eliminarProducto(${index})">❌ Eliminar</button>
       </div>
@@ -139,9 +140,8 @@ function eliminarProducto(index) {
   }
 }
 
-
 // =======================
-// 🏨 HOTELES (NUEVO 🔥)
+// 🏨 HOTELES
 // =======================
 function menuHoteles() {
   content.innerHTML = `
@@ -157,10 +157,13 @@ function menuHoteles() {
 function crearHotel() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
-  let inputs = productos.map(p => `
-    <label>${p.nombre}</label>
-    <input type="time" id="pickup_${p.nombre}">
-  `).join("");
+  let inputs = productos.map(p => {
+    let id = safeId(p.nombre);
+    return `
+      <label>${p.nombre}</label>
+      <input type="time" id="pickup_${id}">
+    `;
+  }).join("");
 
   content.innerHTML = `
     <h2>Nuevo Hotel</h2>
@@ -191,8 +194,9 @@ function guardarHotel(e) {
   };
 
   productos.forEach(p => {
+    let id = safeId(p.nombre);
     hotel.pickups[p.nombre] =
-      document.getElementById(`pickup_${p.nombre}`).value || "";
+      document.getElementById(`pickup_${id}`).value || "";
   });
 
   let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
@@ -222,7 +226,7 @@ function verHoteles() {
     }
 
     html += `</ul>
-      <button onclick="eliminarHotel(${index})">❌ Eliminar</button>
+      <button onclick="eliminarHotel(${index})">❌</button>
       <hr>`;
   });
 
@@ -239,7 +243,6 @@ function eliminarHotel(index) {
     verHoteles();
   }
 }
-
 
 // =======================
 // 🧾 FORMULARIO RESERVA
@@ -261,7 +264,6 @@ function loadForm() {
 
     <form id="reservaForm">
       <input type="text" id="cliente" placeholder="Nombre del cliente" required>
-
       <input type="tel" id="telefono" placeholder="Teléfono" required>
       <input type="email" id="email" placeholder="Email" required>
 
@@ -298,7 +300,6 @@ function loadForm() {
     .addEventListener("submit", guardarReserva);
 }
 
-
 // =======================
 // ⚡ AUTO PRECIO + PICKUP
 // =======================
@@ -315,16 +316,21 @@ function autoDatos() {
   let producto = productos.find(p => p.nombre === exc);
   let hotel = hoteles.find(h => h.nombre === hotelNombre);
 
+  // Precio
   if (producto) {
     let total = (adultos * producto.adulto) + (ninos * producto.nino);
     document.getElementById("precio").value = total;
+  } else {
+    document.getElementById("precio").value = "";
   }
 
+  // Pickup
   if (hotel && hotel.pickups[exc]) {
     document.getElementById("pickup").value = hotel.pickups[exc];
+  } else {
+    document.getElementById("pickup").value = "";
   }
 }
-
 
 // =======================
 // 💾 GUARDAR RESERVA
