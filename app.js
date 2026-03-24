@@ -451,6 +451,30 @@ function verVoucher(index) {
         <p class="precio"><strong>Total:</strong> $${r.precio}</p>
       </div>
 
+      <hr>
+
+      <div class="voucher-policies">
+        <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
+        <p>
+        a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour y es obligatorio presentar el recibo original.<br>
+        b) Se requiere certificado médico para cancelaciones por razones de salud.<br>
+        c) No se permiten cambios el mismo día de la excursión.<br>
+        d) No hay reembolso por no presentarse.<br>
+        e) Descuentos no son reembolsables.<br>
+        f) No cancelaciones para excursiones de Cirque du Soleil.
+        </p>
+
+        <h4>CANCELLATION & REFUND POLICIES</h4>
+        <p>
+        a) Cancellation/refund proceeds with more than 48 hrs. prior to tour commencement and it is mandatory to return the original receipt.<br>
+        b) Medical certificate is required for any cancellation due to health conditions.<br>
+        c) No changes are allowed on the same day of the excursion.<br>
+        d) No refunds will be issued for no-shows.<br>
+        e) Discounts are non-refundable.<br>
+        f) No cancellations for Cirque du Soleil excursions.
+        </p>
+      </div>
+
       <div class="voucher-actions">
         <button onclick="window.print()">🖨️ Imprimir</button>
         <button onclick="mostrarReservas()">⬅ Volver</button>
