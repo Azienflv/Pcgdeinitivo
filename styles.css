@@ -221,3 +221,15 @@ button {
     margin: 2px 0;
   }
 }
+
+.voucher-container {
+  max-width: 600px;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+}
+
+.voucher-policies {
+  font-size: 12px;
+  line-height: 1.5;
+}
