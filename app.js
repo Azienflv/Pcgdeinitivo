@@ -232,8 +232,63 @@ function verHoteles() {
 
   html += `<button onclick="menuHoteles()">⬅ Volver</button>`;
   content.innerHTML = html;
-}
+  }
 
+ function editarHotel(index) {
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  let hotel = hoteles[index];
+
+  let inputs = productos.map(p => {
+    let valor = hotel.pickups[p.nombre] || "";
+    return `
+      <label>${p.nombre}</label>
+      <input type="time" id="edit_pickup_${p.nombre}" value="${valor}">
+    `;
+  }).join("");
+
+  content.innerHTML = `
+    <h2>Editar Hotel</h2>
+
+    <form id="editHotelForm">
+      <input type="text" id="edit_nombreHotel" value="${hotel.nombre}" required>
+
+      <h4>Horarios por excursión</h4>
+      ${inputs}
+
+      <button type="submit">💾 Guardar Cambios</button>
+      <button type="button" onclick="verHoteles()">⬅ Volver</button>
+    </form>
+  `;
+
+  document.getElementById("editHotelForm")
+    .addEventListener("submit", function(e) {
+      e.preventDefault();
+      guardarEdicionHotel(index);
+    });
+}
+  function guardarEdicionHotel(index) {
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  let hotel = hoteles[index];
+
+  // actualizar nombre
+  hotel.nombre = document.getElementById("edit_nombreHotel").value;
+
+  // actualizar pickups
+  productos.forEach(p => {
+    hotel.pickups[p.nombre] =
+      document.getElementById(`edit_pickup_${p.nombre}`).value || "";
+  });
+
+  localStorage.setItem("hoteles", JSON.stringify(hoteles));
+
+  alert("Hotel actualizado ✅");
+  verHoteles();
+}
+                  
 function eliminarHotel(index) {
   let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
 
@@ -496,61 +551,5 @@ function verVoucher(index) {
 
     </div>
   `;
-}
-
-function editarHotel(index) {
-  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-
-  let hotel = hoteles[index];
-
-  let inputs = productos.map(p => {
-    let valor = hotel.pickups[p.nombre] || "";
-    return `
-      <label>${p.nombre}</label>
-      <input type="time" id="edit_pickup_${p.nombre}" value="${valor}">
-    `;
-  }).join("");
-
-  content.innerHTML = `
-    <h2>Editar Hotel</h2>
-
-    <form id="editHotelForm">
-      <input type="text" id="edit_nombreHotel" value="${hotel.nombre}" required>
-
-      <h4>Horarios por excursión</h4>
-      ${inputs}
-
-      <button type="submit">💾 Guardar Cambios</button>
-      <button type="button" onclick="verHoteles()">⬅ Volver</button>
-    </form>
-  `;
-
-  document.getElementById("editHotelForm")
-    .addEventListener("submit", function(e) {
-      e.preventDefault();
-      guardarEdicionHotel(index);
-    });
-}
-
-function guardarEdicionHotel(index) {
-  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-
-  let hotel = hoteles[index];
-
-  // actualizar nombre
-  hotel.nombre = document.getElementById("edit_nombreHotel").value;
-
-  // actualizar pickups
-  productos.forEach(p => {
-    hotel.pickups[p.nombre] =
-      document.getElementById(`edit_pickup_${p.nombre}`).value || "";
-  });
-
-  localStorage.setItem("hoteles", JSON.stringify(hoteles));
-
-  alert("Hotel actualizado ✅");
-  verHoteles();
 }
 
