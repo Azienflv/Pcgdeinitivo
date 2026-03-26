@@ -319,32 +319,26 @@ function autoDatos() {
   let ninos = parseInt(document.getElementById("ninos").value) || 0;
   let descuento = parseFloat(document.getElementById("descuento").value) || 0;
 
-  // ======================
-  // 💰 PRECIO (CORREGIDO)
-  // ======================
+  // ✅ PRODUCTO (usa adulto/nino correctamente)
   let producto = productos.find(p => p.nombre === excursion);
 
   if (producto) {
-    let total = (adultos * (producto.adulto || 0)) + (ninos * (producto.nino || 0));
-    total = Math.max(0, total - descuento);
+    let total = (adultos * producto.adulto) + (ninos * producto.nino);
+
+    // ✅ aplicar descuento SIN romper
+    total = total - descuento;
+    if (total < 0) total = 0;
+
     document.getElementById("precio").value = total;
   } else {
     document.getElementById("precio").value = "";
   }
 
-  // ======================
-  // 🚐 PICKUP (CORREGIDO)
-  // ======================
+  // ✅ PICKUP (estructura correcta)
   let hotel = hoteles.find(h => h.nombre === hotelNombre);
 
-  if (hotel && Array.isArray(hotel.excursiones)) {
-    let exc = hotel.excursiones.find(e => e.nombre === excursion);
-
-    if (exc && exc.pickup) {
-      document.getElementById("pickup").value = exc.pickup;
-    } else {
-      document.getElementById("pickup").value = "";
-    }
+  if (hotel && hotel.pickups && hotel.pickups[excursion]) {
+    document.getElementById("pickup").value = hotel.pickups[excursion];
   } else {
     document.getElementById("pickup").value = "";
   }
