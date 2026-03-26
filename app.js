@@ -603,9 +603,5 @@ Gracias por elegir Punta Cana Going 🌴
   window.open(mailto);
 }
 
-window.onload = function () {
-  if (localStorage.getItem("session") === "active") {
-    document.getElementById("loginScreen").style.display = "none";
-  }
-}
+
 
