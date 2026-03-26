@@ -1,8 +1,3 @@
-// Sidebar toggle
-// 🔹 Función para generar IDs seguros
-function safeId(text) {
-  return text.replace(/\s+/g, "_").replace(/[^\w]/g, "");
-}
 
 // Aquí empieza tu código
 document.addEventListener("DOMContentLoaded", () => {
@@ -19,6 +14,12 @@ document.addEventListener("DOMContentLoaded", () => {
       main.classList.toggle("shift");
     });
   }
+// Sidebar toggle
+// 🔹 Función para generar IDs seguros
+function safeId(text) {
+  return text.replace(/\s+/g, "_").replace(/[^\w]/g, "");
+}
+  
 
   menuItems.forEach(item => {
     item.addEventListener("click", () => {
