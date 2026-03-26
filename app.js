@@ -14,8 +14,8 @@ function safeId(text) {
 // =======================
 // 🚀 Log in
 // =======================
-const USER = "Obtio";
-const PASS = "Lamermax1/";
+const USER = "pcg";
+const PASS = "josias8090";
 
 function login() {
   const user = document.getElementById("username").value.trim();
