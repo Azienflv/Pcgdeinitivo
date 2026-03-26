@@ -6,15 +6,33 @@ function safeId(text) {
 
 // Aquí empieza tu código
 document.addEventListener("DOMContentLoaded", () => {
-  // tu lógica aquí
-});
-const sidebar = document.getElementById("sidebar");
-const main = document.getElementById("main");
-const toggleBtn = document.getElementById("toggleBtn");
 
-toggleBtn.addEventListener("click", () => {
-  sidebar.classList.toggle("active");
-  main.classList.toggle("shift");
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("main");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const menuItems = document.querySelectorAll(".menu-item");
+  window.content = document.getElementById("content");
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+      main.classList.toggle("shift");
+    });
+  }
+
+  menuItems.forEach(item => {
+    item.addEventListener("click", () => {
+      menuItems.forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+
+      const text = item.textContent.trim();
+
+      if (text === "Nueva Reserva") loadForm();
+      else if (text === "Reservas") mostrarReservas();
+      else if (text === "Nuevo Producto") menuProductos();
+    });
+  });
+
 });
 
 // Menú + navegación
