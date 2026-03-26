@@ -339,7 +339,9 @@ function menuReportes() {
     </div>
   `;
 }
-
+// =======================
+// 🛍️📁 Reporte de ventas
+// =======================
 function reporteVentas() {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
 
@@ -348,28 +350,53 @@ function reporteVentas() {
     return;
   }
 
-  let resumen = {};
+  let porMes = {};
+  let porDia = {};
+  let totalGeneral = 0;
 
   reservas.forEach(r => {
-    let mes = r.fecha.slice(0, 7); // YYYY-MM
+    let mes = r.fecha.slice(0, 7);     // YYYY-MM
+    let dia = r.fecha;                 // YYYY-MM-DD
+    let precio = parseFloat(r.precio) || 0;
 
-    if (!resumen[mes]) resumen[mes] = 0;
+    // Mes
+    if (!porMes[mes]) porMes[mes] = 0;
+    porMes[mes] += precio;
 
-    resumen[mes] += parseFloat(r.precio) || 0;
+    // Día
+    if (!porDia[dia]) porDia[dia] = 0;
+    porDia[dia] += precio;
+
+    // Total
+    totalGeneral += precio;
   });
 
-  let html = `<h2>💰 Ventas por Mes</h2><ul>`;
+  let html = `<h2>📊 Reporte de Ventas</h2>`;
 
-  for (let mes in resumen) {
-    html += `<li>${mes} → $${resumen[mes]}</li>`;
+  // 🔹 TOTAL GENERAL
+  html += `<h3>💰 Total General: $${totalGeneral}</h3>`;
+
+  // 🔹 POR MES
+  html += `<h4>📅 Ventas por Mes</h4><ul>`;
+  for (let mes in porMes) {
+    html += `<li>${mes} → $${porMes[mes]}</li>`;
   }
+  html += `</ul>`;
 
-  html += `</ul>
-    <button onclick="menuReportes()">⬅ Volver</button>
-  `;
+  // 🔹 POR DÍA
+  html += `<h4>📆 Ventas por Día</h4><ul>`;
+  for (let dia in porDia) {
+    html += `<li>${dia} → $${porDia[dia]}</li>`;
+  }
+  html += `</ul>`;
+
+  html += `<button onclick="menuReportes()">⬅ Volver</button>`;
 
   content.innerHTML = html;
 }
+// =======================
+//  📇 Ver contactos
+// =======================
 
 function verContactos() {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
@@ -448,31 +475,80 @@ function verVoucher(index) {
       <div class="voucher-policies">
         <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
         <p>
-        a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour y es obligatorio presentar el recibo original.<br>
-        b) Se requiere certificado médico para cancelaciones por razones de salud.<br>
-        c) No se permiten cambios el mismo día de la excursión.<br>
-        d) No hay reembolso por no presentarse.<br>
-        e) Descuentos no son reembolsables.<br>
-        f) No cancelaciones para excursiones de Cirque du Soleil.
+        a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour...<br>
+        b) Se requiere certificado médico...<br>
+        c) No cambios el mismo día...<br>
+        d) No reembolso por no show...<br>
+        e) Descuentos no reembolsables...<br>
+        f) No cancelaciones Cirque du Soleil.
         </p>
 
         <h4>CANCELLATION & REFUND POLICIES</h4>
         <p>
-        a) Cancellation/refund proceeds with more than 48 hrs. prior to tour commencement and it is mandatory to return the original receipt.<br>
-        b) Medical certificate is required for any cancellation due to health conditions.<br>
-        c) No changes are allowed on the same day of the excursion.<br>
-        d) No refunds will be issued for no-shows.<br>
-        e) Discounts are non-refundable.<br>
-        f) No cancellations for Cirque du Soleil excursions.
+        a) Cancellation/refund proceeds with more than 48 hrs...<br>
+        b) Medical certificate required...<br>
+        c) No same-day changes...<br>
+        d) No refunds for no-show...<br>
+        e) Discounts non-refundable...<br>
+        f) No cancellations Cirque du Soleil.
         </p>
       </div>
 
       <div class="voucher-actions">
         <button onclick="window.print()">🖨️ Imprimir</button>
-        <button onclick="mostrarReservas()">⬅ Volver</button>
+        <button onclick="enviarWhatsApp(${index})">📲 WhatsApp</button>
+        <button onclick="enviarEmail(${index})">✉️ Email</button>
       </div>
 
     </div>
   `;
+}
+
+// =======================
+// 📧 Enviar voucher 
+// =======================
+function enviarWhatsApp(index) {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  let r = reservas[index];
+
+  let mensaje = `Hola ${r.cliente},
+Tu reserva está confirmada ✅
+
+Excursión: ${r.excursion}
+Hotel: ${r.hotel}
+Fecha: ${r.fecha}
+Pickup: ${r.pickup}
+Total: $${r.precio}
+
+Punta Cana Going 🌴`;
+
+  let url = `https://wa.me/${r.telefono}?text=${encodeURIComponent(mensaje)}`;
+
+  window.open(url, "_blank");
+}
+
+function enviarEmail(index) {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  let r = reservas[index];
+
+  let asunto = "Confirmación de Reserva - Punta Cana Going";
+
+  let cuerpo = `
+Hola ${r.cliente},
+
+Tu reserva está confirmada:
+
+Excursión: ${r.excursion}
+Hotel: ${r.hotel}
+Fecha: ${r.fecha}
+Pickup: ${r.pickup}
+Total: $${r.precio}
+
+Gracias por elegir Punta Cana Going 🌴
+`;
+
+  let mailto = `mailto:${r.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+
+  window.open(mailto);
 }
 
