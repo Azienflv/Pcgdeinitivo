@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const text = item.textContent.trim();
 
         if (text === "Nueva Reserva") loadForm();
+        else if (text === "Reportes") menuReportes();
         else if (text === "Reservas") mostrarReservas();
         else if (text === "Nuevo Producto") menuProductos();
       });
@@ -328,6 +329,47 @@ function eliminarReserva(index) {
   }
 }
 
+function menuReportes() {
+  content.innerHTML = `
+    <h2>📊 Reportes</h2>
+
+    <div style="display:flex; gap:10px; margin-bottom:20px;">
+      <button onclick="reporteVentas()">💰 Ventas por Mes</button>
+      <button onclick="verContactos()">👥 Contactos</button>
+    </div>
+  `;
+}
+
+function reporteVentas() {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+
+  if (reservas.length === 0) {
+    content.innerHTML = "<h2>No hay ventas aún</h2>";
+    return;
+  }
+
+  let resumen = {};
+
+  reservas.forEach(r => {
+    let mes = r.fecha.slice(0, 7); // YYYY-MM
+
+    if (!resumen[mes]) resumen[mes] = 0;
+
+    resumen[mes] += parseFloat(r.precio) || 0;
+  });
+
+  let html = `<h2>💰 Ventas por Mes</h2><ul>`;
+
+  for (let mes in resumen) {
+    html += `<li>${mes} → $${resumen[mes]}</li>`;
+  }
+
+  html += `</ul>
+    <button onclick="menuReportes()">⬅ Volver</button>
+  `;
+
+  content.innerHTML = html;
+}
 // =======================
 // 🎟️ VOUCHER
 // =======================
