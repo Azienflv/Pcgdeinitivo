@@ -487,7 +487,7 @@ function verContactos() {
     <button onclick="menuReportes()">⬅ Volver</button>
   `;
 
-  content.innerHTML = html;
+  getContent().innerHTML = html;
 }
 
 // =======================
