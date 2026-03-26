@@ -288,7 +288,7 @@ function loadForm() {
       <input type="number" id="precio" placeholder="Precio total" readonly>
 
       <label>Descuento ($)</label>
-      <input type="number" id="descuento" placeholder="Ej: 10" min="0">
+      <input type="number" id="descuento" placeholder="Ej: 10" min="0" value="0">
 
       <button type="submit">Guardar Reserva</button>
     </form>
@@ -302,6 +302,7 @@ function loadForm() {
 
   document.getElementById("reservaForm")
     .addEventListener("submit", guardarReserva);
+}
 // =======================
 // ⚡ AUTO PRECIO + PICKUP
 // =======================
@@ -318,12 +319,10 @@ function autoDatos() {
   if (producto) {
     let total = (adultos * producto.precioAdulto) + (ninos * producto.precioNino);
 
-    // aplicar descuento seguro
     total = Math.max(0, total - descuento);
 
     document.getElementById("precio").value = total;
 
-    // auto pickup si existe
     if (producto.pickup) {
       document.getElementById("pickup").value = producto.pickup;
     }
@@ -360,8 +359,7 @@ function guardarReserva(e) {
 
   alert("Reserva guardada correctamente");
   mostrarReservas();
-
-
+}
 
 // =======================
 // 📊 MOSTRAR RESERVAS
