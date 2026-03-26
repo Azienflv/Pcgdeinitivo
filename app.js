@@ -1,3 +1,7 @@
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("App cargada correctamente ✅");
+});
+
 // 🔹 Función para IDs seguros
 function safeId(text) {
   return text.replace(/\s+/g, "_").replace(/[^\w]/g, "");
