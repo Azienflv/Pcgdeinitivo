@@ -241,10 +241,12 @@ function verHoteles() {
   let hotel = hoteles[index];
 
   let inputs = productos.map(p => {
+    let id = safeId(p.nombre);
     let valor = hotel.pickups[p.nombre] || "";
+
     return `
       <label>${p.nombre}</label>
-      <input type="time" id="edit_pickup_${p.nombre}" value="${valor}">
+      <input type="time" id="edit_pickup_${id}" value="${valor}">
     `;
   }).join("");
 
@@ -268,7 +270,8 @@ function verHoteles() {
       guardarEdicionHotel(index);
     });
 }
-  function guardarEdicionHotel(index) {
+
+function guardarEdicionHotel(index) {
   let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
@@ -277,10 +280,11 @@ function verHoteles() {
   // actualizar nombre
   hotel.nombre = document.getElementById("edit_nombreHotel").value;
 
-  // actualizar pickups
+  // actualizar pickups (CON safeId)
   productos.forEach(p => {
+    let id = safeId(p.nombre);
     hotel.pickups[p.nombre] =
-      document.getElementById(`edit_pickup_${p.nombre}`).value || "";
+      document.getElementById(`edit_pickup_${id}`).value || "";
   });
 
   localStorage.setItem("hoteles", JSON.stringify(hoteles));
