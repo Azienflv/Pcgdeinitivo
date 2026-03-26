@@ -226,8 +226,8 @@ function verHoteles() {
     }
 
     html += `</ul>
-      <button onclick="eliminarHotel(${index})">❌</button>
-      <hr>`;
+      <button onclick="editarHotel(${index})">✏️ Editar</button>
+<button onclick="eliminarHotel(${index})">❌ Eliminar</button>
   });
 
   html += `<button onclick="menuHoteles()">⬅ Volver</button>`;
