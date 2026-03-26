@@ -603,5 +603,17 @@ Gracias por elegir Punta Cana Going 🌴
   window.open(mailto);
 }
 
+window.onload = function () {
+  if (localStorage.getItem("session") === "active") {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+
+    getContent().innerHTML = `
+      <h1>Dashboard</h1>
+      <p>Bienvenido a Punta Cana Going</p>
+    `;
+  }
+};
+
 
 
