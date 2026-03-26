@@ -1,4 +1,13 @@
 // Sidebar toggle
+// 🔹 Función para generar IDs seguros
+function safeId(text) {
+  return text.replace(/\s+/g, "_").replace(/[^\w]/g, "");
+}
+
+// Aquí empieza tu código
+document.addEventListener("DOMContentLoaded", () => {
+  // tu lógica aquí
+});
 const sidebar = document.getElementById("sidebar");
 const main = document.getElementById("main");
 const toggleBtn = document.getElementById("toggleBtn");
