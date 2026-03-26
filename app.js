@@ -370,6 +370,48 @@ function reporteVentas() {
 
   content.innerHTML = html;
 }
+
+function verContactos() {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+
+  if (reservas.length === 0) {
+    content.innerHTML = "<h2>No hay contactos aún</h2>";
+    return;
+  }
+
+  let contactos = [];
+
+  reservas.forEach(r => {
+    let existe = contactos.some(c => c.telefono === r.telefono);
+
+    if (!existe) {
+      contactos.push({
+        nombre: r.cliente,
+        telefono: r.telefono,
+        email: r.email
+      });
+    }
+  });
+
+  let html = `<h2>👥 Contactos</h2><ul>`;
+
+  contactos.forEach(c => {
+    html += `
+      <li>
+        <strong>${c.nombre}</strong><br>
+        📞 ${c.telefono}<br>
+        ✉️ ${c.email}
+      </li><br>
+    `;
+  });
+
+  html += `</ul>
+    <button onclick="menuReportes()">⬅ Volver</button>
+  `;
+
+  content.innerHTML = html;
+}
+
 // =======================
 // 🎟️ VOUCHER
 // =======================
