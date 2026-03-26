@@ -364,7 +364,7 @@ function mostrarReservas() {
   });
 
   tabla += "</table>";
-  content.innerHTML = tabla;
+  getContent().innerHTML = tabla;
 }
 
 // =======================
