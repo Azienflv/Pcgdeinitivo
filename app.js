@@ -170,9 +170,6 @@ function verHoteles() {
   getContent().innerHTML = html;
 }
 
-// =======================
-// 🧾 FORMULARIO RESERVA
-// =======================
 function loadForm() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
   let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
@@ -189,37 +186,48 @@ function loadForm() {
     <h2>Nueva Reserva</h2>
 
     <form id="reservaForm">
+      
+      <!-- 👤 CLIENTE -->
       <input type="text" id="cliente" placeholder="Nombre del cliente" required>
       <input type="tel" id="telefono" placeholder="Teléfono" required>
       <input type="email" id="email" placeholder="Email" required>
 
+      <!-- 🏨 HOTEL -->
       <select id="hotel" required>
         <option value="">Seleccionar hotel</option>
         ${opcionesHoteles}
       </select>
 
+      <!-- 🌴 EXCURSIÓN -->
       <select id="excursion" required>
         <option value="">Seleccionar excursión</option>
         ${opcionesExc}
       </select>
 
+      <!-- 👨‍👩‍👧 PASAJEROS -->
       <input type="number" id="adultos" placeholder="Adultos" min="1" required>
       <input type="number" id="ninos" placeholder="Niños" min="0">
 
+      <!-- ⏰ PICKUP -->
       <label>Pick Up Time</label>
       <input type="time" id="pickup" readonly>
 
+      <!-- 📅 FECHA -->
       <input type="date" id="fecha" required>
 
+      <!-- 💰 PRECIO -->
       <input type="number" id="precio" placeholder="Precio total" readonly>
 
+      <!-- 🔥 DESCUENTO -->
       <label>Descuento ($)</label>
-      <input type="number" id="descuento" placeholder="Ej: 10" min="0" value="0">
+      <input type="number" id="descuento" value="0" min="0">
 
       <button type="submit">Guardar Reserva</button>
+
     </form>
   `;
 
+  // 🔥 EVENTOS (CLAVE)
   document.getElementById("excursion").addEventListener("change", autoDatos);
   document.getElementById("hotel").addEventListener("change", autoDatos);
   document.getElementById("adultos").addEventListener("input", autoDatos);
@@ -229,6 +237,8 @@ function loadForm() {
   document.getElementById("reservaForm")
     .addEventListener("submit", guardarReserva);
 }
+
+
 // =======================
 // ⚡ AUTO DATOS (FIX CLAVE)
 // =======================
