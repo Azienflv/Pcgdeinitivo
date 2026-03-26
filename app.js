@@ -308,24 +308,43 @@ function loadForm() {
 // =======================
 function autoDatos() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
 
   let excursion = document.getElementById("excursion").value;
+  let hotelNombre = document.getElementById("hotel").value;
+
   let adultos = parseInt(document.getElementById("adultos").value) || 0;
   let ninos = parseInt(document.getElementById("ninos").value) || 0;
   let descuento = parseFloat(document.getElementById("descuento").value) || 0;
 
+  // ======================
+  // 💰 PRECIO (PRODUCTOS)
+  // ======================
   let producto = productos.find(p => p.nombre === excursion);
 
   if (producto) {
     let total = (adultos * producto.precioAdulto) + (ninos * producto.precioNino);
-
     total = Math.max(0, total - descuento);
-
     document.getElementById("precio").value = total;
+  } else {
+    document.getElementById("precio").value = "";
+  }
 
-    if (producto.pickup) {
-      document.getElementById("pickup").value = producto.pickup;
+  // ======================
+  // 🚐 PICKUP (HOTELES)
+  // ======================
+  let hotel = hoteles.find(h => h.nombre === hotelNombre);
+
+  if (hotel && hotel.excursiones) {
+    let exc = hotel.excursiones.find(e => e.nombre === excursion);
+
+    if (exc && exc.pickup) {
+      document.getElementById("pickup").value = exc.pickup;
+    } else {
+      document.getElementById("pickup").value = "";
     }
+  } else {
+    document.getElementById("pickup").value = "";
   }
 }
 
