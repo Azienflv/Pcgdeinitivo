@@ -185,24 +185,38 @@ function loadForm() {
     `<option value="${h.nombre}">${h.nombre}</option>`
   ).join("");
 
-  getContent().innerHTML = `
+  content.innerHTML = `
     <h2>Nueva Reserva</h2>
 
     <form id="reservaForm">
       <input type="text" id="cliente" placeholder="Nombre del cliente" required>
+      <input type="tel" id="telefono" placeholder="Teléfono" required>
+      <input type="email" id="email" placeholder="Email" required>
 
-      <select id="hotel">${opcionesHoteles}</select>
-      <select id="excursion">${opcionesExc}</select>
+      <select id="hotel" required>
+        <option value="">Seleccionar hotel</option>
+        ${opcionesHoteles}
+      </select>
 
-      <input type="number" id="adultos" placeholder="Adultos">
-      <input type="number" id="ninos" placeholder="Niños">
+      <select id="excursion" required>
+        <option value="">Seleccionar excursión</option>
+        ${opcionesExc}
+      </select>
 
+      <input type="number" id="adultos" placeholder="Adultos" min="1" required>
+      <input type="number" id="ninos" placeholder="Niños" min="0">
+
+      <label>Pick Up Time</label>
       <input type="time" id="pickup" readonly>
-      <input type="number" id="precio" readonly>
 
-      <input type="number" id="descuento" value="0">
+      <input type="date" id="fecha" required>
 
-      <button type="submit">Guardar</button>
+      <input type="number" id="precio" placeholder="Precio total" readonly>
+
+      <label>Descuento ($)</label>
+      <input type="number" id="descuento" placeholder="Ej: 10" min="0" value="0">
+
+      <button type="submit">Guardar Reserva</button>
     </form>
   `;
 
@@ -215,7 +229,6 @@ function loadForm() {
   document.getElementById("reservaForm")
     .addEventListener("submit", guardarReserva);
 }
-
 // =======================
 // ⚡ AUTO DATOS (FIX CLAVE)
 // =======================
