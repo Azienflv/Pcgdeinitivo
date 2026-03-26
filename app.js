@@ -303,6 +303,8 @@ function loadForm() {
   document.getElementById("reservaForm")
     .addEventListener("submit", guardarReserva);
 }
+
+
 // =======================
 // ⚡ AUTO PRECIO + PICKUP
 // =======================
@@ -318,12 +320,12 @@ function autoDatos() {
   let descuento = parseFloat(document.getElementById("descuento").value) || 0;
 
   // ======================
-  // 💰 PRECIO (PRODUCTOS)
+  // 💰 PRECIO (CORREGIDO)
   // ======================
   let producto = productos.find(p => p.nombre === excursion);
 
   if (producto) {
-    let total = (adultos * producto.precioAdulto) + (ninos * producto.precioNino);
+    let total = (adultos * (producto.adulto || 0)) + (ninos * (producto.nino || 0));
     total = Math.max(0, total - descuento);
     document.getElementById("precio").value = total;
   } else {
@@ -331,11 +333,11 @@ function autoDatos() {
   }
 
   // ======================
-  // 🚐 PICKUP (HOTELES)
+  // 🚐 PICKUP (CORREGIDO)
   // ======================
   let hotel = hoteles.find(h => h.nombre === hotelNombre);
 
-  if (hotel && hotel.excursiones) {
+  if (hotel && Array.isArray(hotel.excursiones)) {
     let exc = hotel.excursiones.find(e => e.nombre === excursion);
 
     if (exc && exc.pickup) {
@@ -347,7 +349,6 @@ function autoDatos() {
     document.getElementById("pickup").value = "";
   }
 }
-
 // =======================
 // 💾 GUARDAR RESERVA
 // =======================
