@@ -287,6 +287,9 @@ function loadForm() {
 
       <input type="number" id="precio" placeholder="Precio total" readonly>
 
+      <label>Descuento ($)</label>
+      <input type="number" id="descuento" placeholder="Ej: 10" min="0">
+
       <button type="submit">Guardar Reserva</button>
     </form>
   `;
@@ -295,40 +298,35 @@ function loadForm() {
   document.getElementById("hotel").addEventListener("change", autoDatos);
   document.getElementById("adultos").addEventListener("input", autoDatos);
   document.getElementById("ninos").addEventListener("input", autoDatos);
+  document.getElementById("descuento").addEventListener("input", autoDatos);
 
   document.getElementById("reservaForm")
     .addEventListener("submit", guardarReserva);
-}
-
 // =======================
 // ⚡ AUTO PRECIO + PICKUP
 // =======================
 function autoDatos() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
-  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
 
-  let exc = document.getElementById("excursion").value;
-  let hotelNombre = document.getElementById("hotel").value;
-
+  let excursion = document.getElementById("excursion").value;
   let adultos = parseInt(document.getElementById("adultos").value) || 0;
   let ninos = parseInt(document.getElementById("ninos").value) || 0;
+  let descuento = parseFloat(document.getElementById("descuento").value) || 0;
 
-  let producto = productos.find(p => p.nombre === exc);
-  let hotel = hoteles.find(h => h.nombre === hotelNombre);
+  let producto = productos.find(p => p.nombre === excursion);
 
-  // Precio
   if (producto) {
-    let total = (adultos * producto.adulto) + (ninos * producto.nino);
-    document.getElementById("precio").value = total;
-  } else {
-    document.getElementById("precio").value = "";
-  }
+    let total = (adultos * producto.precioAdulto) + (ninos * producto.precioNino);
 
-  // Pickup
-  if (hotel && hotel.pickups[exc]) {
-    document.getElementById("pickup").value = hotel.pickups[exc];
-  } else {
-    document.getElementById("pickup").value = "";
+    // aplicar descuento seguro
+    total = Math.max(0, total - descuento);
+
+    document.getElementById("precio").value = total;
+
+    // auto pickup si existe
+    if (producto.pickup) {
+      document.getElementById("pickup").value = producto.pickup;
+    }
   }
 }
 
@@ -338,27 +336,31 @@ function autoDatos() {
 function guardarReserva(e) {
   e.preventDefault();
 
-  const reserva = {
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+
+  let precioFinal = parseFloat(document.getElementById("precio").value) || 0;
+  let descuento = parseFloat(document.getElementById("descuento").value) || 0;
+
+  let nuevaReserva = {
     cliente: document.getElementById("cliente").value,
     telefono: document.getElementById("telefono").value,
     email: document.getElementById("email").value,
     hotel: document.getElementById("hotel").value,
     excursion: document.getElementById("excursion").value,
     adultos: document.getElementById("adultos").value,
-    ninos: document.getElementById("ninos").value || 0,
+    ninos: document.getElementById("ninos").value,
     pickup: document.getElementById("pickup").value,
     fecha: document.getElementById("fecha").value,
-    precio: document.getElementById("precio").value
+    precio: precioFinal,
+    descuento: descuento
   };
 
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-  reservas.push(reserva);
-
+  reservas.push(nuevaReserva);
   localStorage.setItem("reservas", JSON.stringify(reservas));
 
-  alert("Reserva guardada ✅");
-  document.getElementById("reservaForm").reset();
-}
+  alert("Reserva guardada correctamente");
+  mostrarReservas();
+
 
 
 // =======================
