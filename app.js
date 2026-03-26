@@ -1,4 +1,6 @@
-const content = document.getElementById("content");
+function getContent() {
+  return document.getElementById("content");
+}
 
 document.addEventListener("DOMContentLoaded", function() {
   console.log("App cargada correctamente ✅");
@@ -9,10 +11,6 @@ function safeId(text) {
   return text.replace(/\s+/g, "_").replace(/[^\w]/g, "");
 }
 
-// 🔹 SIEMPRE usa esto (clave del fix)
-function getContent() {
-  return document.getElementById("content");
-}
 // =======================
 // 🚀 Log in
 // =======================
@@ -236,7 +234,7 @@ function loadForm() {
     `<option value="${h.nombre}">${h.nombre}</option>`
   ).join("");
 
-  content.innerHTML = `
+  getContent().innerHTML = `
     <h2>Nueva Reserva</h2>
 
     <form id="reservaForm">
@@ -330,7 +328,7 @@ function mostrarReservas() {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
 
   if (reservas.length === 0) {
-    content.innerHTML = "<h2>No hay reservas aún</h2>";
+    getContent().innerHTML = "<h2>No hay reservas aún</h2>";
     return;
   }
 
@@ -383,7 +381,7 @@ function eliminarReserva(index) {
 }
 
 function menuReportes() {
-  content.innerHTML = `
+  getContent().innerHTML = `
     <h2>📊 Reportes</h2>
 
     <div style="display:flex; gap:10px; margin-bottom:20px;">
@@ -399,7 +397,7 @@ function reporteVentas() {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
 
   if (reservas.length === 0) {
-    content.innerHTML = "<h2>No hay ventas aún</h2>";
+    getContent().innerHTML = "<h2>No hay ventas aún</h2>";
     return;
   }
 
@@ -455,7 +453,7 @@ function verContactos() {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
 
   if (reservas.length === 0) {
-    content.innerHTML = "<h2>No hay contactos aún</h2>";
+    getContent().innerHTML = "<h2>No hay contactos aún</h2>";
     return;
   }
 
@@ -499,7 +497,7 @@ function verVoucher(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
   let r = reservas[index];
 
-  content.innerHTML = `
+ getContent().innerHTML = `
     <div class="voucher-container">
 
       <div style="text-align:center; margin-bottom:10px;">
