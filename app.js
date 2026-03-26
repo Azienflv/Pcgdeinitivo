@@ -13,17 +13,31 @@ function getContent() {
 const USER = "Obtio";
 const PASS = "Lamermax1/";
 
+
 function login() {
-  const user = document.getElementById("username").value;
-  const pass = document.getElementById("password").value;
+  const user = document.getElementById("username").value.trim();
+  const pass = document.getElementById("password").value.trim();
 
   if (user === USER && pass === PASS) {
     localStorage.setItem("session", "active");
+
+    // Oculta login
     document.getElementById("loginScreen").style.display = "none";
+
+    // Limpia error por si estaba activo
+    document.getElementById("loginError").style.display = "none";
+
   } else {
     document.getElementById("loginError").style.display = "block";
   }
 }
+
+window.onload = function () {
+  if (localStorage.getItem("session") === "active") {
+    document.getElementById("loginScreen").style.display = "none";
+  }
+}
+
 
 // =======================
 // 🚀 log out
