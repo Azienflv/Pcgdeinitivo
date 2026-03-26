@@ -1,48 +1,54 @@
 <!DOCTYPE html>
-<div id="loginScreen" class="login-screen">
-  <div class="login-box">
-    <h2>🔐 Acceso Punta Cana Going</h2>
-
-    <input type="text" id="username" placeholder="Usuario">
-    <input type="password" id="password" placeholder="Contraseña">
-
-    <button onclick="login()">Entrar</button>
-    <button onclick="logout()">Cerrar sesión</button>
-
-    <p id="loginError" style="color:red; display:none;">Datos incorrectos</p>
-  </div>
-</div>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Punta Cana Going Dashboard</title>
-
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
-  <div class="sidebar" id="sidebar">
-    <h2 class="logo">PCG Tours</h2>
+  <!-- LOGIN -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-box">
+      <h2>🔐 Acceso Punta Cana Going</h2>
 
-    <a href="#" class="menu-item active">Reservas</a>
-    <a href="#" class="menu-item">Nueva Reserva</a>
-    <a href="#" class="menu-item">Nuevo Producto</a>
-    <a href="#" class="menu-item">Reportes</a>
+      <input type="text" id="username" placeholder="Usuario">
+      <input type="password" id="password" placeholder="Contraseña">
+
+      <button onclick="login()">Entrar</button>
+
+      <p id="loginError" style="color:red; display:none;">
+        Datos incorrectos
+      </p>
+    </div>
   </div>
 
-  <div class="main" id="main">
-    <button id="toggleBtn">☰</button>
+  <!-- PANEL -->
+  <div id="app" style="display:none;">
 
-    <!-- CONTENIDO DINÁMICO -->
-    <div id="content">
-      <h1>Dashboard</h1>
-      <p>Bienvenido a Punta Cana Going</p>
+    <div class="sidebar" id="sidebar">
+      <h2 class="logo">PCG Tours</h2>
+
+      <a href="#" class="menu-item active">Reservas</a>
+      <a href="#" class="menu-item">Nueva Reserva</a>
+      <a href="#" class="menu-item">Nuevo Producto</a>
+      <a href="#" class="menu-item">Reportes</a>
+
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+
+    <div class="main" id="main">
+      <button id="toggleBtn">☰</button>
+
+      <div id="content">
+        <h1>Dashboard</h1>
+        <p>Bienvenido a Punta Cana Going</p>
+      </div>
     </div>
 
   </div>
 
-  <!-- JS siempre al final -->
   <script src="app.js"></script>
 
 </body>
