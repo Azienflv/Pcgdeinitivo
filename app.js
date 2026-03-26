@@ -17,25 +17,26 @@ function getContent() {
 const USER = "Obtio";
 const PASS = "Lamermax1/";
 
-
 function login() {
-  const user = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
 
   if (user === USER && pass === PASS) {
     localStorage.setItem("session", "active");
 
-    // Oculta login
     document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "flex";
 
-    // Limpia error por si estaba activo
-    document.getElementById("loginError").style.display = "none";
+    // 👇 ESTO ES CLAVE
+    document.getElementById("content").innerHTML = `
+      <h1>Dashboard</h1>
+      <p>Bienvenido a Punta Cana Going</p>
+    `;
 
   } else {
     document.getElementById("loginError").style.display = "block";
   }
 }
-
 
 // =======================
 // 🚀 log out
