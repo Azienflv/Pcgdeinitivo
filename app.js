@@ -35,22 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-// Menú + navegación
-const menuItems = document.querySelectorAll(".menu-item");
-const content = document.getElementById("content");
-
-menuItems.forEach(item => {
-  item.addEventListener("click", () => {
-    menuItems.forEach(i => i.classList.remove("active"));
-    item.classList.add("active");
-
-    const text = item.textContent.trim();
-
-    if (text === "Nueva Reserva") loadForm();
-    else if (text === "Reservas") mostrarReservas();
-    else if (text === "Nuevo Producto") menuProductos();
-  });
-});
 
 // =======================
 // =======================
