@@ -53,12 +53,6 @@ menuItems.forEach(item => {
 });
 
 // =======================
-// 🔑 UTILIDAD (ANTI BUG)
-// =======================
-function safeId(text) {
-  return text.replace(/\s+/g, "_").toLowerCase();
-}
-
 // =======================
 // 📦 MENÚ PRODUCTOS
 // =======================
