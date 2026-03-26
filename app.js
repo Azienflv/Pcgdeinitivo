@@ -489,7 +489,7 @@ function verVoucher(index) {
 
       <div style="text-align:center; margin-bottom:10px;">
         <img src="assets/logo.png" class="voucher-logo">
-        <p style="margin:3px 0; font-size:12px;">📞 +1 829-XXX-XXXX</p>
+        <p style="margin:3px 0; font-size:12px;">📞 +1 829-331-9938</p>
         <p style="margin:0; font-size:12px;">📧 info@puntacanagoing.com</p>
       </div>
 
