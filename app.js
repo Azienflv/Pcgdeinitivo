@@ -32,12 +32,6 @@ function login() {
   }
 }
 
-window.onload = function () {
-  if (localStorage.getItem("session") === "active") {
-    document.getElementById("loginScreen").style.display = "none";
-  }
-}
-
 
 // =======================
 // 🚀 log out
@@ -595,5 +589,11 @@ Gracias por elegir Punta Cana Going 🌴
   let mailto = `mailto:${r.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
 
   window.open(mailto);
+}
+
+window.onload = function () {
+  if (localStorage.getItem("session") === "active") {
+    document.getElementById("loginScreen").style.display = "none";
+  }
 }
 
