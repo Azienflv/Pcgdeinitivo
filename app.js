@@ -1,3 +1,5 @@
+const content = document.getElementById("content");
+
 document.addEventListener("DOMContentLoaded", function() {
   console.log("App cargada correctamente ✅");
 });
