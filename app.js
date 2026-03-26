@@ -45,12 +45,19 @@ function logout() {
   location.reload();
 }
 
-// Mantener sesión activa
-window.onload = function () {
-  if (localStorage.getItem("session") === "active") {
-    document.getElementById("loginScreen").style.display = "none";
+// =======================
+// 🚀 menu deplegable
+// =======================
+
+function toggleMenu() {
+  const menu = document.getElementById("menu");
+
+  if (menu.style.display === "block") {
+    menu.style.display = "none";
+  } else {
+    menu.style.display = "block";
   }
-};
+}
 // =======================
 // 🚀 INIT
 // =======================
