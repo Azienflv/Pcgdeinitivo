@@ -7,7 +7,38 @@ function safeId(text) {
 function getContent() {
   return document.getElementById("content");
 }
+// =======================
+// 🚀 Log in
+// =======================
+const USER = "Obtio";
+const PASS = "Lamermax1/";
 
+function login() {
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+
+  if (user === USER && pass === PASS) {
+    localStorage.setItem("session", "active");
+    document.getElementById("loginScreen").style.display = "none";
+  } else {
+    document.getElementById("loginError").style.display = "block";
+  }
+}
+
+// =======================
+// 🚀 log out
+// =======================
+function logout() {
+  localStorage.removeItem("session");
+  location.reload();
+}
+
+// Mantener sesión activa
+window.onload = function () {
+  if (localStorage.getItem("session") === "active") {
+    document.getElementById("loginScreen").style.display = "none";
+  }
+};
 // =======================
 // 🚀 INIT
 // =======================
