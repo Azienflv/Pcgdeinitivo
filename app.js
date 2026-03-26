@@ -443,7 +443,7 @@ function reporteVentas() {
 
   html += `<button onclick="menuReportes()">⬅ Volver</button>`;
 
-  content.innerHTML = html;
+  getContent().innerHTML = html;
 }
 // =======================
 //  📇 Ver contactos
