@@ -956,8 +956,25 @@ function menuReportes() {
   `;
 }
 
-function reporteVentas() {
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+async function reporteVentas() {
+  let reservas = [];
+
+  try {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from("reservas")
+        .select("*")
+        .order("fecha", { ascending: false });
+
+      if (error) throw error;
+      reservas = data || [];
+    } else {
+      reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    }
+  } catch (err) {
+    console.warn("Reporte desde localStorage ⚠️", err);
+    reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  }
 
   if (reservas.length === 0) {
     getContent().innerHTML = "<h2>No hay ventas aún</h2>";
@@ -969,8 +986,8 @@ function reporteVentas() {
   let totalGeneral = 0;
 
   reservas.forEach(r => {
-    let mes = r.fecha.slice(0, 7);
-    let dia = r.fecha;
+    let mes = (r.fecha || "").slice(0, 7);
+    let dia = r.fecha || "";
     let precio = parseFloat(r.precio) || 0;
 
     if (!porMes[mes]) porMes[mes] = 0;
@@ -983,18 +1000,18 @@ function reporteVentas() {
   });
 
   let html = `<h2>📊 Reporte de Ventas</h2>`;
-  html += `<h3>💰 Total General: $${totalGeneral}</h3>`;
+  html += `<h3>💰 Total General: $${totalGeneral.toFixed(2)}</h3>`;
 
   html += `<h4>📅 Ventas por Mes</h4><ul>`;
-  for (let mes in porMes) {
-    html += `<li>${mes} → $${porMes[mes]}</li>`;
-  }
+  Object.keys(porMes).sort().reverse().forEach(mes => {
+    html += `<li>${mes} → $${porMes[mes].toFixed(2)}</li>`;
+  });
   html += `</ul>`;
 
   html += `<h4>📆 Ventas por Día</h4><ul>`;
-  for (let dia in porDia) {
-    html += `<li>${dia} → $${porDia[dia]}</li>`;
-  }
+  Object.keys(porDia).sort().reverse().forEach(dia => {
+    html += `<li>${dia} → $${porDia[dia].toFixed(2)}</li>`;
+  });
   html += `</ul>`;
 
   html += `<button onclick="menuReportes()">⬅ Volver</button>`;
@@ -1002,37 +1019,59 @@ function reporteVentas() {
   getContent().innerHTML = html;
 }
 
-function verContactos() {
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+async function verContactos() {
+  let reservas = [];
+
+  try {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from("reservas")
+        .select("cliente, telefono, email, fecha")
+        .order("fecha", { ascending: false });
+
+      if (error) throw error;
+      reservas = data || [];
+    } else {
+      reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    }
+  } catch (err) {
+    console.warn("Contactos desde localStorage ⚠️", err);
+    reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  }
 
   if (reservas.length === 0) {
     getContent().innerHTML = "<h2>No hay contactos aún</h2>";
     return;
   }
 
-  let contactos = [];
+  let contactosMap = new Map();
 
   reservas.forEach(r => {
-    let existe = contactos.some(c => c.telefono === r.telefono);
+    const key = (r.telefono || r.email || r.cliente || "").trim().toLowerCase();
+    if (!key) return;
 
-    if (!existe) {
-      contactos.push({
-        nombre: r.cliente,
-        telefono: r.telefono,
-        email: r.email
+    if (!contactosMap.has(key)) {
+      contactosMap.set(key, {
+        nombre: r.cliente || "",
+        telefono: r.telefono || "",
+        email: r.email || "",
+        fecha: r.fecha || ""
       });
     }
   });
+
+  const contactos = Array.from(contactosMap.values());
 
   let html = `<h2>👥 Contactos</h2><ul>`;
 
   contactos.forEach(c => {
     html += `
-      <li>
+      <li style="margin-bottom:12px;">
         <strong>${c.nombre}</strong><br>
-        📞 ${c.telefono}<br>
-        ✉️ ${c.email}
-      </li><br>
+        📞 ${c.telefono || "-"}<br>
+        ✉️ ${c.email || "-"}<br>
+        📅 Última reserva: ${c.fecha || "-"}
+      </li>
     `;
   });
 
