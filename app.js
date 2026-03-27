@@ -17,35 +17,7 @@ function safeId(text) {
 const USER = "pcg";
 const PASS = "josias8090";
 
-function login() {
-  const user = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
 
-  if (
-    user.toLowerCase() === USER.toLowerCase() &&
-    pass === PASS
-  ) {
-    localStorage.setItem("session", "active");
-
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("app").style.display = "flex";
-
-    getContent().innerHTML = `
-      <h1>Dashboard</h1>
-      <p>Bienvenido a Punta Cana Going</p>
-    `;
-  } else {
-    document.getElementById("loginError").style.display = "block";
-  }
-}
-
-// =======================
-// 🚀 log out
-// =======================
-function logout() {
-  localStorage.removeItem("session");
-  location.reload();
-}
 
 // =======================
 // 🚀 INIT
