@@ -299,35 +299,4 @@ style.css
             position: absolute;
             visibility: hidden;
         }
-        #login {
-            visibility: visible;
-        }
-
-        h3 {
-            display: table-cell;
-            vertical-align: middle;
-            padding: 10px 15px;
-            font-size: 1.5em;
-            color: #ffffff;
-        }
-
-        #forgot h3 {
-            display: block;
-            margin-top: 30px;
-            text-align: center;
-        }
-
-        #forgot div {
-            margin-top: 30px;
-        }
-        p {
-            padding: 10px 15px;
-            font-size: 1.3em;
-            color: #ffffff;
-        }
-        /*#footer {
-            width: 300px;
-            margin: 10px auto;
-            text-align: center;
-            color: rgba(9, 118, 155, 0.91);
-        }*/
+        
