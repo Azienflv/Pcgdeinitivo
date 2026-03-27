@@ -207,9 +207,9 @@ button:hover {
 
 /* LOGO */
 .voucher-logo {
-  width: 130px;
+  width: 180px;
   display: block;
-  margin: 0 auto 10px;
+  margin: 0 auto 15px;
   object-fit: contain;
 }
 
