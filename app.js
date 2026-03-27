@@ -268,7 +268,9 @@ function actualizarProducto(index) {
   alert("Producto actualizado ✅");
   editarProductos();
 }
-
+// =======================
+// 🚩Eliminar producto
+// =======================
 function eliminarProducto(index) {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
@@ -278,7 +280,9 @@ function eliminarProducto(index) {
     editarProductos();
   }
 }
-
+// =======================
+// 🚩Actualizar producto nube
+// =======================
 async function actualizarProductoDesdeNube(id) {
   const nombre = document.getElementById(`nombre-${id}`).value.trim();
   const adulto = parseFloat(document.getElementById(`adulto-${id}`).value) || 0;
@@ -299,6 +303,29 @@ async function actualizarProductoDesdeNube(id) {
     alert("No se pudo actualizar en la nube ⚠️");
   }
 }
+
+// =======================
+// 🚩Eliminar producto nube
+// =======================
+async function eliminarProductoDesdeNube(id) {
+  if (!confirm("¿Eliminar este producto?")) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from("productos")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Producto eliminado de la nube ✅");
+    editarProductos();
+  } catch (err) {
+    console.error("Error eliminando producto en la nube:", err);
+    alert("No se pudo eliminar en la nube ⚠️");
+  }
+}
+
 // =======================
 // 🏨 HOTELES
 // =======================
