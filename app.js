@@ -1,3 +1,8 @@
+const SUPABASE_URL = "TU_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "TU_SUPABASE_ANON_KEY";
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 function getContent() {
   return document.getElementById("content");
 }
@@ -120,8 +125,10 @@ function loadProducto() {
   document.getElementById("productoForm")
     .addEventListener("submit", guardarProducto);
 }
-
-function guardarProducto(e) {
+// =======================
+// 🚩GUARDAR PRODUCTO
+// =======================
+async function guardarProducto(e) {
   e.preventDefault();
 
   const producto = {
@@ -130,15 +137,33 @@ function guardarProducto(e) {
     nino: parseFloat(document.getElementById("precioNino").value) || 0
   };
 
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-  productos.push(producto);
+  try {
+    const { error } = await supabaseClient
+      .from("productos")
+      .insert([producto]);
 
-  localStorage.setItem("productos", JSON.stringify(productos));
+    if (error) throw error;
 
-  alert("Excursión guardada ✅");
-  document.getElementById("productoForm").reset();
+    let productos = JSON.parse(localStorage.getItem("productos")) || [];
+    productos.push(producto);
+    localStorage.setItem("productos", JSON.stringify(productos));
+
+    alert("Excursión guardada en la nube ✅");
+    document.getElementById("productoForm").reset();
+  } catch (err) {
+    console.error("Error guardando producto:", err);
+
+    let productos = JSON.parse(localStorage.getItem("productos")) || [];
+    productos.push(producto);
+    localStorage.setItem("productos", JSON.stringify(productos));
+
+    alert("Excursión guardada localmente ⚠️");
+    document.getElementById("productoForm").reset();
+  }
 }
-
+// =======================
+// 🚩EDITAR PRODUCTO
+// =======================
 function editarProductos() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
@@ -168,7 +193,9 @@ function editarProductos() {
   html += `<button onclick="menuProductos()">⬅ Volver</button>`;
   getContent().innerHTML = html;
 }
-
+// =======================
+// 🚩ACTUALIZAR PRODUCTO
+// =======================
 function actualizarProducto(index) {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
@@ -440,8 +467,10 @@ function autoDatos() {
     document.getElementById("pickup").value = "";
   }
 }
-
-function guardarReserva(e) {
+// =======================
+// 🧾 GUARDAR RESERVA
+// =======================
+async function guardarReserva(e) {
   e.preventDefault();
 
   const reserva = {
@@ -450,20 +479,37 @@ function guardarReserva(e) {
     email: document.getElementById("email").value.trim(),
     hotel: document.getElementById("hotel").value,
     excursion: document.getElementById("excursion").value,
-    adultos: document.getElementById("adultos").value,
-    ninos: document.getElementById("ninos").value || 0,
+    adultos: parseInt(document.getElementById("adultos").value) || 1,
+    ninos: parseInt(document.getElementById("ninos").value) || 0,
     pickup: document.getElementById("pickup").value,
     fecha: document.getElementById("fecha").value,
-    precio: document.getElementById("precio").value,
-    descuento: document.getElementById("descuento").value || 0
+    precio: parseFloat(document.getElementById("precio").value) || 0,
+    descuento: parseFloat(document.getElementById("descuento").value) || 0
   };
 
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-  reservas.push(reserva);
-  localStorage.setItem("reservas", JSON.stringify(reservas));
+  try {
+    const { error } = await supabaseClient
+      .from("reservas")
+      .insert([reserva]);
 
-  alert("Reserva guardada ✅");
-  mostrarReservas();
+    if (error) throw error;
+
+    let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    reservas.push(reserva);
+    localStorage.setItem("reservas", JSON.stringify(reservas));
+
+    alert("Reserva guardada en la nube ✅");
+    mostrarReservas();
+  } catch (err) {
+    console.error("Error guardando reserva:", err);
+
+    let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    reservas.push(reserva);
+    localStorage.setItem("reservas", JSON.stringify(reservas));
+
+    alert("Reserva guardada localmente ⚠️");
+    mostrarReservas();
+  }
 }
 
 // =======================
