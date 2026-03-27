@@ -183,34 +183,76 @@ async function guardarProducto(e) {
 // =======================
 // ✏️ EDITAR PRODUCTOS
 // =======================
-function editarProductos() {
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+async function editarProductos() {
+  try {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from("productos")
+        .select("*")
+        .order("nombre", { ascending: true });
 
-  if (productos.length === 0) {
-    getContent().innerHTML = `
-      <h2>No hay productos aún</h2>
-      <button onclick="menuProductos()">⬅ Volver</button>
-    `;
-    return;
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        getContent().innerHTML = `
+          <h2>No hay productos aún</h2>
+          <button onclick="menuProductos()">⬅ Volver</button>
+        `;
+        return;
+      }
+
+      let html = `<h2>Editar Productos</h2>`;
+
+      data.forEach((p) => {
+        html += `
+          <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
+            <input type="text" value="${p.nombre}" id="nombre-${p.id}">
+            <input type="number" value="${p.adulto}" id="adulto-${p.id}">
+            <input type="number" value="${p.nino}" id="nino-${p.id}">
+            <br><br>
+            <button onclick="actualizarProductoDesdeNube(${p.id})">💾 Guardar</button>
+            <button onclick="eliminarProductoDesdeNube(${p.id})">❌ Eliminar</button>
+          </div>
+        `;
+      });
+
+      html += `<button onclick="menuProductos()">⬅ Volver</button>`;
+      getContent().innerHTML = html;
+      return;
+    }
+
+    throw new Error("Supabase no configurado");
+  } catch (err) {
+    console.warn("Cargando productos desde localStorage ⚠️", err);
+
+    let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+    if (productos.length === 0) {
+      getContent().innerHTML = `
+        <h2>No hay productos aún</h2>
+        <button onclick="menuProductos()">⬅ Volver</button>
+      `;
+      return;
+    }
+
+    let html = `<h2>Editar Productos</h2>`;
+
+    productos.forEach((p, index) => {
+      html += `
+        <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
+          <input type="text" value="${p.nombre}" id="nombre-${index}">
+          <input type="number" value="${p.adulto}" id="adulto-${index}">
+          <input type="number" value="${p.nino}" id="nino-${index}">
+          <br><br>
+          <button onclick="actualizarProducto(${index})">💾 Guardar</button>
+          <button onclick="eliminarProducto(${index})">❌ Eliminar</button>
+        </div>
+      `;
+    });
+
+    html += `<button onclick="menuProductos()">⬅ Volver</button>`;
+    getContent().innerHTML = html;
   }
-
-  let html = `<h2>Editar Productos</h2>`;
-
-  productos.forEach((p, index) => {
-    html += `
-      <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
-        <input type="text" value="${p.nombre}" id="nombre-${index}">
-        <input type="number" value="${p.adulto}" id="adulto-${index}">
-        <input type="number" value="${p.nino}" id="nino-${index}">
-        <br><br>
-        <button onclick="actualizarProducto(${index})">💾 Guardar</button>
-        <button onclick="eliminarProducto(${index})">❌ Eliminar</button>
-      </div>
-    `;
-  });
-
-  html += `<button onclick="menuProductos()">⬅ Volver</button>`;
-  getContent().innerHTML = html;
 }
 // =======================
 // 🚩Actualizar producto
