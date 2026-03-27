@@ -531,59 +531,102 @@ async function guardarReserva(e) {
 // =======================
 // 📊 MOSTRAR RESERVAS
 // =======================
-function mostrarReservas() {
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+async function mostrarReservas() {
+  try {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from("reservas")
+        .select("*")
+        .order("fecha", { ascending: false });
 
-  if (reservas.length === 0) {
-    getContent().innerHTML = "<h2>No hay reservas aún</h2>";
-    return;
-  }
+      if (error) throw error;
 
-  let tabla = `
-    <h2>Reservas</h2>
-    <table border="1" style="width:100%; border-collapse: collapse;">
-      <tr>
-        <th>Cliente</th>
-        <th>Hotel</th>
-        <th>Excursión</th>
-        <th>Pickup</th>
-        <th>Fecha</th>
-        <th>Precio</th>
-        <th>Acciones</th>
-      </tr>
-  `;
+      if (!data || data.length === 0) {
+        getContent().innerHTML = "<h2>No hay reservas aún</h2>";
+        return;
+      }
 
-  reservas.forEach((r, index) => {
-    tabla += `
-      <tr>
-        <td>${r.cliente}</td>
-        <td>${r.hotel}</td>
-        <td>${r.excursion}</td>
-        <td>${r.pickup || "-"}</td>
-        <td>${r.fecha}</td>
-        <td>$${r.precio}</td>
-        <td>
-          <button onclick="verVoucher(${index})">📄</button>
-          <button onclick="eliminarReserva(${index})">❌</button>
-        </td>
-      </tr>
+      let tabla = `
+        <h2>Reservas</h2>
+        <table border="1" style="width:100%; border-collapse: collapse;">
+          <tr>
+            <th>Cliente</th>
+            <th>Hotel</th>
+            <th>Excursión</th>
+            <th>Pickup</th>
+            <th>Fecha</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+          </tr>
+      `;
+
+      data.forEach((r, index) => {
+        tabla += `
+          <tr>
+            <td>${r.cliente}</td>
+            <td>${r.hotel}</td>
+            <td>${r.excursion}</td>
+            <td>${r.pickup || "-"}</td>
+            <td>${r.fecha}</td>
+            <td>$${r.precio}</td>
+            <td>
+              <button onclick="verVoucherDesdeNube(${r.id})">📄</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      tabla += "</table>";
+      getContent().innerHTML = tabla;
+      return;
+    }
+
+    throw new Error("Supabase no configurado");
+  } catch (err) {
+    console.warn("Cargando reservas desde localStorage ⚠️", err);
+
+    let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+
+    if (reservas.length === 0) {
+      getContent().innerHTML = "<h2>No hay reservas aún</h2>";
+      return;
+    }
+
+    let tabla = `
+      <h2>Reservas</h2>
+      <table border="1" style="width:100%; border-collapse: collapse;">
+        <tr>
+          <th>Cliente</th>
+          <th>Hotel</th>
+          <th>Excursión</th>
+          <th>Pickup</th>
+          <th>Fecha</th>
+          <th>Precio</th>
+          <th>Acciones</th>
+        </tr>
     `;
-  });
 
-  tabla += "</table>";
-  getContent().innerHTML = tabla;
-}
+    reservas.forEach((r, index) => {
+      tabla += `
+        <tr>
+          <td>${r.cliente}</td>
+          <td>${r.hotel}</td>
+          <td>${r.excursion}</td>
+          <td>${r.pickup || "-"}</td>
+          <td>${r.fecha}</td>
+          <td>$${r.precio}</td>
+          <td>
+            <button onclick="verVoucher(${index})">📄</button>
+            <button onclick="eliminarReserva(${index})">❌</button>
+          </td>
+        </tr>
+      `;
+    });
 
-function eliminarReserva(index) {
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-
-  if (confirm("¿Seguro que quieres eliminar esta reserva?")) {
-    reservas.splice(index, 1);
-    localStorage.setItem("reservas", JSON.stringify(reservas));
-    mostrarReservas();
+    tabla += "</table>";
+    getContent().innerHTML = tabla;
   }
 }
-
 // =======================
 // 📊 REPORTES
 // =======================
