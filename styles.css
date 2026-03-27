@@ -18,12 +18,12 @@ body {
 }
 
 /* ========================= */
-/* 🔐 LOGIN */
+/* 🔐 LOGIN PREMIUM */
 /* ========================= */
 .login-screen {
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 23, 0.95);
+  background: linear-gradient(135deg, #020617, #0f172a);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -33,16 +33,25 @@ body {
 .login-box {
   background: #ffffff;
   color: #000;
-  width: 320px;
-  padding: 30px 25px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  width: 340px;
+  padding: 35px 25px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
   text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+.login-logo {
+  width: 180px;
+  display: block;
+  margin: 0 auto 15px;
+  object-fit: contain;
 }
 
 .login-box h2 {
   margin-bottom: 20px;
-  font-size: 22px;
+  font-size: 20px;
+  color: #0f172a;
 }
 
 .login-box input {
@@ -52,46 +61,61 @@ body {
   border-radius: 8px;
   border: 1px solid #cbd5e1;
   outline: none;
+  transition: 0.2s;
+}
+
+.login-box input:focus {
+  border-color: #0ea5c6;
+  box-shadow: 0 0 0 2px rgba(14, 165, 198, 0.2);
 }
 
 .login-box button {
   width: 100%;
   padding: 12px;
-  background: #2563eb;
+  background: linear-gradient(135deg, #0f3b78, #0ea5c6);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
 }
 
 .login-box button:hover {
-  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* ========================= */
-/* SIDEBAR */
+/* SIDEBAR PREMIUM */
 /* ========================= */
 .sidebar {
-  width: 250px;
+  width: 260px;
   height: 100vh;
-  background: #020617;
+  background: linear-gradient(180deg, #020617, #0f172a);
   position: fixed;
   left: 0;
   top: 0;
+  padding: 20px 15px;
   transition: 0.3s;
-  padding-top: 20px;
   overflow-y: auto;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .sidebar.active {
-  left: -250px;
+  left: -260px;
 }
 
 .logo {
   text-align: center;
-  margin-bottom: 20px;
-  font-weight: bold;
-  text-transform: uppercase;
+  margin-bottom: 25px;
+}
+
+.sidebar-logo {
+  width: 180px;
+  display: block;
+  margin: 0 auto 10px;
+  object-fit: contain;
 }
 
 /* ========================= */
@@ -99,28 +123,48 @@ body {
 /* ========================= */
 .menu-item {
   display: block;
-  padding: 15px;
+  padding: 14px 16px;
+  margin-bottom: 6px;
+  border-radius: 10px;
   color: #94a3b8;
   text-decoration: none;
+  font-size: 14px;
+  transition: 0.25s;
 }
 
 .menu-item:hover {
-  background: #1e293b;
-  color: white;
+  background: rgba(14, 165, 198, 0.1);
+  color: #ffffff;
+  transform: translateX(5px);
 }
 
 .menu-item.active {
-  background: #2563eb;
-  color: white;
+  background: linear-gradient(135deg, #0f3b78, #0ea5c6);
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* BOTÓN LOGOUT */
+.sidebar button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  background: #ef4444;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.sidebar button:hover {
+  background: #dc2626;
 }
 
 /* ========================= */
 /* MAIN */
 /* ========================= */
 .main {
-  margin-left: 250px;
+  margin-left: 260px;
   padding: 20px;
-  width: calc(100% - 250px);
+  width: calc(100% - 260px);
   transition: 0.3s;
 }
 
@@ -142,7 +186,7 @@ body {
 }
 
 /* ========================= */
-/* INPUTS */
+/* INPUTS GENERALES */
 /* ========================= */
 input,
 select {
@@ -154,7 +198,7 @@ select {
 }
 
 /* ========================= */
-/* BOTONES */
+/* BOTONES GENERALES */
 /* ========================= */
 button {
   padding: 10px 15px;
@@ -185,7 +229,6 @@ button:hover {
   overflow: hidden;
 }
 
-/* Marca de agua */
 .voucher-container::before {
   content: "";
   position: absolute;
@@ -368,9 +411,23 @@ button:hover {
 }
 
 /* ========================= */
-/* 📱 RESPONSIVE */
+/* RESPONSIVE */
 /* ========================= */
 @media (max-width: 700px) {
+  .main {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+  }
+
+  .sidebar {
+    left: -260px;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
   .premium-voucher {
     padding: 18px;
   }
@@ -392,23 +449,19 @@ button:hover {
     align-self: flex-start;
   }
 
-  .main {
-    margin-left: 0;
-    width: 100%;
-    padding: 15px;
+  .login-box {
+    width: calc(100% - 30px);
+    max-width: 340px;
   }
 
-  .sidebar {
-    left: -250px;
-  }
-
-  .sidebar.active {
-    left: 0;
+  .login-logo,
+  .sidebar-logo {
+    width: 160px;
   }
 }
 
 /* ========================= */
-/* 🖨️ PRINT */
+/* PRINT */
 /* ========================= */
 @media print {
   body {
@@ -452,5 +505,19 @@ button:hover {
   .voucher-policies {
     font-size: 10px;
     line-height: 1.35;
+  }
+}
+
+/* ========================= */
+/* ANIMACIÓN LOGIN */
+/* ========================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
