@@ -279,6 +279,26 @@ function eliminarProducto(index) {
   }
 }
 
+async function actualizarProductoDesdeNube(id) {
+  const nombre = document.getElementById(`nombre-${id}`).value.trim();
+  const adulto = parseFloat(document.getElementById(`adulto-${id}`).value) || 0;
+  const nino = parseFloat(document.getElementById(`nino-${id}`).value) || 0;
+
+  try {
+    const { error } = await supabaseClient
+      .from("productos")
+      .update({ nombre, adulto, nino })
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Producto actualizado en la nube ✅");
+    editarProductos();
+  } catch (err) {
+    console.error("Error actualizando producto en la nube:", err);
+    alert("No se pudo actualizar en la nube ⚠️");
+  }
+}
 // =======================
 // 🏨 HOTELES
 // =======================
