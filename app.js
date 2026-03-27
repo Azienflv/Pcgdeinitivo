@@ -1129,50 +1129,69 @@ function verVoucher(index) {
   let r = reservas[index];
 
   getContent().innerHTML = `
-    <div class="voucher-container">
-      <div style="text-align:center; margin-bottom:10px;">
+    <div class="voucher-container premium-voucher">
+
+      <div class="voucher-header">
         <img src="assets/logo.png" class="voucher-logo">
-        <p style="margin:3px 0; font-size:12px;">📞 +1 829-331-9938</p>
-        <p style="margin:0; font-size:12px;">📧 info@puntacanagoing.com</p>
+        <p class="voucher-tagline">Premium Tours & Experiences</p>
+        <p class="voucher-contact">📞 +1 829-331-9938 &nbsp;|&nbsp; 📧 info@puntacanagoing.com</p>
       </div>
 
-      <h2 class="voucher-title">Punta Cana Going TOURS</h2>
-      <p class="voucher-subtitle">Tour Voucher</p>
-
-      <hr>
-
-      <div class="voucher-info">
-        <p><strong>Cliente:</strong> ${r.cliente}</p>
-        <p><strong>Hotel:</strong> ${r.hotel}</p>
-        <p><strong>Excursión:</strong> ${r.excursion}</p>
-        <p><strong>Adultos:</strong> ${r.adultos} | <strong>Niños:</strong> ${r.ninos}</p>
-        <p><strong>Pickup:</strong> ${r.pickup || "-"}</p>
-        <p><strong>Fecha:</strong> ${r.fecha}</p>
-        <p class="precio"><strong>Total:</strong> $${r.precio}</p>
+      <div class="voucher-topbar">
+        <div>
+          <h2 class="voucher-title">Reservation Voucher</h2>
+          <p class="voucher-subtitle">Punta Cana Going Tours</p>
+        </div>
+        <div class="voucher-status">CONFIRMED</div>
       </div>
 
-      <hr>
+      <div class="voucher-card">
+        <h3>Client Information</h3>
+        <div class="voucher-grid">
+          <div><span>Client</span><strong>${r.cliente}</strong></div>
+          <div><span>Hotel</span><strong>${r.hotel}</strong></div>
+          <div><span>Date</span><strong>${r.fecha}</strong></div>
+          <div><span>Pick Up</span><strong>${r.pickup || "-"}</strong></div>
+        </div>
+      </div>
 
-      <div class="voucher-policies">
-        <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
-        <p>
-          a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour.<br>
-          b) Se requiere certificado médico en caso de enfermedad.<br>
-          c) No se permiten cambios el mismo día del tour.<br>
-          d) No hay reembolso por no presentación (no show).<br>
-          e) Descuentos aplicados no son reembolsables.<br>
-          f) No cancelaciones para eventos especiales como Cirque du Soleil.
-        </p>
+      <div class="voucher-card voucher-highlight">
+        <h3>Tour Details</h3>
+        <div class="voucher-grid">
+          <div><span>Excursion</span><strong>${r.excursion}</strong></div>
+          <div><span>Adults</span><strong>${r.adultos}</strong></div>
+          <div><span>Children</span><strong>${r.ninos}</strong></div>
+          <div><span>Total</span><strong class="voucher-total">$${r.precio}</strong></div>
+        </div>
+      </div>
 
-        <h4>CANCELLATION & REFUND POLICIES</h4>
-        <p>
-          a) Cancellation/refund is valid if requested 48 hours before the tour.<br>
-          b) Medical certificate required if applicable.<br>
-          c) No same-day changes allowed.<br>
-          d) No refund for no-show.<br>
-          e) Discounts are non-refundable.<br>
-          f) No cancellations for special events such as Cirque du Soleil.
-        </p>
+      <div class="voucher-card">
+        <h3>Cancellation & Refund Policies</h3>
+        <div class="voucher-policies">
+          <h4>ES</h4>
+          <p>
+            a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour.<br>
+            b) Se requiere certificado médico en caso de enfermedad.<br>
+            c) No se permiten cambios el mismo día del tour.<br>
+            d) No hay reembolso por no presentación (no show).<br>
+            e) Descuentos aplicados no son reembolsables.<br>
+            f) No cancelaciones para eventos especiales como Cirque du Soleil.
+          </p>
+
+          <h4>EN</h4>
+          <p>
+            a) Cancellation/refund is valid if requested 48 hours before the tour.<br>
+            b) Medical certificate required if applicable.<br>
+            c) No same-day changes allowed.<br>
+            d) No refund for no-show.<br>
+            e) Discounts are non-refundable.<br>
+            f) No cancellations for special events such as Cirque du Soleil.
+          </p>
+        </div>
+      </div>
+
+      <div class="voucher-footer">
+        <p>Thank you for choosing <strong>Punta Cana Going Tours</strong></p>
       </div>
 
       <div class="voucher-actions">
@@ -1197,50 +1216,69 @@ async function verVoucherDesdeNube(id) {
     const r = data;
 
     getContent().innerHTML = `
-      <div class="voucher-container">
-        <div style="text-align:center; margin-bottom:10px;">
+      <div class="voucher-container premium-voucher">
+
+        <div class="voucher-header">
           <img src="assets/logo.png" class="voucher-logo">
-          <p style="margin:3px 0; font-size:12px;">📞 +1 829-331-9938</p>
-          <p style="margin:0; font-size:12px;">📧 info@puntacanagoing.com</p>
+          <p class="voucher-tagline">Premium Tours & Experiences</p>
+          <p class="voucher-contact">📞 +1 829-331-9938 &nbsp;|&nbsp; 📧 info@puntacanagoing.com</p>
         </div>
 
-        <h2 class="voucher-title">Punta Cana Going TOURS</h2>
-        <p class="voucher-subtitle">Tour Voucher</p>
-
-        <hr>
-
-        <div class="voucher-info">
-          <p><strong>Cliente:</strong> ${r.cliente}</p>
-          <p><strong>Hotel:</strong> ${r.hotel}</p>
-          <p><strong>Excursión:</strong> ${r.excursion}</p>
-          <p><strong>Adultos:</strong> ${r.adultos} | <strong>Niños:</strong> ${r.ninos}</p>
-          <p><strong>Pickup:</strong> ${r.pickup || "-"}</p>
-          <p><strong>Fecha:</strong> ${r.fecha}</p>
-          <p class="precio"><strong>Total:</strong> $${r.precio}</p>
+        <div class="voucher-topbar">
+          <div>
+            <h2 class="voucher-title">Reservation Voucher</h2>
+            <p class="voucher-subtitle">Punta Cana Going Tours</p>
+          </div>
+          <div class="voucher-status">CONFIRMED</div>
         </div>
 
-        <hr>
+        <div class="voucher-card">
+          <h3>Client Information</h3>
+          <div class="voucher-grid">
+            <div><span>Client</span><strong>${r.cliente}</strong></div>
+            <div><span>Hotel</span><strong>${r.hotel}</strong></div>
+            <div><span>Date</span><strong>${r.fecha}</strong></div>
+            <div><span>Pick Up</span><strong>${r.pickup || "-"}</strong></div>
+          </div>
+        </div>
 
-        <div class="voucher-policies">
-          <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
-          <p>
-            a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour.<br>
-            b) Se requiere certificado médico en caso de enfermedad.<br>
-            c) No se permiten cambios el mismo día del tour.<br>
-            d) No hay reembolso por no presentación (no show).<br>
-            e) Descuentos aplicados no son reembolsables.<br>
-            f) No cancelaciones para eventos especiales como Cirque du Soleil.
-          </p>
+        <div class="voucher-card voucher-highlight">
+          <h3>Tour Details</h3>
+          <div class="voucher-grid">
+            <div><span>Excursion</span><strong>${r.excursion}</strong></div>
+            <div><span>Adults</span><strong>${r.adultos}</strong></div>
+            <div><span>Children</span><strong>${r.ninos}</strong></div>
+            <div><span>Total</span><strong class="voucher-total">$${r.precio}</strong></div>
+          </div>
+        </div>
 
-          <h4>CANCELLATION & REFUND POLICIES</h4>
-          <p>
-            a) Cancellation/refund is valid if requested 48 hours before the tour.<br>
-            b) Medical certificate required if applicable.<br>
-            c) No same-day changes allowed.<br>
-            d) No refund for no-show.<br>
-            e) Discounts are non-refundable.<br>
-            f) No cancellations for special events such as Cirque du Soleil.
-          </p>
+        <div class="voucher-card">
+          <h3>Cancellation & Refund Policies</h3>
+          <div class="voucher-policies">
+            <h4>ES</h4>
+            <p>
+              a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour.<br>
+              b) Se requiere certificado médico en caso de enfermedad.<br>
+              c) No se permiten cambios el mismo día del tour.<br>
+              d) No hay reembolso por no presentación (no show).<br>
+              e) Descuentos aplicados no son reembolsables.<br>
+              f) No cancelaciones para eventos especiales como Cirque du Soleil.
+            </p>
+
+            <h4>EN</h4>
+            <p>
+              a) Cancellation/refund is valid if requested 48 hours before the tour.<br>
+              b) Medical certificate required if applicable.<br>
+              c) No same-day changes allowed.<br>
+              d) No refund for no-show.<br>
+              e) Discounts are non-refundable.<br>
+              f) No cancellations for special events such as Cirque du Soleil.
+            </p>
+          </div>
+        </div>
+
+        <div class="voucher-footer">
+          <p>Thank you for choosing <strong>Punta Cana Going Tours</strong></p>
         </div>
 
         <div class="voucher-actions">
@@ -1255,6 +1293,7 @@ async function verVoucherDesdeNube(id) {
     alert("No se pudo cargar el voucher desde la nube ⚠️");
   }
 }
+
 // =======================
 // 📲 / 📧 ENVÍOS
 // =======================
