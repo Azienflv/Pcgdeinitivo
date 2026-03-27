@@ -1194,11 +1194,12 @@ function verVoucher(index) {
         <p>Thank you for choosing <strong>Punta Cana Going Tours</strong></p>
       </div>
 
-      <div class="voucher-actions">
-        <button onclick="window.print()">🖨️ Imprimir</button>
-        <button onclick="enviarWhatsApp(${index})">📲 WhatsApp</button>
-        <button onclick="enviarEmail(${index})">✉️ Email</button>
-      </div>
+   <div class="voucher-actions">
+  <button onclick="window.print()">🖨️ Imprimir</button>
+  <button onclick="enviarEmail(${index})">✉️ Email</button>
+  <button onclick="descargarPDFLocal(${index})">📄 Descargar PDF</button>
+  <button onclick="compartirPDFLocal(${index})">📲 Compartir PDF</button>
+</div>
     </div>
   `;
 }
@@ -1282,10 +1283,11 @@ async function verVoucherDesdeNube(id) {
         </div>
 
         <div class="voucher-actions">
-          <button onclick="window.print()">🖨️ Imprimir</button>
-          <button onclick="enviarWhatsAppDesdeNube(${r.id})">📲 WhatsApp</button>
-          <button onclick="enviarEmailDesdeNube(${r.id})">✉️ Email</button>
-        </div>
+  <button onclick="window.print()">🖨️ Imprimir</button>
+  <button onclick="enviarEmailDesdeNube(${r.id})">✉️ Email</button>
+  <button onclick="descargarPDFDesdeNube(${r.id})">📄 Descargar PDF</button>
+  <button onclick="compartirPDFDesdeNube(${r.id})">📲 Compartir PDF</button>
+</div>
       </div>
     `;
   } catch (err) {
