@@ -792,6 +792,82 @@ function verVoucher(index) {
     </div>
   `;
 }
+// =======================
+// 🎟️ VOUCHER DESDE LA NUBE
+// =======================
+async function verVoucherDesdeNube(id) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("reservas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    const r = data;
+
+    getContent().innerHTML = `
+      <div class="voucher-container">
+
+        <div style="text-align:center; margin-bottom:10px;">
+          <img src="assets/logo.png" class="voucher-logo">
+          <p style="margin:3px 0; font-size:12px;">📞 +1 829-331-9938</p>
+          <p style="margin:0; font-size:12px;">📧 info@puntacanagoing.com</p>
+        </div>
+
+        <h2 class="voucher-title">Punta Cana Going TOURS</h2>
+        <p class="voucher-subtitle">Tour Voucher</p>
+
+        <hr>
+
+        <div class="voucher-info">
+          <p><strong>Cliente:</strong> ${r.cliente}</p>
+          <p><strong>Hotel:</strong> ${r.hotel}</p>
+          <p><strong>Excursión:</strong> ${r.excursion}</p>
+          <p><strong>Adultos:</strong> ${r.adultos} | <strong>Niños:</strong> ${r.ninos}</p>
+          <p><strong>Pickup:</strong> ${r.pickup || "-"}</p>
+          <p><strong>Fecha:</strong> ${r.fecha}</p>
+          <p class="precio"><strong>Total:</strong> $${r.precio}</p>
+        </div>
+
+        <hr>
+
+        <div class="voucher-policies">
+          <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
+          <p>
+          a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour...<br>
+          b) Se requiere certificado médico...<br>
+          c) No cambios el mismo día...<br>
+          d) No reembolso por no show...<br>
+          e) Descuentos no reembolsables...<br>
+          f) No cancelaciones Cirque du Soleil.
+          </p>
+
+          <h4>CANCELLATION & REFUND POLICIES</h4>
+          <p>
+          a) Cancellation/refund proceeds with more than 48 hrs...<br>
+          b) Medical certificate required...<br>
+          c) No same-day changes...<br>
+          d) No refunds for no-show...<br>
+          e) Discounts non-refundable...<br>
+          f) No cancellations Cirque du Soleil.
+          </p>
+        </div>
+
+        <div class="voucher-actions">
+          <button onclick="window.print()">🖨️ Imprimir</button>
+          <button onclick="enviarWhatsAppDesdeNube(${r.id})">📲 WhatsApp</button>
+          <button onclick="enviarEmailDesdeNube(${r.id})">✉️ Email</button>
+        </div>
+
+      </div>
+    `;
+  } catch (err) {
+    console.error("Error cargando voucher desde nube:", err);
+    alert("No se pudo cargar el voucher desde la nube ⚠️");
+  }
+}
 
 // =======================
 // 📲 / 📧 ENVÍOS
