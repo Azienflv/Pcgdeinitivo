@@ -303,3 +303,11 @@ button:hover {
     font-size: 10px;
   }
 }
+
+.voucher-policies {
+  display: block;
+  font-size: 11px;
+  margin-top: 10px;
+  line-height: 1.3;
+  color: #000;
+}
