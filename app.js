@@ -904,6 +904,7 @@ async function mostrarReservas() {
             <td>$${r.precio}</td>
             <td>
               <button onclick="verVoucherDesdeNube(${r.id})">📄</button>
+<button onclick="eliminarReservaDesdeNube(${r.id})">❌</button>
             </td>
           </tr>
         `;
