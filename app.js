@@ -369,15 +369,31 @@ function crearHotel() {
     .addEventListener("submit", guardarHotel);
 }
 
-function guardarHotel(e) {
+async function guardarHotel(e) {
   e.preventDefault();
 
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-
+  let productos = [];
   let hotel = {
     nombre: document.getElementById("nombreHotel").value.trim(),
     pickups: {}
   };
+
+  try {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from("productos")
+        .select("*")
+        .order("nombre", { ascending: true });
+
+      if (error) throw error;
+      productos = data || [];
+    } else {
+      productos = JSON.parse(localStorage.getItem("productos")) || [];
+    }
+  } catch (err) {
+    console.warn("Productos desde localStorage ⚠️", err);
+    productos = JSON.parse(localStorage.getItem("productos")) || [];
+  }
 
   productos.forEach(p => {
     let id = safeId(p.nombre);
@@ -385,40 +401,97 @@ function guardarHotel(e) {
       document.getElementById(`pickup_${id}`).value || "";
   });
 
-  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-  hoteles.push(hotel);
+  try {
+    if (supabaseClient) {
+      const { error } = await supabaseClient
+        .from("hoteles")
+        .insert([hotel]);
 
-  localStorage.setItem("hoteles", JSON.stringify(hoteles));
-
-  alert("Hotel guardado ✅");
-  menuHoteles();
-}
-
-function verHoteles() {
-  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-
-  if (hoteles.length === 0) {
-    getContent().innerHTML = `<h2>No hay hoteles</h2>`;
-    return;
-  }
-
-  let html = `<h2>Hoteles</h2>`;
-
-  hoteles.forEach((h, index) => {
-    html += `<h4>${h.nombre}</h4><ul>`;
-
-    for (let exc in h.pickups) {
-      html += `<li>${exc} → ${h.pickups[exc] || "Sin horario"}</li>`;
+      if (error) throw error;
     }
 
-    html += `</ul>
-      <button onclick="editarHotel(${index})">✏️</button>
-      <button onclick="eliminarHotel(${index})">❌</button>
-    `;
-  });
+    let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+    hoteles.push(hotel);
+    localStorage.setItem("hoteles", JSON.stringify(hoteles));
 
-  html += `<br><button onclick="menuHoteles()">⬅ Volver</button>`;
-  getContent().innerHTML = html;
+    alert(supabaseClient ? "Hotel guardado en la nube ✅" : "Hotel guardado localmente ✅");
+    menuHoteles();
+  } catch (err) {
+    console.error("Error guardando hotel:", err);
+
+    let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+    hoteles.push(hotel);
+    localStorage.setItem("hoteles", JSON.stringify(hoteles));
+
+    alert("Hotel guardado localmente ⚠️");
+    menuHoteles();
+  }
+}
+
+async function verHoteles() {
+  try {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from("hoteles")
+        .select("*")
+        .order("nombre", { ascending: true });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        getContent().innerHTML = `<h2>No hay hoteles</h2>`;
+        return;
+      }
+
+      let html = `<h2>Hoteles</h2>`;
+
+      data.forEach((h) => {
+        html += `<h4>${h.nombre}</h4><ul>`;
+
+        for (let exc in h.pickups) {
+          html += `<li>${exc} → ${h.pickups[exc] || "Sin horario"}</li>`;
+        }
+
+        html += `</ul>
+          <button onclick="editarHotelDesdeNube(${h.id})">✏️</button>
+          <button onclick="eliminarHotelDesdeNube(${h.id})">❌</button>
+        `;
+      });
+
+      html += `<br><button onclick="menuHoteles()">⬅ Volver</button>`;
+      getContent().innerHTML = html;
+      return;
+    }
+
+    throw new Error("Supabase no configurado");
+  } catch (err) {
+    console.warn("Hoteles desde localStorage ⚠️", err);
+
+    let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+
+    if (hoteles.length === 0) {
+      getContent().innerHTML = `<h2>No hay hoteles</h2>`;
+      return;
+    }
+
+    let html = `<h2>Hoteles</h2>`;
+
+    hoteles.forEach((h, index) => {
+      html += `<h4>${h.nombre}</h4><ul>`;
+
+      for (let exc in h.pickups) {
+        html += `<li>${exc} → ${h.pickups[exc] || "Sin horario"}</li>`;
+      }
+
+      html += `</ul>
+        <button onclick="editarHotel(${index})">✏️</button>
+        <button onclick="eliminarHotel(${index})">❌</button>
+      `;
+    });
+
+    html += `<br><button onclick="menuHoteles()">⬅ Volver</button>`;
+    getContent().innerHTML = html;
+  }
 }
 
 function editarHotel(index) {
@@ -492,23 +565,29 @@ function eliminarHotel(index) {
 
 async function loadForm() {
   let productos = [];
-  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+  let hoteles = [];
 
   try {
     if (supabaseClient) {
-      const { data, error } = await supabaseClient
-        .from("productos")
-        .select("*")
-        .order("nombre", { ascending: true });
+      const [{ data: productosData, error: productosError }, { data: hotelesData, error: hotelesError }] =
+        await Promise.all([
+          supabaseClient.from("productos").select("*").order("nombre", { ascending: true }),
+          supabaseClient.from("hoteles").select("*").order("nombre", { ascending: true })
+        ]);
 
-      if (error) throw error;
-      productos = data || [];
+      if (productosError) throw productosError;
+      if (hotelesError) throw hotelesError;
+
+      productos = productosData || [];
+      hoteles = hotelesData || [];
     } else {
       productos = JSON.parse(localStorage.getItem("productos")) || [];
+      hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
     }
   } catch (err) {
-    console.warn("Cargando productos desde localStorage ⚠️", err);
+    console.warn("Form desde localStorage ⚠️", err);
     productos = JSON.parse(localStorage.getItem("productos")) || [];
+    hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
   }
 
   let opcionesExc = productos.map(p =>
