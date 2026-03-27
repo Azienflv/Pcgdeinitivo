@@ -487,11 +487,29 @@ function eliminarHotel(index) {
 }
 
 // =======================
-// 🧾 FORMULARIO RESERVA
+// 🧾 LoadForm
 // =======================
-function loadForm() {
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+async function loadForm() {
+  let productos = [];
   let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+
+  try {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from("productos")
+        .select("*")
+        .order("nombre", { ascending: true });
+
+      if (error) throw error;
+      productos = data || [];
+    } else {
+      productos = JSON.parse(localStorage.getItem("productos")) || [];
+    }
+  } catch (err) {
+    console.warn("Cargando productos desde localStorage ⚠️", err);
+    productos = JSON.parse(localStorage.getItem("productos")) || [];
+  }
 
   let opcionesExc = productos.map(p =>
     `<option value="${p.nombre}">${p.nombre}</option>`
@@ -545,10 +563,29 @@ function loadForm() {
   document.getElementById("reservaForm")
     .addEventListener("submit", guardarReserva);
 }
+// =======================
+// 🧾 Autodatos 
+// =======================
 
-function autoDatos() {
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+async function autoDatos() {
+  let productos = [];
   let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+
+  try {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from("productos")
+        .select("*");
+
+      if (error) throw error;
+      productos = data || [];
+    } else {
+      productos = JSON.parse(localStorage.getItem("productos")) || [];
+    }
+  } catch (err) {
+    console.warn("Cargando productos desde localStorage ⚠️", err);
+    productos = JSON.parse(localStorage.getItem("productos")) || [];
+  }
 
   let excursion = document.getElementById("excursion").value;
   let hotelNombre = document.getElementById("hotel").value;
@@ -575,7 +612,6 @@ function autoDatos() {
     document.getElementById("pickup").value = "";
   }
 }
-
 // =======================
 // 🧾 GUARDAR RESERVA
 // =======================
