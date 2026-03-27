@@ -530,6 +530,59 @@ function editarHotel(index) {
     });
 }
 
+async function editarHotelDesdeNube(id) {
+  try {
+    const { data: hotel, error: hotelError } = await supabaseClient
+      .from("hoteles")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (hotelError) throw hotelError;
+
+    const { data: productos, error: productosError } = await supabaseClient
+      .from("productos")
+      .select("*")
+      .order("nombre", { ascending: true });
+
+    if (productosError) throw productosError;
+
+    let inputs = (productos || []).map(p => {
+      let pid = safeId(p.nombre);
+      let valor = hotel.pickups?.[p.nombre] || "";
+
+      return `
+        <label>${p.nombre}</label>
+        <input type="time" id="edit_pickup_${pid}" value="${valor}">
+      `;
+    }).join("");
+
+    getContent().innerHTML = `
+      <h2>Editar Hotel</h2>
+
+      <form id="editHotelForm">
+        <input type="text" id="edit_nombreHotel" value="${hotel.nombre}" required>
+
+        <h4>Horarios por excursión</h4>
+        ${inputs}
+
+        <button type="submit">💾 Guardar Cambios</button>
+        <button type="button" onclick="verHoteles()">⬅ Volver</button>
+      </form>
+    `;
+
+    document.getElementById("editHotelForm")
+      .addEventListener("submit", function(e) {
+        e.preventDefault();
+        guardarEdicionHotelDesdeNube(id);
+      });
+
+  } catch (err) {
+    console.error("Error cargando hotel desde nube:", err);
+    alert("No se pudo cargar el hotel desde la nube ⚠️");
+  }
+}
+
 function guardarEdicionHotel(index) {
   let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
@@ -549,6 +602,39 @@ function guardarEdicionHotel(index) {
   verHoteles();
 }
 
+async function guardarEdicionHotelDesdeNube(id) {
+  try {
+    const { data: productos, error: productosError } = await supabaseClient
+      .from("productos")
+      .select("*")
+      .order("nombre", { ascending: true });
+
+    if (productosError) throw productosError;
+
+    let pickups = {};
+
+    (productos || []).forEach(p => {
+      let pid = safeId(p.nombre);
+      pickups[p.nombre] = document.getElementById(`edit_pickup_${pid}`).value || "";
+    });
+
+    const nombre = document.getElementById("edit_nombreHotel").value.trim();
+
+    const { error } = await supabaseClient
+      .from("hoteles")
+      .update({ nombre, pickups })
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Hotel actualizado en la nube ✅");
+    verHoteles();
+  } catch (err) {
+    console.error("Error actualizando hotel en nube:", err);
+    alert("No se pudo actualizar el hotel en la nube ⚠️");
+  }
+}
+
 function eliminarHotel(index) {
   let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
 
@@ -556,6 +642,25 @@ function eliminarHotel(index) {
     hoteles.splice(index, 1);
     localStorage.setItem("hoteles", JSON.stringify(hoteles));
     verHoteles();
+  }
+}
+
+async function eliminarHotelDesdeNube(id) {
+  if (!confirm("¿Eliminar hotel?")) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from("hoteles")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Hotel eliminado de la nube ✅");
+    verHoteles();
+  } catch (err) {
+    console.error("Error eliminando hotel en nube:", err);
+    alert("No se pudo eliminar el hotel de la nube ⚠️");
   }
 }
 
