@@ -14,11 +14,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 let supabaseClient = null;
 
-if (
-  typeof supabase !== "undefined" &&
-  SUPABASE_URL !== "PEGA_AQUI_TU_SUPABASE_URL" &&
-  SUPABASE_ANON_KEY !== "PEGA_AQUI_TU_SUPABASE_ANON_KEY"
-) {
+if (typeof supabase !== "undefined" && SUPABASE_URL && SUPABASE_ANON_KEY) {
   supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   console.log("Supabase conectado ✅");
 } else {
@@ -34,6 +30,10 @@ async function login() {
   const loginError = document.getElementById("loginError");
 
   try {
+    if (!supabaseClient) {
+      throw new Error("Supabase no está conectado");
+    }
+
     const { data, error } = await supabaseClient
       .from("usuarios")
       .select("*")
@@ -79,24 +79,6 @@ function logout() {
   if (loginError) loginError.style.display = "none";
 }
 
-window.onload = function () {
-  const session = localStorage.getItem("session");
-  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-
-  if (session === "active" && currentUser) {
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("app").style.display = "flex";
-
-    getContent().innerHTML = `
-      <h1>Dashboard</h1>
-      <p>Bienvenido, ${currentUser.username}</p>
-    `;
-  } else {
-    document.getElementById("loginScreen").style.display = "flex";
-    document.getElementById("app").style.display = "none";
-  }
-};
-
 // =======================
 // 🚀 INIT
 // =======================
@@ -126,10 +108,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const text = item.textContent.trim();
 
         if (text === "Nueva Reserva") loadForm();
-else if (text === "Reportes") menuReportes();
-else if (text === "Reservas") mostrarReservas();
-else if (text === "Nuevo Producto") menuProductos();
-else if (text === "Usuarios") menuUsuarios();
+        else if (text === "Reportes") menuReportes();
+        else if (text === "Reservas") mostrarReservas();
+        else if (text === "Nuevo Producto") menuProductos();
+        else if (text === "Usuarios") menuUsuarios();
       });
     });
   }
@@ -170,9 +152,7 @@ function loadProducto() {
   document.getElementById("productoForm")
     .addEventListener("submit", guardarProducto);
 }
-// =======================
-// 🚩Guardar producto
-// =======================
+
 async function guardarProducto(e) {
   e.preventDefault();
 
@@ -209,9 +189,6 @@ async function guardarProducto(e) {
   }
 }
 
-// =======================
-// ✏️ EDITAR PRODUCTOS
-// =======================
 async function editarProductos() {
   try {
     if (supabaseClient) {
@@ -283,9 +260,7 @@ async function editarProductos() {
     getContent().innerHTML = html;
   }
 }
-// =======================
-// 🚩Actualizar producto
-// =======================
+
 function actualizarProducto(index) {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
@@ -297,9 +272,7 @@ function actualizarProducto(index) {
   alert("Producto actualizado ✅");
   editarProductos();
 }
-// =======================
-// 🚩Eliminar producto
-// =======================
+
 function eliminarProducto(index) {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
@@ -309,9 +282,7 @@ function eliminarProducto(index) {
     editarProductos();
   }
 }
-// =======================
-// 🚩Actualizar producto nube
-// =======================
+
 async function actualizarProductoDesdeNube(id) {
   const nombre = document.getElementById(`nombre-${id}`).value.trim();
   const adulto = parseFloat(document.getElementById(`adulto-${id}`).value) || 0;
@@ -333,9 +304,6 @@ async function actualizarProductoDesdeNube(id) {
   }
 }
 
-// =======================
-// 🚩Eliminar producto nube
-// =======================
 async function eliminarProductoDesdeNube(id) {
   if (!confirm("¿Eliminar este producto?")) return;
 
@@ -369,8 +337,25 @@ function menuHoteles() {
   `;
 }
 
-function crearHotel() {
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+async function crearHotel() {
+  let productos = [];
+
+  try {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from("productos")
+        .select("*")
+        .order("nombre", { ascending: true });
+
+      if (error) throw error;
+      productos = data || [];
+    } else {
+      productos = JSON.parse(localStorage.getItem("productos")) || [];
+    }
+  } catch (err) {
+    console.warn("Productos desde localStorage ⚠️", err);
+    productos = JSON.parse(localStorage.getItem("productos")) || [];
+  }
 
   let inputs = productos.map(p => {
     let id = safeId(p.nombre);
@@ -694,9 +679,8 @@ async function eliminarHotelDesdeNube(id) {
 }
 
 // =======================
-// 🧾 LoadForm
+// 🧾 FORMULARIO RESERVA
 // =======================
-
 async function loadForm() {
   let productos = [];
   let hoteles = [];
@@ -776,28 +760,32 @@ async function loadForm() {
   document.getElementById("reservaForm")
     .addEventListener("submit", guardarReserva);
 }
-// =======================
-// 🧾 Autodatos 
-// =======================
 
 async function autoDatos() {
   let productos = [];
-  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+  let hoteles = [];
 
   try {
     if (supabaseClient) {
-      const { data, error } = await supabaseClient
-        .from("productos")
-        .select("*");
+      const [{ data: productosData, error: productosError }, { data: hotelesData, error: hotelesError }] =
+        await Promise.all([
+          supabaseClient.from("productos").select("*"),
+          supabaseClient.from("hoteles").select("*")
+        ]);
 
-      if (error) throw error;
-      productos = data || [];
+      if (productosError) throw productosError;
+      if (hotelesError) throw hotelesError;
+
+      productos = productosData || [];
+      hoteles = hotelesData || [];
     } else {
       productos = JSON.parse(localStorage.getItem("productos")) || [];
+      hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
     }
   } catch (err) {
-    console.warn("Cargando productos desde localStorage ⚠️", err);
+    console.warn("AutoDatos desde localStorage ⚠️", err);
     productos = JSON.parse(localStorage.getItem("productos")) || [];
+    hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
   }
 
   let excursion = document.getElementById("excursion").value;
@@ -825,6 +813,7 @@ async function autoDatos() {
     document.getElementById("pickup").value = "";
   }
 }
+
 // =======================
 // 🧾 GUARDAR RESERVA
 // =======================
@@ -904,7 +893,7 @@ async function mostrarReservas() {
           </tr>
       `;
 
-      data.forEach((r, index) => {
+      data.forEach((r) => {
         tabla += `
           <tr>
             <td>${r.cliente}</td>
@@ -971,6 +960,7 @@ async function mostrarReservas() {
     getContent().innerHTML = tabla;
   }
 }
+
 // =======================
 // 📊 REPORTES
 // =======================
@@ -1112,7 +1102,7 @@ async function verContactos() {
 }
 
 // =======================
-// 🎟️ VOUCHER
+// 🎟️ VOUCHERS
 // =======================
 function verVoucher(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
@@ -1120,7 +1110,6 @@ function verVoucher(index) {
 
   getContent().innerHTML = `
     <div class="voucher-container">
-
       <div style="text-align:center; margin-bottom:10px;">
         <img src="assets/logo.png" class="voucher-logo">
         <p style="margin:3px 0; font-size:12px;">📞 +1 829-331-9938</p>
@@ -1142,42 +1131,15 @@ function verVoucher(index) {
         <p class="precio"><strong>Total:</strong> $${r.precio}</p>
       </div>
 
-      <hr>
-
-      <div class="voucher-policies">
-        <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
-        <p>
-        a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour...<br>
-        b) Se requiere certificado médico...<br>
-        c) No cambios el mismo día...<br>
-        d) No reembolso por no show...<br>
-        e) Descuentos no reembolsables...<br>
-        f) No cancelaciones Cirque du Soleil.
-        </p>
-
-        <h4>CANCELLATION & REFUND POLICIES</h4>
-        <p>
-        a) Cancellation/refund proceeds with more than 48 hrs...<br>
-        b) Medical certificate required...<br>
-        c) No same-day changes...<br>
-        d) No refunds for no-show...<br>
-        e) Discounts non-refundable...<br>
-        f) No cancellations Cirque du Soleil.
-        </p>
-      </div>
-
       <div class="voucher-actions">
         <button onclick="window.print()">🖨️ Imprimir</button>
         <button onclick="enviarWhatsApp(${index})">📲 WhatsApp</button>
         <button onclick="enviarEmail(${index})">✉️ Email</button>
       </div>
-
     </div>
   `;
 }
-// =======================
-// 🎟️ VOUCHER DESDE LA NUBE
-// =======================
+
 async function verVoucherDesdeNube(id) {
   try {
     const { data, error } = await supabaseClient
@@ -1192,7 +1154,6 @@ async function verVoucherDesdeNube(id) {
 
     getContent().innerHTML = `
       <div class="voucher-container">
-
         <div style="text-align:center; margin-bottom:10px;">
           <img src="assets/logo.png" class="voucher-logo">
           <p style="margin:3px 0; font-size:12px;">📞 +1 829-331-9938</p>
@@ -1214,36 +1175,11 @@ async function verVoucherDesdeNube(id) {
           <p class="precio"><strong>Total:</strong> $${r.precio}</p>
         </div>
 
-        <hr>
-
-        <div class="voucher-policies">
-          <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
-          <p>
-          a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour...<br>
-          b) Se requiere certificado médico...<br>
-          c) No cambios el mismo día...<br>
-          d) No reembolso por no show...<br>
-          e) Descuentos no reembolsables...<br>
-          f) No cancelaciones Cirque du Soleil.
-          </p>
-
-          <h4>CANCELLATION & REFUND POLICIES</h4>
-          <p>
-          a) Cancellation/refund proceeds with more than 48 hrs...<br>
-          b) Medical certificate required...<br>
-          c) No same-day changes...<br>
-          d) No refunds for no-show...<br>
-          e) Discounts non-refundable...<br>
-          f) No cancellations Cirque du Soleil.
-          </p>
-        </div>
-
         <div class="voucher-actions">
           <button onclick="window.print()">🖨️ Imprimir</button>
           <button onclick="enviarWhatsAppDesdeNube(${r.id})">📲 WhatsApp</button>
           <button onclick="enviarEmailDesdeNube(${r.id})">✉️ Email</button>
         </div>
-
       </div>
     `;
   } catch (err) {
@@ -1260,7 +1196,6 @@ function enviarWhatsApp(index) {
   let r = reservas[index];
 
   let telefono = (r.telefono || "").replace(/\D/g, "");
-
   let mensaje = `Hola ${r.cliente},
 Tu reserva está confirmada ✅
 
@@ -1281,7 +1216,6 @@ function enviarEmail(index) {
   let r = reservas[index];
 
   let asunto = "Confirmación de Reserva - Punta Cana Going";
-
   let cuerpo = `Hola ${r.cliente},
 
 Tu reserva está confirmada:
@@ -1297,9 +1231,7 @@ Gracias por elegir Punta Cana Going 🌴`;
   let mailto = `mailto:${r.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
   window.open(mailto);
 }
-// =======================
-// 🚩Envio desde la nube
-// =======================
+
 async function enviarWhatsAppDesdeNube(id) {
   try {
     const { data, error } = await supabaseClient
@@ -1343,7 +1275,6 @@ async function enviarEmailDesdeNube(id) {
 
     let r = data;
     let asunto = "Confirmación de Reserva - Punta Cana Going";
-
     let cuerpo = `Hola ${r.cliente},
 
 Tu reserva está confirmada:
@@ -1362,36 +1293,9 @@ Gracias por elegir Punta Cana Going 🌴`;
     console.error("Error enviando email desde nube:", err);
   }
 }
-// =======================
-// 🔄 RESTAURAR SESIÓN
-// =======================
-window.onload = function () {
-  if (localStorage.getItem("session") === "active") {
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("app").style.display = "flex";
-
-    getContent().innerHTML = `
-      <h1>Dashboard</h1>
-      <p>Bienvenido a Punta Cana Going</p>
-    `;
-  } else {
-    document.getElementById("loginScreen").style.display = "flex";
-    document.getElementById("app").style.display = "none";
-  }
-};
 
 // =======================
-// 📦 SERVICE WORKER
-// =======================
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js")
-      .then(() => console.log("Service Worker registrado ✅"))
-      .catch(error => console.log("Error registrando Service Worker ❌", error));
-  });
-}
-// =======================
-// 🚩 Multi Usuario
+// 👥 MULTI USUARIO
 // =======================
 async function menuUsuarios() {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
@@ -1517,4 +1421,36 @@ async function eliminarUsuarioDesdeNube(id) {
     console.error("Error eliminando usuario:", err);
     alert("No se pudo eliminar el usuario ⚠️");
   }
+}
+
+// =======================
+// 🔄 RESTAURAR SESIÓN
+// =======================
+window.onload = function () {
+  const session = localStorage.getItem("session");
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+
+  if (session === "active" && currentUser) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+
+    getContent().innerHTML = `
+      <h1>Dashboard</h1>
+      <p>Bienvenido, ${currentUser.username}</p>
+    `;
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("app").style.display = "none";
+  }
+};
+
+// =======================
+// 📦 SERVICE WORKER
+// =======================
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .then(() => console.log("Service Worker registrado ✅"))
+      .catch(error => console.log("Error registrando Service Worker ❌", error));
+  });
 }
