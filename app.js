@@ -1390,3 +1390,131 @@ if ("serviceWorker" in navigator) {
       .catch(error => console.log("Error registrando Service Worker ❌", error));
   });
 }
+// =======================
+// 🚩 Multi Usuario
+// =======================
+async function menuUsuarios() {
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+
+  if (!currentUser || currentUser.role !== "admin") {
+    getContent().innerHTML = `
+      <h2>Acceso denegado</h2>
+      <p>Solo el administrador puede gestionar usuarios.</p>
+    `;
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("usuarios")
+      .select("*")
+      .order("username", { ascending: true });
+
+    if (error) throw error;
+
+    let html = `
+      <h2>Usuarios</h2>
+
+      <form id="userForm" style="margin-bottom:20px;">
+        <input type="text" id="newUsername" placeholder="Nuevo usuario" required>
+        <input type="password" id="newPassword" placeholder="Contraseña" required>
+
+        <select id="newRole">
+          <option value="seller">Vendedor</option>
+          <option value="admin">Administrador</option>
+        </select>
+
+        <button type="submit">Agregar usuario</button>
+      </form>
+
+      <h3>Lista de usuarios</h3>
+    `;
+
+    (data || []).forEach((u) => {
+      html += `
+        <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
+          <strong>${u.username}</strong> — ${u.role}
+          <div style="margin-top:10px;">
+            <button onclick="eliminarUsuarioDesdeNube(${u.id})">❌ Eliminar</button>
+          </div>
+        </div>
+      `;
+    });
+
+    getContent().innerHTML = html;
+
+    document.getElementById("userForm").addEventListener("submit", guardarUsuarioDesdeNube);
+
+  } catch (err) {
+    console.error("Error cargando usuarios:", err);
+    alert("No se pudieron cargar los usuarios ⚠️");
+  }
+}
+
+async function guardarUsuarioDesdeNube(e) {
+  e.preventDefault();
+
+  const username = document.getElementById("newUsername").value.trim();
+  const password = document.getElementById("newPassword").value.trim();
+  const role = document.getElementById("newRole").value;
+
+  try {
+    const { data: existing, error: existingError } = await supabaseClient
+      .from("usuarios")
+      .select("*")
+      .eq("username", username);
+
+    if (existingError) throw existingError;
+
+    if (existing && existing.length > 0) {
+      alert("Ese usuario ya existe");
+      return;
+    }
+
+    const { error } = await supabaseClient
+      .from("usuarios")
+      .insert([{ username, password, role }]);
+
+    if (error) throw error;
+
+    alert("Usuario creado ✅");
+    menuUsuarios();
+  } catch (err) {
+    console.error("Error creando usuario:", err);
+    alert("No se pudo crear el usuario ⚠️");
+  }
+}
+
+async function eliminarUsuarioDesdeNube(id) {
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+
+  if (!confirm("¿Eliminar este usuario?")) return;
+
+  try {
+    const { data, error: userError } = await supabaseClient
+      .from("usuarios")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (userError) throw userError;
+
+    if (currentUser && data.username === currentUser.username) {
+      alert("No puedes eliminar tu propio usuario mientras estás logueado");
+      return;
+    }
+
+    const { error } = await supabaseClient
+      .from("usuarios")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Usuario eliminado ✅");
+    menuUsuarios();
+  } catch (err) {
+    console.error("Error eliminando usuario:", err);
+    alert("No se pudo eliminar el usuario ⚠️");
+  }
+}
