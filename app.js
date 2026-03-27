@@ -961,6 +961,25 @@ async function mostrarReservas() {
     getContent().innerHTML = tabla;
   }
 }
+async function eliminarReservaDesdeNube(id) {
+  if (!confirm("¿Seguro que quieres eliminar esta reserva?")) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from("reservas")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Reserva eliminada de la nube ✅");
+    mostrarReservas();
+
+  } catch (err) {
+    console.error("Error eliminando reserva:", err);
+    alert("No se pudo eliminar la reserva ⚠️");
+  }
+}
 
 // =======================
 // 📊 REPORTES
