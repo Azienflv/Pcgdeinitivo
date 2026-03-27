@@ -1,14 +1,28 @@
-const SUPABASE_URL = "TU_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "TU_SUPABASE_ANON_KEY";
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 function getContent() {
   return document.getElementById("content");
 }
 
 function safeId(text) {
   return text.replace(/\s+/g, "_").replace(/[^\w]/g, "");
+}
+
+// =======================
+// ☁️ SUPABASE
+// =======================
+const SUPABASE_URL = "PEGA_AQUI_TU_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "PEGA_AQUI_TU_SUPABASE_ANON_KEY";
+
+let supabaseClient = null;
+
+if (
+  typeof supabase !== "undefined" &&
+  SUPABASE_URL !== "PEGA_AQUI_TU_SUPABASE_URL" &&
+  SUPABASE_ANON_KEY !== "PEGA_AQUI_TU_SUPABASE_ANON_KEY"
+) {
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  console.log("Supabase conectado ✅");
+} else {
+  console.warn("Supabase no está configurado todavía.");
 }
 
 // =======================
@@ -125,9 +139,7 @@ function loadProducto() {
   document.getElementById("productoForm")
     .addEventListener("submit", guardarProducto);
 }
-// =======================
-// 🚩GUARDAR PRODUCTO
-// =======================
+
 async function guardarProducto(e) {
   e.preventDefault();
 
@@ -138,17 +150,19 @@ async function guardarProducto(e) {
   };
 
   try {
-    const { error } = await supabaseClient
-      .from("productos")
-      .insert([producto]);
+    if (supabaseClient) {
+      const { error } = await supabaseClient
+        .from("productos")
+        .insert([producto]);
 
-    if (error) throw error;
+      if (error) throw error;
+    }
 
     let productos = JSON.parse(localStorage.getItem("productos")) || [];
     productos.push(producto);
     localStorage.setItem("productos", JSON.stringify(productos));
 
-    alert("Excursión guardada en la nube ✅");
+    alert(supabaseClient ? "Excursión guardada en la nube ✅" : "Excursión guardada localmente ✅");
     document.getElementById("productoForm").reset();
   } catch (err) {
     console.error("Error guardando producto:", err);
@@ -161,8 +175,9 @@ async function guardarProducto(e) {
     document.getElementById("productoForm").reset();
   }
 }
+
 // =======================
-// 🚩EDITAR PRODUCTO
+// ✏️ EDITAR PRODUCTOS
 // =======================
 function editarProductos() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
@@ -193,9 +208,7 @@ function editarProductos() {
   html += `<button onclick="menuProductos()">⬅ Volver</button>`;
   getContent().innerHTML = html;
 }
-// =======================
-// 🚩ACTUALIZAR PRODUCTO
-// =======================
+
 function actualizarProducto(index) {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
@@ -467,6 +480,7 @@ function autoDatos() {
     document.getElementById("pickup").value = "";
   }
 }
+
 // =======================
 // 🧾 GUARDAR RESERVA
 // =======================
@@ -488,17 +502,19 @@ async function guardarReserva(e) {
   };
 
   try {
-    const { error } = await supabaseClient
-      .from("reservas")
-      .insert([reserva]);
+    if (supabaseClient) {
+      const { error } = await supabaseClient
+        .from("reservas")
+        .insert([reserva]);
 
-    if (error) throw error;
+      if (error) throw error;
+    }
 
     let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
     reservas.push(reserva);
     localStorage.setItem("reservas", JSON.stringify(reservas));
 
-    alert("Reserva guardada en la nube ✅");
+    alert(supabaseClient ? "Reserva guardada en la nube ✅" : "Reserva guardada localmente ✅");
     mostrarReservas();
   } catch (err) {
     console.error("Error guardando reserva:", err);
@@ -798,6 +814,9 @@ window.onload = function () {
   }
 };
 
+// =======================
+// 📦 SERVICE WORKER
+// =======================
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js")
