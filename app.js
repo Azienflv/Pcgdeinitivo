@@ -51,7 +51,9 @@ function login() {
     if (loginError) loginError.style.display = "block";
   }
 }
-
+// =======================
+// 🔐 LOG OUT 
+// =======================
 function logout() {
   localStorage.removeItem("session");
 
@@ -139,7 +141,9 @@ function loadProducto() {
   document.getElementById("productoForm")
     .addEventListener("submit", guardarProducto);
 }
-
+// =======================
+// 🚩Guardar producto
+// =======================
 async function guardarProducto(e) {
   e.preventDefault();
 
@@ -208,7 +212,9 @@ function editarProductos() {
   html += `<button onclick="menuProductos()">⬅ Volver</button>`;
   getContent().innerHTML = html;
 }
-
+// =======================
+// 🚩Actualizar producto
+// =======================
 function actualizarProducto(index) {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
@@ -914,7 +920,71 @@ Gracias por elegir Punta Cana Going 🌴`;
   let mailto = `mailto:${r.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
   window.open(mailto);
 }
+// =======================
+// 🚩Envio desde la nube
+// =======================
+async function enviarWhatsAppDesdeNube(id) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("reservas")
+      .select("*")
+      .eq("id", id)
+      .single();
 
+    if (error) throw error;
+
+    let r = data;
+    let telefono = (r.telefono || "").replace(/\D/g, "");
+
+    let mensaje = `Hola ${r.cliente},
+Tu reserva está confirmada ✅
+
+Excursión: ${r.excursion}
+Hotel: ${r.hotel}
+Fecha: ${r.fecha}
+Pickup: ${r.pickup}
+Total: $${r.precio}
+
+Punta Cana Going 🌴`;
+
+    let url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, "_blank");
+  } catch (err) {
+    console.error("Error enviando WhatsApp desde nube:", err);
+  }
+}
+
+async function enviarEmailDesdeNube(id) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("reservas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    let r = data;
+    let asunto = "Confirmación de Reserva - Punta Cana Going";
+
+    let cuerpo = `Hola ${r.cliente},
+
+Tu reserva está confirmada:
+
+Excursión: ${r.excursion}
+Hotel: ${r.hotel}
+Fecha: ${r.fecha}
+Pickup: ${r.pickup}
+Total: $${r.precio}
+
+Gracias por elegir Punta Cana Going 🌴`;
+
+    let mailto = `mailto:${r.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+    window.open(mailto);
+  } catch (err) {
+    console.error("Error enviando email desde nube:", err);
+  }
+}
 // =======================
 // 🔄 RESTAURAR SESIÓN
 // =======================
