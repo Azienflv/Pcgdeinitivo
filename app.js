@@ -2,27 +2,57 @@ function getContent() {
   return document.getElementById("content");
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-  console.log("App cargada correctamente ✅");
-});
-
-// 🔹 Función para IDs seguros
 function safeId(text) {
   return text.replace(/\s+/g, "_").replace(/[^\w]/g, "");
 }
 
 // =======================
-// 🚀 Log in
+// 🔐 LOGIN
 // =======================
 const USER = "pcg";
 const PASS = "josias8090";
 
+function login() {
+  const user = document.getElementById("username").value.trim();
+  const pass = document.getElementById("password").value.trim();
+  const loginError = document.getElementById("loginError");
 
+  if (user === USER && pass === PASS) {
+    localStorage.setItem("session", "active");
+
+    if (loginError) loginError.style.display = "none";
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+
+    getContent().innerHTML = `
+      <h1>Dashboard</h1>
+      <p>Bienvenido a Punta Cana Going</p>
+    `;
+  } else {
+    if (loginError) loginError.style.display = "block";
+  }
+}
+
+function logout() {
+  localStorage.removeItem("session");
+
+  document.getElementById("app").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+
+  const username = document.getElementById("username");
+  const password = document.getElementById("password");
+  const loginError = document.getElementById("loginError");
+
+  if (username) username.value = "";
+  if (password) password.value = "";
+  if (loginError) loginError.style.display = "none";
+}
 
 // =======================
 // 🚀 INIT
 // =======================
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("App cargada correctamente ✅");
 
   const sidebar = document.getElementById("sidebar");
   const main = document.getElementById("main");
@@ -38,7 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (menuItems.length > 0) {
     menuItems.forEach(item => {
-      item.addEventListener("click", () => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+
         menuItems.forEach(i => i.classList.remove("active"));
         item.classList.add("active");
 
@@ -51,7 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
-
 });
 
 // =======================
@@ -61,7 +92,7 @@ function menuProductos() {
   getContent().innerHTML = `
     <h2>Gestión de Productos</h2>
 
-    <div style="display:flex; gap:10px; margin-bottom:20px;">
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
       <button onclick="loadProducto()">➕ Excursiones</button>
       <button onclick="editarProductos()">✏️ Editar Productos</button>
       <button onclick="menuHoteles()">🏨 Hoteles</button>
@@ -94,9 +125,9 @@ function guardarProducto(e) {
   e.preventDefault();
 
   const producto = {
-    nombre: document.getElementById("nombreExcursion").value,
-    adulto: parseFloat(document.getElementById("precioAdulto").value),
-    nino: parseFloat(document.getElementById("precioNino").value)
+    nombre: document.getElementById("nombreExcursion").value.trim(),
+    adulto: parseFloat(document.getElementById("precioAdulto").value) || 0,
+    nino: parseFloat(document.getElementById("precioNino").value) || 0
   };
 
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
@@ -108,9 +139,6 @@ function guardarProducto(e) {
   document.getElementById("productoForm").reset();
 }
 
-// =======================
-// ✏️ EDITAR PRODUCTOS
-// =======================
 function editarProductos() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
@@ -131,14 +159,36 @@ function editarProductos() {
         <input type="number" value="${p.adulto}" id="adulto-${index}">
         <input type="number" value="${p.nino}" id="nino-${index}">
         <br><br>
-        <button onclick="actualizarProducto(${index})">💾</button>
-        <button onclick="eliminarProducto(${index})">❌</button>
+        <button onclick="actualizarProducto(${index})">💾 Guardar</button>
+        <button onclick="eliminarProducto(${index})">❌ Eliminar</button>
       </div>
     `;
   });
 
   html += `<button onclick="menuProductos()">⬅ Volver</button>`;
   getContent().innerHTML = html;
+}
+
+function actualizarProducto(index) {
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  productos[index].nombre = document.getElementById(`nombre-${index}`).value.trim();
+  productos[index].adulto = parseFloat(document.getElementById(`adulto-${index}`).value) || 0;
+  productos[index].nino = parseFloat(document.getElementById(`nino-${index}`).value) || 0;
+
+  localStorage.setItem("productos", JSON.stringify(productos));
+  alert("Producto actualizado ✅");
+  editarProductos();
+}
+
+function eliminarProducto(index) {
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  if (confirm("¿Eliminar este producto?")) {
+    productos.splice(index, 1);
+    localStorage.setItem("productos", JSON.stringify(productos));
+    editarProductos();
+  }
 }
 
 // =======================
@@ -153,6 +203,60 @@ function menuHoteles() {
     <br><br>
     <button onclick="menuProductos()">⬅ Volver</button>
   `;
+}
+
+function crearHotel() {
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  let inputs = productos.map(p => {
+    let id = safeId(p.nombre);
+    return `
+      <label>${p.nombre}</label>
+      <input type="time" id="pickup_${id}">
+    `;
+  }).join("");
+
+  getContent().innerHTML = `
+    <h2>Nuevo Hotel</h2>
+
+    <form id="hotelForm">
+      <input type="text" id="nombreHotel" placeholder="Nombre del hotel" required>
+
+      <h4>Horarios por excursión</h4>
+      ${inputs}
+
+      <button type="submit">Guardar Hotel</button>
+      <button type="button" onclick="menuHoteles()">⬅ Volver</button>
+    </form>
+  `;
+
+  document.getElementById("hotelForm")
+    .addEventListener("submit", guardarHotel);
+}
+
+function guardarHotel(e) {
+  e.preventDefault();
+
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  let hotel = {
+    nombre: document.getElementById("nombreHotel").value.trim(),
+    pickups: {}
+  };
+
+  productos.forEach(p => {
+    let id = safeId(p.nombre);
+    hotel.pickups[p.nombre] =
+      document.getElementById(`pickup_${id}`).value || "";
+  });
+
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+  hoteles.push(hotel);
+
+  localStorage.setItem("hoteles", JSON.stringify(hoteles));
+
+  alert("Hotel guardado ✅");
+  menuHoteles();
 }
 
 function verHoteles() {
@@ -178,10 +282,78 @@ function verHoteles() {
     `;
   });
 
-  html += `<button onclick="menuHoteles()">⬅ Volver</button>`;
+  html += `<br><button onclick="menuHoteles()">⬅ Volver</button>`;
   getContent().innerHTML = html;
 }
 
+function editarHotel(index) {
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+  let hotel = hoteles[index];
+
+  let inputs = productos.map(p => {
+    let id = safeId(p.nombre);
+    let valor = hotel.pickups[p.nombre] || "";
+
+    return `
+      <label>${p.nombre}</label>
+      <input type="time" id="edit_pickup_${id}" value="${valor}">
+    `;
+  }).join("");
+
+  getContent().innerHTML = `
+    <h2>Editar Hotel</h2>
+
+    <form id="editHotelForm">
+      <input type="text" id="edit_nombreHotel" value="${hotel.nombre}" required>
+
+      <h4>Horarios por excursión</h4>
+      ${inputs}
+
+      <button type="submit">💾 Guardar Cambios</button>
+      <button type="button" onclick="verHoteles()">⬅ Volver</button>
+    </form>
+  `;
+
+  document.getElementById("editHotelForm")
+    .addEventListener("submit", function(e) {
+      e.preventDefault();
+      guardarEdicionHotel(index);
+    });
+}
+
+function guardarEdicionHotel(index) {
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+  let hotel = hoteles[index];
+
+  hotel.nombre = document.getElementById("edit_nombreHotel").value.trim();
+
+  productos.forEach(p => {
+    let id = safeId(p.nombre);
+    hotel.pickups[p.nombre] =
+      document.getElementById(`edit_pickup_${id}`).value || "";
+  });
+
+  localStorage.setItem("hoteles", JSON.stringify(hoteles));
+
+  alert("Hotel actualizado ✅");
+  verHoteles();
+}
+
+function eliminarHotel(index) {
+  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+
+  if (confirm("¿Eliminar hotel?")) {
+    hoteles.splice(index, 1);
+    localStorage.setItem("hoteles", JSON.stringify(hoteles));
+    verHoteles();
+  }
+}
+
+// =======================
+// 🧾 FORMULARIO RESERVA
+// =======================
 function loadForm() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
   let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
@@ -198,48 +370,37 @@ function loadForm() {
     <h2>Nueva Reserva</h2>
 
     <form id="reservaForm">
-      
-      <!-- 👤 CLIENTE -->
       <input type="text" id="cliente" placeholder="Nombre del cliente" required>
       <input type="tel" id="telefono" placeholder="Teléfono" required>
       <input type="email" id="email" placeholder="Email" required>
 
-      <!-- 🏨 HOTEL -->
       <select id="hotel" required>
         <option value="">Seleccionar hotel</option>
         ${opcionesHoteles}
       </select>
 
-      <!-- 🌴 EXCURSIÓN -->
       <select id="excursion" required>
         <option value="">Seleccionar excursión</option>
         ${opcionesExc}
       </select>
 
-      <!-- 👨‍👩‍👧 PASAJEROS -->
       <input type="number" id="adultos" placeholder="Adultos" min="1" required>
       <input type="number" id="ninos" placeholder="Niños" min="0">
 
-      <!-- ⏰ PICKUP -->
       <label>Pick Up Time</label>
       <input type="time" id="pickup" readonly>
 
-      <!-- 📅 FECHA -->
       <input type="date" id="fecha" required>
 
-      <!-- 💰 PRECIO -->
       <input type="number" id="precio" placeholder="Precio total" readonly>
 
-      <!-- 🔥 DESCUENTO -->
       <label>Descuento ($)</label>
       <input type="number" id="descuento" value="0" min="0">
 
       <button type="submit">Guardar Reserva</button>
-
     </form>
   `;
 
-  // 🔥 EVENTOS (CLAVE)
   document.getElementById("excursion").addEventListener("change", autoDatos);
   document.getElementById("hotel").addEventListener("change", autoDatos);
   document.getElementById("adultos").addEventListener("input", autoDatos);
@@ -250,10 +411,6 @@ function loadForm() {
     .addEventListener("submit", guardarReserva);
 }
 
-
-// =======================
-// ⚡ AUTO DATOS (FIX CLAVE)
-// =======================
 function autoDatos() {
   let productos = JSON.parse(localStorage.getItem("productos")) || [];
   let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
@@ -271,14 +428,42 @@ function autoDatos() {
     let total = (adultos * producto.adulto) + (ninos * producto.nino);
     total = Math.max(0, total - descuento);
     document.getElementById("precio").value = total;
+  } else {
+    document.getElementById("precio").value = "";
   }
 
   let hotel = hoteles.find(h => h.nombre === hotelNombre);
 
   if (hotel && hotel.pickups) {
-    document.getElementById("pickup").value =
-      hotel.pickups[excursion] || "";
+    document.getElementById("pickup").value = hotel.pickups[excursion] || "";
+  } else {
+    document.getElementById("pickup").value = "";
   }
+}
+
+function guardarReserva(e) {
+  e.preventDefault();
+
+  const reserva = {
+    cliente: document.getElementById("cliente").value.trim(),
+    telefono: document.getElementById("telefono").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    hotel: document.getElementById("hotel").value,
+    excursion: document.getElementById("excursion").value,
+    adultos: document.getElementById("adultos").value,
+    ninos: document.getElementById("ninos").value || 0,
+    pickup: document.getElementById("pickup").value,
+    fecha: document.getElementById("fecha").value,
+    precio: document.getElementById("precio").value,
+    descuento: document.getElementById("descuento").value || 0
+  };
+
+  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+  reservas.push(reserva);
+  localStorage.setItem("reservas", JSON.stringify(reservas));
+
+  alert("Reserva guardada ✅");
+  mostrarReservas();
 }
 
 // =======================
@@ -327,32 +512,30 @@ function mostrarReservas() {
   getContent().innerHTML = tabla;
 }
 
-// =======================
-// ❌ ELIMINAR RESERVA
-// =======================
 function eliminarReserva(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
 
   if (confirm("¿Seguro que quieres eliminar esta reserva?")) {
     reservas.splice(index, 1);
     localStorage.setItem("reservas", JSON.stringify(reservas));
-    mostrarReservas(); // refresca la tabla
+    mostrarReservas();
   }
 }
 
+// =======================
+// 📊 REPORTES
+// =======================
 function menuReportes() {
   getContent().innerHTML = `
     <h2>📊 Reportes</h2>
 
-    <div style="display:flex; gap:10px; margin-bottom:20px;">
-      <button onclick="reporteVentas()">💰 Ventas por Mes</button>
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+      <button onclick="reporteVentas()">💰 Ventas</button>
       <button onclick="verContactos()">👥 Contactos</button>
     </div>
   `;
 }
-// =======================
-// 🛍️📁 Reporte de ventas
-// =======================
+
 function reporteVentas() {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
 
@@ -366,35 +549,28 @@ function reporteVentas() {
   let totalGeneral = 0;
 
   reservas.forEach(r => {
-    let mes = r.fecha.slice(0, 7);     // YYYY-MM
-    let dia = r.fecha;                 // YYYY-MM-DD
+    let mes = r.fecha.slice(0, 7);
+    let dia = r.fecha;
     let precio = parseFloat(r.precio) || 0;
 
-    // Mes
     if (!porMes[mes]) porMes[mes] = 0;
     porMes[mes] += precio;
 
-    // Día
     if (!porDia[dia]) porDia[dia] = 0;
     porDia[dia] += precio;
 
-    // Total
     totalGeneral += precio;
   });
 
   let html = `<h2>📊 Reporte de Ventas</h2>`;
-
-  // 🔹 TOTAL GENERAL
   html += `<h3>💰 Total General: $${totalGeneral}</h3>`;
 
-  // 🔹 POR MES
   html += `<h4>📅 Ventas por Mes</h4><ul>`;
   for (let mes in porMes) {
     html += `<li>${mes} → $${porMes[mes]}</li>`;
   }
   html += `</ul>`;
 
-  // 🔹 POR DÍA
   html += `<h4>📆 Ventas por Día</h4><ul>`;
   for (let dia in porDia) {
     html += `<li>${dia} → $${porDia[dia]}</li>`;
@@ -405,9 +581,6 @@ function reporteVentas() {
 
   getContent().innerHTML = html;
 }
-// =======================
-//  📇 Ver contactos
-// =======================
 
 function verContactos() {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
@@ -457,7 +630,7 @@ function verVoucher(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
   let r = reservas[index];
 
- getContent().innerHTML = `
+  getContent().innerHTML = `
     <div class="voucher-container">
 
       <div style="text-align:center; margin-bottom:10px;">
@@ -516,11 +689,13 @@ function verVoucher(index) {
 }
 
 // =======================
-// 📧 Enviar voucher 
+// 📲 / 📧 ENVÍOS
 // =======================
 function enviarWhatsApp(index) {
   let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
   let r = reservas[index];
+
+  let telefono = (r.telefono || "").replace(/\D/g, "");
 
   let mensaje = `Hola ${r.cliente},
 Tu reserva está confirmada ✅
@@ -533,8 +708,7 @@ Total: $${r.precio}
 
 Punta Cana Going 🌴`;
 
-  let url = `https://wa.me/${r.telefono}?text=${encodeURIComponent(mensaje)}`;
-
+  let url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, "_blank");
 }
 
@@ -544,8 +718,7 @@ function enviarEmail(index) {
 
   let asunto = "Confirmación de Reserva - Punta Cana Going";
 
-  let cuerpo = `
-Hola ${r.cliente},
+  let cuerpo = `Hola ${r.cliente},
 
 Tu reserva está confirmada:
 
@@ -555,14 +728,15 @@ Fecha: ${r.fecha}
 Pickup: ${r.pickup}
 Total: $${r.precio}
 
-Gracias por elegir Punta Cana Going 🌴
-`;
+Gracias por elegir Punta Cana Going 🌴`;
 
   let mailto = `mailto:${r.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
-
   window.open(mailto);
 }
 
+// =======================
+// 🔄 RESTAURAR SESIÓN
+// =======================
 window.onload = function () {
   if (localStorage.getItem("session") === "active") {
     document.getElementById("loginScreen").style.display = "none";
@@ -572,8 +746,8 @@ window.onload = function () {
       <h1>Dashboard</h1>
       <p>Bienvenido a Punta Cana Going</p>
     `;
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("app").style.display = "none";
   }
 };
-
-
-
