@@ -28,16 +28,26 @@ if (
 // =======================
 // 🔐 LOGIN
 // =======================
-const USER = "pcg";
-const PASS = "josias8090";
-
-function login() {
+async function login() {
   const user = document.getElementById("username").value.trim();
   const pass = document.getElementById("password").value.trim();
   const loginError = document.getElementById("loginError");
 
-  if (user === USER && pass === PASS) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("usuarios")
+      .select("*")
+      .eq("username", user)
+      .eq("password", pass)
+      .single();
+
+    if (error || !data) {
+      if (loginError) loginError.style.display = "block";
+      return;
+    }
+
     localStorage.setItem("session", "active");
+    localStorage.setItem("currentUser", JSON.stringify(data));
 
     if (loginError) loginError.style.display = "none";
     document.getElementById("loginScreen").style.display = "none";
@@ -45,17 +55,17 @@ function login() {
 
     getContent().innerHTML = `
       <h1>Dashboard</h1>
-      <p>Bienvenido a Punta Cana Going</p>
+      <p>Bienvenido, ${data.username}</p>
     `;
-  } else {
+  } catch (err) {
+    console.error("Error en login:", err);
     if (loginError) loginError.style.display = "block";
   }
 }
-// =======================
-// 🔐 LOG OUT 
-// =======================
+
 function logout() {
   localStorage.removeItem("session");
+  localStorage.removeItem("currentUser");
 
   document.getElementById("app").style.display = "none";
   document.getElementById("loginScreen").style.display = "flex";
@@ -68,6 +78,24 @@ function logout() {
   if (password) password.value = "";
   if (loginError) loginError.style.display = "none";
 }
+
+window.onload = function () {
+  const session = localStorage.getItem("session");
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+
+  if (session === "active" && currentUser) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+
+    getContent().innerHTML = `
+      <h1>Dashboard</h1>
+      <p>Bienvenido, ${currentUser.username}</p>
+    `;
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("app").style.display = "none";
+  }
+};
 
 // =======================
 // 🚀 INIT
