@@ -76,14 +76,15 @@ body {
   height: 100vh;
   background: #020617;
   position: fixed;
-  left: -250px;
+  left: 0; /* ✅ ABIERTO POR DEFECTO */
   top: 0;
   transition: 0.3s;
   padding-top: 20px;
+  overflow-y: auto;
 }
 
 .sidebar.active {
-  left: 0;
+  left: -250px; /* ✅ ahora active lo oculta */
 }
 
 .logo {
@@ -117,14 +118,15 @@ body {
 /* MAIN */
 /* ========================= */
 .main {
-  margin-left: 0;
+  margin-left: 250px; /* ✅ contenido desplazado desde el inicio */
   padding: 20px;
-  width: 100%;
+  width: calc(100% - 250px);
   transition: 0.3s;
 }
 
 .main.shift {
-  margin-left: 250px;
+  margin-left: 0; /* ✅ cuando ocultes sidebar */
+  width: 100%;
 }
 
 /* ========================= */
@@ -136,6 +138,7 @@ body {
   border: none;
   color: white;
   cursor: pointer;
+  margin-bottom: 20px;
 }
 
 /* ========================= */
@@ -278,6 +281,11 @@ button:hover {
   #toggleBtn,
   .voucher-actions {
     display: none;
+  }
+
+  .main {
+    margin-left: 0;
+    width: 100%;
   }
 
   .voucher-container {
