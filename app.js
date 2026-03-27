@@ -1151,29 +1151,29 @@ function verVoucher(index) {
         <p class="precio"><strong>Total:</strong> $${r.precio}</p>
       </div>
 
-<div class="voucher-policies">
+      <hr>
 
-  <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
-  <p>
-  a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour.<br>
-  b) Se requiere certificado médico en caso de enfermedad.<br>
-  c) No se permiten cambios el mismo día del tour.<br>
-  d) No hay reembolso por no presentación (no show).<br>
-  e) Descuentos aplicados no son reembolsables.<br>
-  f) No cancelaciones para eventos especiales como Cirque du Soleil.
-  </p>
+      <div class="voucher-policies">
+        <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
+        <p>
+          a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour.<br>
+          b) Se requiere certificado médico en caso de enfermedad.<br>
+          c) No se permiten cambios el mismo día del tour.<br>
+          d) No hay reembolso por no presentación (no show).<br>
+          e) Descuentos aplicados no son reembolsables.<br>
+          f) No cancelaciones para eventos especiales como Cirque du Soleil.
+        </p>
 
-  <h4>CANCELLATION & REFUND POLICIES</h4>
-  <p>
-  a) Cancellation/refund is valid if requested 48 hours before the tour.<br>
-  b) Medical certificate required if applicable.<br>
-  c) No same-day changes allowed.<br>
-  d) No refund for no-show.<br>
-  e) Discounts are non-refundable.<br>
-  f) No cancellations for special events such as Cirque du Soleil.
-  </p>
-
-</div>
+        <h4>CANCELLATION & REFUND POLICIES</h4>
+        <p>
+          a) Cancellation/refund is valid if requested 48 hours before the tour.<br>
+          b) Medical certificate required if applicable.<br>
+          c) No same-day changes allowed.<br>
+          d) No refund for no-show.<br>
+          e) Discounts are non-refundable.<br>
+          f) No cancellations for special events such as Cirque du Soleil.
+        </p>
+      </div>
 
       <div class="voucher-actions">
         <button onclick="window.print()">🖨️ Imprimir</button>
@@ -1218,29 +1218,31 @@ async function verVoucherDesdeNube(id) {
           <p><strong>Fecha:</strong> ${r.fecha}</p>
           <p class="precio"><strong>Total:</strong> $${r.precio}</p>
         </div>
-<div class="voucher-policies">
 
-  <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
-  <p>
-  a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour.<br>
-  b) Se requiere certificado médico en caso de enfermedad.<br>
-  c) No se permiten cambios el mismo día del tour.<br>
-  d) No hay reembolso por no presentación (no show).<br>
-  e) Descuentos aplicados no son reembolsables.<br>
-  f) No cancelaciones para eventos especiales como Cirque du Soleil.
-  </p>
+        <hr>
 
-  <h4>CANCELLATION & REFUND POLICIES</h4>
-  <p>
-  a) Cancellation/refund is valid if requested 48 hours before the tour.<br>
-  b) Medical certificate required if applicable.<br>
-  c) No same-day changes allowed.<br>
-  d) No refund for no-show.<br>
-  e) Discounts are non-refundable.<br>
-  f) No cancellations for special events such as Cirque du Soleil.
-  </p>
+        <div class="voucher-policies">
+          <h4>POLÍTICAS DE CANCELACIÓN Y REEMBOLSO</h4>
+          <p>
+            a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour.<br>
+            b) Se requiere certificado médico en caso de enfermedad.<br>
+            c) No se permiten cambios el mismo día del tour.<br>
+            d) No hay reembolso por no presentación (no show).<br>
+            e) Descuentos aplicados no son reembolsables.<br>
+            f) No cancelaciones para eventos especiales como Cirque du Soleil.
+          </p>
 
-</div>
+          <h4>CANCELLATION & REFUND POLICIES</h4>
+          <p>
+            a) Cancellation/refund is valid if requested 48 hours before the tour.<br>
+            b) Medical certificate required if applicable.<br>
+            c) No same-day changes allowed.<br>
+            d) No refund for no-show.<br>
+            e) Discounts are non-refundable.<br>
+            f) No cancellations for special events such as Cirque du Soleil.
+          </p>
+        </div>
+
         <div class="voucher-actions">
           <button onclick="window.print()">🖨️ Imprimir</button>
           <button onclick="enviarWhatsAppDesdeNube(${r.id})">📲 WhatsApp</button>
@@ -1253,7 +1255,6 @@ async function verVoucherDesdeNube(id) {
     alert("No se pudo cargar el voucher desde la nube ⚠️");
   }
 }
-
 // =======================
 // 📲 / 📧 ENVÍOS
 // =======================
