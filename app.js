@@ -126,9 +126,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const text = item.textContent.trim();
 
         if (text === "Nueva Reserva") loadForm();
-        else if (text === "Reportes") menuReportes();
-        else if (text === "Reservas") mostrarReservas();
-        else if (text === "Nuevo Producto") menuProductos();
+else if (text === "Reportes") menuReportes();
+else if (text === "Reservas") mostrarReservas();
+else if (text === "Nuevo Producto") menuProductos();
+else if (text === "Usuarios") menuUsuarios();
       });
     });
   }
