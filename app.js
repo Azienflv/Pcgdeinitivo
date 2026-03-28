@@ -1534,6 +1534,106 @@ async function eliminarUsuarioDesdeNube(id) {
 }
 
 // =======================
+// 🖼️ GENERAR IMAGEN DESDE VOUCHER
+// =======================
+async function generarImagenVoucher(element) {
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: "#ffffff"
+  });
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      resolve(blob);
+    }, "image/png");
+  });
+}
+
+// =======================
+// 🖼️ COMPARTIR IMAGEN LOCAL
+// =======================
+async function compartirImagenLocal(index) {
+  try {
+    const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    const r = reservas[index];
+
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) {
+      alert("No se encontró el voucher para compartir.");
+      return;
+    }
+
+    const blob = await generarImagenVoucher(voucher);
+    const nombre = (r?.cliente || "voucher").replace(/\s+/g, "_");
+    const file = new File([blob], `Voucher_${nombre}.png`, { type: "image/png" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: "Voucher Punta Cana Going",
+        text: `Voucher de ${r?.cliente || "cliente"}`,
+        files: [file]
+      });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Voucher_${nombre}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("Tu navegador no permite compartir imágenes directamente. Se descargó la imagen.");
+    }
+  } catch (err) {
+    console.error("Error compartiendo imagen local:", err);
+    alert("No se pudo compartir la imagen ⚠️");
+  }
+}
+
+// =======================
+// 🖼️ COMPARTIR IMAGEN DESDE NUBE
+// =======================
+async function compartirImagenDesdeNube(id) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("reservas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) {
+      alert("No se encontró el voucher para compartir.");
+      return;
+    }
+
+    const blob = await generarImagenVoucher(voucher);
+    const nombre = (data?.cliente || "voucher").replace(/\s+/g, "_");
+    const file = new File([blob], `Voucher_${nombre}.png`, { type: "image/png" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: "Voucher Punta Cana Going",
+        text: `Voucher de ${data?.cliente || "cliente"}`,
+        files: [file]
+      });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Voucher_${nombre}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("Tu navegador no permite compartir imágenes directamente. Se descargó la imagen.");
+    }
+  } catch (err) {
+    console.error("Error compartiendo imagen desde nube:", err);
+    alert("No se pudo compartir la imagen ⚠️");
+  }
+}
+
+// =======================
 // 🔄 RESTAURAR SESIÓN
 // =======================
 window.onload = function () {
