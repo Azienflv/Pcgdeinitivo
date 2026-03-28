@@ -1199,6 +1199,7 @@ function verVoucher(index) {
   <button onclick="enviarEmail(${index})">✉️ Email</button>
   <button onclick="descargarPDFLocal(${index})">📄 Descargar PDF</button>
   <button onclick="compartirPDFLocal(${index})">📲 Compartir PDF</button>
+  <button onclick="compartirImagenLocal(${index})">🖼️ Compartir Imagen</button>
 </div>
     </div>
   `;
@@ -1282,11 +1283,12 @@ async function verVoucherDesdeNube(id) {
           <p>Thank you for choosing <strong>Punta Cana Going Tours</strong></p>
         </div>
 
-        <div class="voucher-actions">
+ <div class="voucher-actions">
   <button onclick="window.print()">🖨️ Imprimir</button>
   <button onclick="enviarEmailDesdeNube(${r.id})">✉️ Email</button>
   <button onclick="descargarPDFDesdeNube(${r.id})">📄 Descargar PDF</button>
   <button onclick="compartirPDFDesdeNube(${r.id})">📲 Compartir PDF</button>
+  <button onclick="compartirImagenDesdeNube(${r.id})">🖼️ Compartir Imagen</button>
 </div>
       </div>
     `;
