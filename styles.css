@@ -97,13 +97,10 @@ body {
   left: 0;
   top: 0;
   padding: 20px 15px;
-  transition: 0.3s;
+  transition: left 0.3s ease;
   overflow-y: auto;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.sidebar.active {
-  left: -260px;
+  z-index: 1000;
 }
 
 .logo {
@@ -165,7 +162,7 @@ body {
   margin-left: 260px;
   padding: 20px;
   width: calc(100% - 260px);
-  transition: 0.3s;
+  transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
 .main.shift {
@@ -220,41 +217,6 @@ button:hover {
   position: relative;
   background: #ffffff;
   color: #000;
-  max-width: 760px;
-  margin: auto;
-  padding: 28px;
-  border-radius: 18px;
-  font-family: Arial, sans-serif;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-}
-
-.voucher-container::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 500px;
-  height: 500px;
-  background: url("assets/logo.png") no-repeat center;
-  background-size: contain;
-  transform: translate(-50%, -50%) rotate(-15deg);
-  opacity: 0.05;
-  pointer-events: none;
-}
-
-.voucher-container * {
-  position: relative;
-  z-index: 1;
-}
-
-/* ========================= */
-/* 🎟️ PREMIUM VOUCHER UI COMPACTO */
-/* ========================= */
-.voucher-container {
-  position: relative;
-  background: #ffffff;
-  color: #000;
   max-width: 720px;
   margin: auto;
   padding: 18px;
@@ -278,6 +240,14 @@ button:hover {
   pointer-events: none;
 }
 
+.voucher-container * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================= */
+/* 🎟️ PREMIUM VOUCHER UI COMPACTO */
+/* ========================= */
 .premium-voucher {
   background: #ffffff;
   color: #111827;
@@ -438,7 +408,48 @@ button:hover {
   background: #0b2e5d;
 }
 
-@media (max-width: 700px) {
+/* ========================= */
+/* OVERLAY MÓVIL */
+/* ========================= */
+.mobile-overlay {
+  display: none;
+}
+
+/* ========================= */
+/* RESPONSIVE */
+/* ========================= */
+@media (max-width: 768px) {
+  .sidebar {
+    left: -260px;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .main {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+  }
+
+  .main.shift {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .mobile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 999;
+  }
+
+  .mobile-overlay.active {
+    display: block;
+  }
+
   .premium-voucher {
     padding: 14px;
   }
@@ -459,12 +470,30 @@ button:hover {
   .voucher-status {
     align-self: flex-start;
   }
+
+  .login-box {
+    width: calc(100% - 30px);
+    max-width: 340px;
+  }
+
+  .login-logo,
+  .sidebar-logo {
+    width: 160px;
+  }
 }
 
+/* ========================= */
+/* PRINT */
+/* ========================= */
 @media print {
+  body {
+    background: white;
+  }
+
   .sidebar,
   #toggleBtn,
-  .voucher-actions {
+  .voucher-actions,
+  .mobile-overlay {
     display: none !important;
   }
 
@@ -518,104 +547,6 @@ button:hover {
 }
 
 /* ========================= */
-/* RESPONSIVE */
-/* ========================= */
-@media (max-width: 700px) {
-  .main {
-    margin-left: 0;
-    width: 100%;
-    padding: 15px;
-  }
-
-  .sidebar {
-    left: -260px;
-  }
-
-  .sidebar.active {
-    left: 0;
-  }
-
-  .premium-voucher {
-    padding: 18px;
-  }
-
-  .voucher-logo {
-    width: 180px;
-  }
-
-  .voucher-topbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .voucher-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .voucher-status {
-    align-self: flex-start;
-  }
-
-  .login-box {
-    width: calc(100% - 30px);
-    max-width: 340px;
-  }
-
-  .login-logo,
-  .sidebar-logo {
-    width: 160px;
-  }
-}
-
-/* ========================= */
-/* PRINT */
-/* ========================= */
-@media print {
-  body {
-    background: white;
-  }
-
-  .sidebar,
-  #toggleBtn,
-  .voucher-actions {
-    display: none !important;
-  }
-
-  .main {
-    margin-left: 0;
-    width: 100%;
-    padding: 0;
-  }
-
-  .voucher-container,
-  .premium-voucher {
-    box-shadow: none;
-    margin: 0;
-    width: 100%;
-    max-width: 100%;
-    padding: 16px;
-    border-top: 6px solid #0f3b78;
-  }
-
-  .voucher-container::before {
-    opacity: 0.04;
-  }
-
-  .voucher-card {
-    break-inside: avoid;
-  }
-
-  .voucher-topbar {
-    background: #f8fafc !important;
-  }
-
-  .voucher-policies {
-    font-size: 10px;
-    line-height: 1.35;
-  }
-}
-
-/* ========================= */
 /* ANIMACIÓN LOGIN */
 /* ========================= */
 @keyframes fadeIn {
@@ -627,41 +558,4 @@ button:hover {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* ========================= */
-/* 📱 FIX MOBILE SIDEBAR */
-/* ========================= */
-@media (max-width: 768px) {
-
-  .sidebar {
-    left: -250px; /* oculto por defecto */
-    z-index: 999;
-  }
-
-  .sidebar.active {
-    left: 0; /* se abre */
-  }
-
-  .main {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .main.shift {
-    margin-left: 0;
-  }
-
-}
-
-.sidebar::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: none;
-}
-
-.sidebar.active::after {
-  display: block;
 }
