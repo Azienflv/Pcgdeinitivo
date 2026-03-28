@@ -628,3 +628,28 @@ button:hover {
     transform: translateY(0);
   }
 }
+
+/* ========================= */
+/* 📱 FIX MOBILE SIDEBAR */
+/* ========================= */
+@media (max-width: 768px) {
+
+  .sidebar {
+    left: -250px; /* oculto por defecto */
+    z-index: 999;
+  }
+
+  .sidebar.active {
+    left: 0; /* se abre */
+  }
+
+  .main {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .main.shift {
+    margin-left: 0;
+  }
+
+}
