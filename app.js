@@ -1562,3 +1562,178 @@ if ("serviceWorker" in navigator) {
       .catch(error => console.log("Error registrando Service Worker ❌", error));
   });
 }
+
+// =======================
+// 📄 GENERAR PDF DESDE ELEMENTO
+// =======================
+async function generarPDFFromElement(element, fileName = "voucher-pcg.pdf") {
+  const { jsPDF } = window.jspdf;
+
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: "#ffffff"
+  });
+
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+
+  const imgWidth = pageWidth - 10;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+  let position = 5;
+
+  pdf.addImage(imgData, "PNG", 5, position, imgWidth, imgHeight);
+  heightLeft -= (pageHeight - 10);
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight + 5;
+    pdf.addPage();
+    pdf.addImage(imgData, "PNG", 5, position, imgWidth, imgHeight);
+    heightLeft -= (pageHeight - 10);
+  }
+
+  return {
+    pdf,
+    blob: pdf.output("blob"),
+    fileName
+  };
+}
+
+// =======================
+// 📄 DESCARGAR PDF LOCAL
+// =======================
+async function descargarPDFLocal(index) {
+  try {
+    const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    const r = reservas[index];
+
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) {
+      alert("No se encontró el voucher para exportar.");
+      return;
+    }
+
+    const nombre = (r?.cliente || "voucher").replace(/\s+/g, "_");
+    const { pdf } = await generarPDFFromElement(voucher, `Voucher_${nombre}.pdf`);
+    pdf.save(`Voucher_${nombre}.pdf`);
+  } catch (err) {
+    console.error("Error descargando PDF local:", err);
+    alert("No se pudo generar el PDF ⚠️");
+  }
+}
+
+// =======================
+// 📄 COMPARTIR PDF LOCAL
+// =======================
+async function compartirPDFLocal(index) {
+  try {
+    const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    const r = reservas[index];
+
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) {
+      alert("No se encontró el voucher para compartir.");
+      return;
+    }
+
+    const nombre = (r?.cliente || "voucher").replace(/\s+/g, "_");
+    const { blob } = await generarPDFFromElement(voucher, `Voucher_${nombre}.pdf`);
+    const file = new File([blob], `Voucher_${nombre}.pdf`, { type: "application/pdf" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: "Voucher Punta Cana Going",
+        text: `Voucher de ${r?.cliente || "cliente"}`,
+        files: [file]
+      });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Voucher_${nombre}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("Tu navegador no permite compartir archivos directamente. Se descargó el PDF.");
+    }
+  } catch (err) {
+    console.error("Error compartiendo PDF local:", err);
+    alert("No se pudo compartir el PDF ⚠️");
+  }
+}
+
+// =======================
+// 📄 DESCARGAR PDF DESDE NUBE
+// =======================
+async function descargarPDFDesdeNube(id) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("reservas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) {
+      alert("No se encontró el voucher para exportar.");
+      return;
+    }
+
+    const nombre = (data?.cliente || "voucher").replace(/\s+/g, "_");
+    const { pdf } = await generarPDFFromElement(voucher, `Voucher_${nombre}.pdf`);
+    pdf.save(`Voucher_${nombre}.pdf`);
+  } catch (err) {
+    console.error("Error descargando PDF desde nube:", err);
+    alert("No se pudo generar el PDF ⚠️");
+  }
+}
+
+// =======================
+// 📄 COMPARTIR PDF DESDE NUBE
+// =======================
+async function compartirPDFDesdeNube(id) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("reservas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) {
+      alert("No se encontró el voucher para compartir.");
+      return;
+    }
+
+    const nombre = (data?.cliente || "voucher").replace(/\s+/g, "_");
+    const { blob } = await generarPDFFromElement(voucher, `Voucher_${nombre}.pdf`);
+    const file = new File([blob], `Voucher_${nombre}.pdf`, { type: "application/pdf" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: "Voucher Punta Cana Going",
+        text: `Voucher de ${data?.cliente || "cliente"}`,
+        files: [file]
+      });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Voucher_${nombre}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("Tu navegador no permite compartir archivos directamente. Se descargó el PDF.");
+    }
+  } catch (err) {
+    console.error("Error compartiendo PDF desde nube:", err);
+    alert("No se pudo compartir el PDF ⚠️");
+  }
+}
