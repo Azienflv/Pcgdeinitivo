@@ -101,7 +101,11 @@ document.addEventListener("DOMContentLoaded", () => {
     menuItems.forEach(item => {
       item.addEventListener("click", (e) => {
         e.preventDefault();
-
+        
+// 🔥 Cerrar menú en móvil
+if (window.innerWidth <= 768) {
+  sidebar.classList.remove("active");
+}
         menuItems.forEach(i => i.classList.remove("active"));
         item.classList.add("active");
 
