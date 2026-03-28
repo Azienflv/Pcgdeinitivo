@@ -93,7 +93,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (toggleBtn && sidebar && main) {
     toggleBtn.addEventListener("click", () => {
       sidebar.classList.toggle("active");
-      main.classList.toggle("shift");
+
+      // Solo mover el main en escritorio
+      if (window.innerWidth > 768) {
+        main.classList.toggle("shift");
+      }
     });
   }
 
@@ -101,11 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
     menuItems.forEach(item => {
       item.addEventListener("click", (e) => {
         e.preventDefault();
-        
-// 🔥 Cerrar menú en móvil
-if (window.innerWidth <= 768) {
-  sidebar.classList.remove("active");
-}
+
         menuItems.forEach(i => i.classList.remove("active"));
         item.classList.add("active");
 
@@ -116,9 +116,23 @@ if (window.innerWidth <= 768) {
         else if (text === "Reservas") mostrarReservas();
         else if (text === "Nuevo Producto") menuProductos();
         else if (text === "Usuarios") menuUsuarios();
+
+        // Cerrar menú automáticamente en móvil
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove("active");
+          main.classList.remove("shift");
+        }
       });
     });
   }
+
+  // Ajustar al cambiar tamaño de pantalla
+  window.addEventListener("resize", () => {
+    if (window.innerWidth <= 768) {
+      main.classList.remove("shift");
+      sidebar.classList.remove("active");
+    }
+  });
 });
 
 // =======================
