@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Punta Cana Going Dashboard</title>
+
   <link rel="stylesheet" href="styles.css">
 
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f172a">
 
+  <!-- iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PCG Tours">
@@ -17,9 +20,12 @@
 </head>
 <body>
 
-  <!-- LOGIN -->
+  <!-- ========================= -->
+  <!-- 🔐 LOGIN -->
+  <!-- ========================= -->
   <div id="loginScreen" class="login-screen">
     <div class="login-box">
+
       <img src="assets/logo.png" alt="Punta Cana Going Tours" class="login-logo">
 
       <h2>Acceso Punta Cana Going</h2>
@@ -33,14 +39,19 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js"></script>
- 
-  <!-- APP -->
+  <!-- ========================= -->
+  <!-- 📱 OVERLAY MÓVIL -->
+  <!-- ========================= -->
+  <div id="mobileOverlay" class="mobile-overlay"></div>
+
+  <!-- ========================= -->
+  <!-- 🚀 APP -->
+  <!-- ========================= -->
   <div id="app" style="display:none;">
+
+    <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
+
       <div class="logo">
         <img src="assets/logo.png" alt="Punta Cana Going Tours" class="sidebar-logo">
       </div>
@@ -54,17 +65,33 @@
       <button onclick="logout()">Cerrar sesión</button>
     </div>
 
+    <!-- MAIN -->
     <div class="main" id="main">
+
       <button id="toggleBtn">☰</button>
 
       <div id="content">
         <h1>Dashboard</h1>
         <p>Bienvenido a Punta Cana Going</p>
       </div>
+
     </div>
+
   </div>
 
+  <!-- ========================= -->
+  <!-- 📦 LIBRERÍAS -->
+  <!-- ========================= -->
+
+  <!-- PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- APP -->
   <script src="app.js"></script>
+
 </body>
 </html>
