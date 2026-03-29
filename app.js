@@ -507,12 +507,22 @@ async function editarHotel(id) {
     const productos = await fetchProductos();
 
     let inputs = productos.map(p => {
-      const pid = safeId(p.nombre);
-      const valor = hotel.pickups?.[p.nombre] || "";
+      let pid = safeId(p.nombre);
+
+      let horariosGuardados = hotel.pickups?.[p.nombre] || [];
+
+      if (!Array.isArray(horariosGuardados)) {
+        horariosGuardados = horariosGuardados ? [horariosGuardados] : [];
+      }
 
       return `
-        <label>${p.nombre}</label>
-        <input type="time" id="edit_pickup_${pid}" value="${valor}">
+        <div style="margin-bottom:16px; padding:10px; border:1px solid #334155; border-radius:8px;">
+          <label style="display:block; margin-bottom:8px;"><strong>${p.nombre}</strong></label>
+
+          <input type="time" id="edit_pickup1_${pid}" value="${horariosGuardados[0] || ""}">
+          <input type="time" id="edit_pickup2_${pid}" value="${horariosGuardados[1] || ""}">
+          <input type="time" id="edit_pickup3_${pid}" value="${horariosGuardados[2] || ""}">
+        </div>
       `;
     }).join("");
 
