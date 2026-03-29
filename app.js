@@ -436,8 +436,15 @@ async function guardarHotel(e) {
     };
 
     productos.forEach(p => {
-      const id = safeId(p.nombre);
-      hotel.pickups[p.nombre] = document.getElementById(`pickup_${id}`).value || "";
+      let id = safeId(p.nombre);
+
+      let horarios = [
+        document.getElementById(`pickup1_${id}`).value,
+        document.getElementById(`pickup2_${id}`).value,
+        document.getElementById(`pickup3_${id}`).value
+      ].filter(h => h && h.trim() !== "");
+
+      hotel.pickups[p.nombre] = horarios;
     });
 
     const { error } = await supabaseClient
@@ -448,6 +455,7 @@ async function guardarHotel(e) {
 
     alert("Hotel guardado ✅");
     menuHoteles();
+
   } catch (err) {
     console.error("Error guardando hotel:", err);
     alert("No se pudo guardar el hotel ⚠️");
