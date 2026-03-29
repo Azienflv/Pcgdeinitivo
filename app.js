@@ -575,63 +575,57 @@ async function eliminarHotel(id) {
 // =======================
 async function loadForm() {
   try {
-    const productos = await fetchProductos();
-    const hoteles = await fetchHoteles();
 
-    let opcionesExc = productos.map(p =>
+    let productos = [];
+
+    // 🔥 SOLO NUBE (sin localStorage)
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from("productos")
+        .select("*");
+
+      if (error) throw error;
+
+      productos = data || [];
+    }
+
+    // 👉 Si no hay productos, evitar error
+    if (!productos.length) {
+      getContent().innerHTML = `
+        <h2>⚠️ No hay productos creados</h2>
+        <p>Debes crear al menos un producto primero.</p>
+      `;
+      return;
+    }
+
+    // 👉 Construir opciones
+    let opciones = productos.map(p => 
       `<option value="${p.nombre}">${p.nombre}</option>`
-    ).join("");
-
-    let opcionesHoteles = hoteles.map(h =>
-      `<option value="${h.nombre}">${h.nombre}</option>`
     ).join("");
 
     getContent().innerHTML = `
       <h2>Nueva Reserva</h2>
 
-      <form id="reservaForm">
-        <input type="text" id="cliente" placeholder="Nombre del cliente" required>
-        <input type="tel" id="telefono" placeholder="Teléfono" required>
-        <input type="email" id="email" placeholder="Email" required>
+      <input placeholder="Cliente" id="cliente">
+      <input placeholder="Hotel" id="hotel">
 
-        <select id="hotel" required>
-          <option value="">Seleccionar hotel</option>
-          ${opcionesHoteles}
-        </select>
+      <select id="excursion">
+        ${opciones}
+      </select>
 
-        <select id="excursion" required>
-          <option value="">Seleccionar excursión</option>
-          ${opcionesExc}
-        </select>
+      <input type="number" placeholder="Adultos" id="adultos">
+      <input type="number" placeholder="Niños" id="ninos">
 
-        <input type="number" id="adultos" placeholder="Adultos" min="1" required>
-        <input type="number" id="ninos" placeholder="Niños" min="0">
+      <input type="date" id="fecha">
+      <input type="time" id="pickup">
 
-        <label>Pick Up Time</label>
-        <input type="time" id="pickup" readonly>
+      <input type="number" placeholder="Precio total" id="precio">
 
-        <input type="date" id="fecha" required>
-
-        <input type="number" id="precio" placeholder="Precio total" readonly>
-
-        <label>Descuento ($)</label>
-        <input type="number" id="descuento" value="0" min="0">
-
-        <button type="submit">Guardar Reserva</button>
-      </form>
+      <button onclick="guardarReserva()">Guardar</button>
     `;
 
-    document.getElementById("excursion").addEventListener("change", autoDatos);
-    document.getElementById("hotel").addEventListener("change", autoDatos);
-    document.getElementById("adultos").addEventListener("input", autoDatos);
-    document.getElementById("ninos").addEventListener("input", autoDatos);
-    document.getElementById("descuento").addEventListener("input", autoDatos);
-
-    document.getElementById("reservaForm")
-      .addEventListener("submit", guardarReserva);
-
   } catch (err) {
-    console.error("Error cargando formulario:", err);
+    console.error("Error en loadForm:", err);
     alert("No se pudo cargar el formulario ⚠️");
   }
 }
