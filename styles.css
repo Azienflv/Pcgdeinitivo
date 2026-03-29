@@ -104,15 +104,43 @@ body {
 }
 
 .logo {
+  position: relative;
   text-align: center;
   margin-bottom: 25px;
+  padding: 18px 10px;
+  border-radius: 14px;
+
+  background: linear-gradient(145deg, rgba(15, 59, 120, 0.25), rgba(14, 165, 198, 0.15));
+  backdrop-filter: blur(6px);
+
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: radial-gradient(circle at top, rgba(14,165,198,0.25), transparent 70%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.logo::after {
+  content: "Punta Cana Going Tours";
+  display: block;
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin-top: 4px;
+  color: #94a3b8;
 }
 
 .sidebar-logo {
-  width: 180px;
+  width: 150px;
   display: block;
-  margin: 0 auto 10px;
+  margin: 0 auto 6px;
   object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4));
 }
 
 /* ========================= */
@@ -671,4 +699,10 @@ button:hover {
 
 .export-mode .voucher-actions {
   display: none !important;
+}
+
+.logo:hover {
+  transform: translateY(-2px);
+  transition: 0.3s;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
