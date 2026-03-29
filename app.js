@@ -281,13 +281,17 @@ async function guardarProducto(e) {
       .from("productos")
       .insert([producto]);
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase error productos:", error);
+      throw error;
+    }
 
     alert("Excursión guardada en la nube ✅");
     document.getElementById("productoForm").reset();
+
   } catch (err) {
     console.error("Error guardando producto:", err);
-    alert("No se pudo guardar el producto ⚠️");
+    alert("No se pudo guardar el producto: " + (err.message || "Error desconocido") + " ⚠️");
   }
 }
 
