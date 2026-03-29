@@ -807,6 +807,172 @@ async function mostrarReservas() {
   }
 }
 
+// =======================
+// ✏️ EDITAR RESERVA
+// =======================
+async function editarReserva(id) {
+  try {
+    const reserva = await fetchReservaById(id);
+    const productos = await fetchProductos();
+    const hoteles = await fetchHoteles();
+
+    let opcionesExc = productos.map(p =>
+      `<option value="${p.nombre}" ${p.nombre === reserva.excursion ? "selected" : ""}>${p.nombre}</option>`
+    ).join("");
+
+    let opcionesHoteles = hoteles.map(h =>
+      `<option value="${h.nombre}" ${h.nombre === reserva.hotel ? "selected" : ""}>${h.nombre}</option>`
+    ).join("");
+
+    getContent().innerHTML = `
+      <h2>Editar Reserva</h2>
+
+      <form id="editReservaForm">
+        <input type="text" id="edit_cliente" placeholder="Nombre del cliente" value="${reserva.cliente || ""}" required>
+        <input type="tel" id="edit_telefono" placeholder="Teléfono" value="${reserva.telefono || ""}" required>
+        <input type="email" id="edit_email" placeholder="Email" value="${reserva.email || ""}" required>
+
+        <select id="edit_hotel" required>
+          <option value="">Seleccionar hotel</option>
+          ${opcionesHoteles}
+        </select>
+
+        <select id="edit_excursion" required>
+          <option value="">Seleccionar excursión</option>
+          ${opcionesExc}
+        </select>
+
+        <input type="number" id="edit_adultos" placeholder="Adultos" min="1" value="${reserva.adultos || 1}" required>
+        <input type="number" id="edit_ninos" placeholder="Niños" min="0" value="${reserva.ninos || 0}">
+
+        <label>Pick Up Time</label>
+        <select id="edit_pickup" required>
+          <option value="">Seleccionar pickup</option>
+        </select>
+
+        <input type="date" id="edit_fecha" value="${reserva.fecha || ""}" required>
+
+        <input type="number" id="edit_precio" placeholder="Precio total" value="${reserva.precio || 0}" readonly>
+
+        <label>Descuento ($)</label>
+        <input type="number" id="edit_descuento" value="${reserva.descuento || 0}" min="0">
+
+        <button type="submit">💾 Guardar Cambios</button>
+        <button type="button" onclick="mostrarReservas()">⬅ Volver</button>
+      </form>
+    `;
+
+    document.getElementById("edit_excursion").addEventListener("change", () => autoDatosEdicion(reserva.pickup));
+    document.getElementById("edit_hotel").addEventListener("change", () => autoDatosEdicion(reserva.pickup));
+    document.getElementById("edit_adultos").addEventListener("input", () => autoDatosEdicion(reserva.pickup));
+    document.getElementById("edit_ninos").addEventListener("input", () => autoDatosEdicion(reserva.pickup));
+    document.getElementById("edit_descuento").addEventListener("input", () => autoDatosEdicion(reserva.pickup));
+
+    await autoDatosEdicion(reserva.pickup);
+
+    document.getElementById("editReservaForm")
+      .addEventListener("submit", function(e) {
+        e.preventDefault();
+        guardarEdicionReserva(id);
+      });
+
+  } catch (err) {
+    console.error("Error cargando reserva para editar:", err);
+    alert("No se pudo cargar la reserva ⚠️");
+  }
+}
+
+// =======================
+// ⚡ AUTO DATOS EDICIÓN
+// =======================
+async function autoDatosEdicion(pickupActual = "") {
+  try {
+    const productos = await fetchProductos();
+    const hoteles = await fetchHoteles();
+
+    const excursion = document.getElementById("edit_excursion").value;
+    const hotelNombre = document.getElementById("edit_hotel").value;
+
+    const adultos = parseInt(document.getElementById("edit_adultos").value) || 0;
+    const ninos = parseInt(document.getElementById("edit_ninos").value) || 0;
+    const descuento = parseFloat(document.getElementById("edit_descuento").value) || 0;
+
+    const producto = productos.find(p => p.nombre === excursion);
+
+    if (producto) {
+      let total = (adultos * producto.adulto) + (ninos * producto.nino);
+      total = Math.max(0, total - descuento);
+      document.getElementById("edit_precio").value = total;
+    } else {
+      document.getElementById("edit_precio").value = "";
+    }
+
+    const pickupSelect = document.getElementById("edit_pickup");
+    pickupSelect.innerHTML = `<option value="">Seleccionar pickup</option>`;
+
+    const hotel = hoteles.find(h => h.nombre === hotelNombre);
+
+    if (hotel && hotel.pickups && hotel.pickups[excursion]) {
+      let horarios = hotel.pickups[excursion];
+
+      if (!Array.isArray(horarios)) {
+        horarios = horarios ? [horarios] : [];
+      }
+
+      horarios = horarios.filter(h => h && h.trim() !== "");
+
+      horarios.forEach((hora, index) => {
+        pickupSelect.innerHTML += `<option value="${hora}">Pickup ${index + 1} - ${hora}</option>`;
+      });
+
+      // Si existe el pickup actual, lo deja seleccionado
+      if (pickupActual && horarios.includes(pickupActual)) {
+        pickupSelect.value = pickupActual;
+      } else if (horarios.length === 1) {
+        pickupSelect.value = horarios[0];
+      }
+    }
+
+  } catch (err) {
+    console.error("Error recalculando edición:", err);
+  }
+}
+
+// =======================
+// 💾 GUARDAR EDICIÓN RESERVA
+// =======================
+async function guardarEdicionReserva(id) {
+  try {
+    const reservaActualizada = {
+      cliente: document.getElementById("edit_cliente").value.trim(),
+      telefono: document.getElementById("edit_telefono").value.trim(),
+      email: document.getElementById("edit_email").value.trim(),
+      hotel: document.getElementById("edit_hotel").value,
+      excursion: document.getElementById("edit_excursion").value,
+      adultos: parseInt(document.getElementById("edit_adultos").value) || 1,
+      ninos: parseInt(document.getElementById("edit_ninos").value) || 0,
+      pickup: document.getElementById("edit_pickup").value,
+      fecha: document.getElementById("edit_fecha").value,
+      precio: parseFloat(document.getElementById("edit_precio").value) || 0,
+      descuento: parseFloat(document.getElementById("edit_descuento").value) || 0
+    };
+
+    const { error } = await supabaseClient
+      .from("reservas")
+      .update(reservaActualizada)
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Reserva actualizada ✅");
+    mostrarReservas();
+
+  } catch (err) {
+    console.error("Error actualizando reserva:", err);
+    alert("No se pudo actualizar la reserva ⚠️");
+  }
+}
+
 async function eliminarReserva(id) {
   if (!confirm("¿Seguro que quieres eliminar esta reserva?")) return;
 
