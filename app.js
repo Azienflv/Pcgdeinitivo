@@ -1278,14 +1278,3 @@ if ("serviceWorker" in navigator) {
       .catch(error => console.log("Error registrando Service Worker ❌", error));
   });
 }
-
-function limpiarDatosLocalesViejos() {
-  localStorage.removeItem("reservas");
-  localStorage.removeItem("productos");
-  localStorage.removeItem("hoteles");
-
-  alert("Datos locales eliminados ✅");
-}
-
-<button onclick="limpiarDatosLocalesViejos()">🧹 Limpiar datos</button>
-
