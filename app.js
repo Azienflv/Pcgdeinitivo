@@ -1070,38 +1070,59 @@ Gracias por elegir Punta Cana Going 🌴`;
 async function generarPDFFromElement(element) {
   const { jsPDF } = window.jspdf;
 
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff"
-  });
+  element.classList.add("export-mode");
 
-  const imgData = canvas.toDataURL("image/png");
+  const actions = element.querySelector(".voucher-actions");
+  const oldDisplay = actions ? actions.style.display : "";
+  if (actions) actions.style.display = "none";
 
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff"
+    });
 
-  const imgWidth = pageWidth - 10;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
-  let heightLeft = imgHeight;
-  let position = 5;
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
-  pdf.addImage(imgData, "PNG", 5, position, imgWidth, imgHeight);
-  heightLeft -= (pageHeight - 10);
+    const margin = 6;
+    const usableWidth = pageWidth - margin * 2;
+    const usableHeight = pageHeight - margin * 2;
 
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight + 5;
-    pdf.addPage();
-    pdf.addImage(imgData, "PNG", 5, position, imgWidth, imgHeight);
-    heightLeft -= (pageHeight - 10);
+    const imgWidth = usableWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    // Si cabe en una sola hoja, lo mete en una sola hoja
+    if (imgHeight <= usableHeight) {
+      pdf.addImage(imgData, "JPEG", margin, margin, imgWidth, imgHeight);
+    } else {
+      // Si no cabe, lo divide, pero sin capturar botones
+      let heightLeft = imgHeight;
+      let position = margin;
+
+      pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
+      heightLeft -= usableHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + margin;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
+        heightLeft -= usableHeight;
+      }
+    }
+
+    return {
+      pdf,
+      blob: pdf.output("blob")
+    };
+  } finally {
+    element.classList.remove("export-mode");
+    if (actions) actions.style.display = oldDisplay;
   }
-
-  return {
-    pdf,
-    blob: pdf.output("blob")
-  };
 }
 
 async function descargarPDF(id) {
