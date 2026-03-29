@@ -3,14 +3,14 @@ function getContent() {
 }
 
 function safeId(text) {
-  return text.replace(/\s+/g, "_").replace(/[^\w]/g, "");
+  return String(text || "").replace(/\s+/g, "_").replace(/[^\w]/g, "");
 }
 
 // =======================
 // ☁️ SUPABASE
 // =======================
 const SUPABASE_URL = "https://gqurgezuuytxrcmudnik.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxdXJnZXp1dXl0eHJjbXVkbmlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MTAyMjIsImV4cCI6MjA5MDE4NjIyMn0.1EW73snm3LvXPW0jK-g_-Klze0FyIbXI4dzv0J2XGr4";
+const SUPABASE_ANON_KEY = "TU_SUPABASE_ANON_KEY_AQUI";
 
 let supabaseClient = null;
 
@@ -18,21 +18,19 @@ if (typeof supabase !== "undefined" && SUPABASE_URL && SUPABASE_ANON_KEY) {
   supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   console.log("Supabase conectado ✅");
 } else {
-  console.warn("Supabase no está configurado todavía.");
+  console.warn("Supabase no está configurado.");
 }
 
 // =======================
-// 🔐 LOGIN
+// 🔐 LOGIN / LOGOUT
 // =======================
 async function login() {
-  const user = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
+  const user = document.getElementById("username")?.value.trim();
+  const pass = document.getElementById("password")?.value.trim();
   const loginError = document.getElementById("loginError");
 
   try {
-    if (!supabaseClient) {
-      throw new Error("Supabase no está conectado");
-    }
+    if (!supabaseClient) throw new Error("Supabase no está conectado");
 
     const { data, error } = await supabaseClient
       .from("usuarios")
@@ -80,30 +78,65 @@ function logout() {
 }
 
 // =======================
+// 📱 HELPERS UI
+// =======================
+function isMobile() {
+  return window.innerWidth <= 768;
+}
+
+function openSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("main");
+  const overlay = document.getElementById("mobileOverlay");
+
+  if (!sidebar || !main) return;
+
+  if (isMobile()) {
+    sidebar.classList.add("active");
+    main.classList.remove("shift");
+    if (overlay) overlay.classList.add("active");
+  } else {
+    sidebar.classList.toggle("active");
+    main.classList.toggle("shift");
+  }
+}
+
+function closeSidebarMobile() {
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("main");
+  const overlay = document.getElementById("mobileOverlay");
+
+  if (!isMobile()) return;
+  if (sidebar) sidebar.classList.remove("active");
+  if (main) main.classList.remove("shift");
+  if (overlay) overlay.classList.remove("active");
+}
+
+// =======================
 // 🚀 INIT
 // =======================
 document.addEventListener("DOMContentLoaded", () => {
   console.log("App cargada correctamente ✅");
 
-  const sidebar = document.getElementById("sidebar");
-  const main = document.getElementById("main");
   const toggleBtn = document.getElementById("toggleBtn");
   const menuItems = document.querySelectorAll(".menu-item");
+  const overlay = document.getElementById("mobileOverlay");
 
-  if (toggleBtn && sidebar && main) {
+  if (toggleBtn) {
     toggleBtn.addEventListener("click", () => {
-      sidebar.classList.toggle("active");
+      openSidebar();
+    });
+  }
 
-      // Solo mover el main en escritorio
-      if (window.innerWidth > 768) {
-        main.classList.toggle("shift");
-      }
+  if (overlay) {
+    overlay.addEventListener("click", () => {
+      closeSidebarMobile();
     });
   }
 
   if (menuItems.length > 0) {
     menuItems.forEach(item => {
-      item.addEventListener("click", (e) => {
+      item.addEventListener("click", async (e) => {
         e.preventDefault();
 
         menuItems.forEach(i => i.classList.remove("active"));
@@ -111,29 +144,92 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const text = item.textContent.trim();
 
-        if (text === "Nueva Reserva") loadForm();
-        else if (text === "Reportes") menuReportes();
-        else if (text === "Reservas") mostrarReservas();
+        if (text === "Nueva Reserva") await loadForm();
+        else if (text === "Reportes") await menuReportes();
+        else if (text === "Reservas") await mostrarReservas();
         else if (text === "Nuevo Producto") menuProductos();
-        else if (text === "Usuarios") menuUsuarios();
+        else if (text === "Usuarios") await menuUsuarios();
 
-        // Cerrar menú automáticamente en móvil
-        if (window.innerWidth <= 768) {
-          sidebar.classList.remove("active");
-          main.classList.remove("shift");
-        }
+        closeSidebarMobile();
       });
     });
   }
 
-  // Ajustar al cambiar tamaño de pantalla
   window.addEventListener("resize", () => {
-    if (window.innerWidth <= 768) {
-      main.classList.remove("shift");
-      sidebar.classList.remove("active");
+    if (isMobile()) {
+      const main = document.getElementById("main");
+      if (main) main.classList.remove("shift");
+    } else {
+      const overlayEl = document.getElementById("mobileOverlay");
+      if (overlayEl) overlayEl.classList.remove("active");
     }
   });
 });
+
+// =======================
+// 🔄 RESTAURAR SESIÓN
+// =======================
+window.onload = function () {
+  const session = localStorage.getItem("session");
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+
+  if (session === "active" && currentUser) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+
+    getContent().innerHTML = `
+      <h1>Dashboard</h1>
+      <p>Bienvenido, ${currentUser.username}</p>
+    `;
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("app").style.display = "none";
+  }
+};
+
+// =======================
+// 🧰 HELPERS DATA
+// =======================
+async function fetchProductos() {
+  const { data, error } = await supabaseClient
+    .from("productos")
+    .select("*")
+    .order("nombre", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchHoteles() {
+  const { data, error } = await supabaseClient
+    .from("hoteles")
+    .select("*")
+    .order("nombre", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchReservas() {
+  const { data, error } = await supabaseClient
+    .from("reservas")
+    .select("*")
+    .order("fecha", { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchReservaById(id) {
+  const { data, error } = await supabaseClient
+    .from("reservas")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
 
 // =======================
 // 📦 MENÚ PRODUCTOS
@@ -151,7 +247,7 @@ function menuProductos() {
 }
 
 // =======================
-// ➕ CREAR EXCURSIONES
+// ➕ CREAR PRODUCTO
 // =======================
 function loadProducto() {
   getContent().innerHTML = `
@@ -181,75 +277,23 @@ async function guardarProducto(e) {
   };
 
   try {
-    if (supabaseClient) {
-      const { error } = await supabaseClient
-        .from("productos")
-        .insert([producto]);
+    const { error } = await supabaseClient
+      .from("productos")
+      .insert([producto]);
 
-      if (error) throw error;
-    }
+    if (error) throw error;
 
-    let productos = JSON.parse(localStorage.getItem("productos")) || [];
-    productos.push(producto);
-    localStorage.setItem("productos", JSON.stringify(productos));
-
-    alert(supabaseClient ? "Excursión guardada en la nube ✅" : "Excursión guardada localmente ✅");
+    alert("Excursión guardada en la nube ✅");
     document.getElementById("productoForm").reset();
   } catch (err) {
     console.error("Error guardando producto:", err);
-
-    let productos = JSON.parse(localStorage.getItem("productos")) || [];
-    productos.push(producto);
-    localStorage.setItem("productos", JSON.stringify(productos));
-
-    alert("Excursión guardada localmente ⚠️");
-    document.getElementById("productoForm").reset();
+    alert("No se pudo guardar el producto ⚠️");
   }
 }
 
 async function editarProductos() {
   try {
-    if (supabaseClient) {
-      const { data, error } = await supabaseClient
-        .from("productos")
-        .select("*")
-        .order("nombre", { ascending: true });
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        getContent().innerHTML = `
-          <h2>No hay productos aún</h2>
-          <button onclick="menuProductos()">⬅ Volver</button>
-        `;
-        return;
-      }
-
-      let html = `<h2>Editar Productos</h2>`;
-
-      data.forEach((p) => {
-        html += `
-          <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
-            <input type="text" value="${p.nombre}" id="nombre-${p.id}">
-            <input type="number" value="${p.adulto}" id="adulto-${p.id}">
-            <input type="number" value="${p.nino}" id="nino-${p.id}">
-            <br><br>
-            <button onclick="actualizarProductoDesdeNube(${p.id})">💾 Guardar</button>
-            <button onclick="eliminarProductoDesdeNube(${p.id})">❌ Eliminar</button>
-          </div>
-        `;
-      });
-
-      html += `<button onclick="menuProductos()">⬅ Volver</button>`;
-      getContent().innerHTML = html;
-      return;
-    }
-
-    throw new Error("Supabase no configurado");
-  } catch (err) {
-    console.warn("Cargando productos desde localStorage ⚠️", err);
-
-    let productos = JSON.parse(localStorage.getItem("productos")) || [];
+    const productos = await fetchProductos();
 
     if (productos.length === 0) {
       getContent().innerHTML = `
@@ -261,47 +305,28 @@ async function editarProductos() {
 
     let html = `<h2>Editar Productos</h2>`;
 
-    productos.forEach((p, index) => {
+    productos.forEach((p) => {
       html += `
         <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
-          <input type="text" value="${p.nombre}" id="nombre-${index}">
-          <input type="number" value="${p.adulto}" id="adulto-${index}">
-          <input type="number" value="${p.nino}" id="nino-${index}">
+          <input type="text" value="${p.nombre}" id="nombre-${p.id}">
+          <input type="number" value="${p.adulto}" id="adulto-${p.id}">
+          <input type="number" value="${p.nino}" id="nino-${p.id}">
           <br><br>
-          <button onclick="actualizarProducto(${index})">💾 Guardar</button>
-          <button onclick="eliminarProducto(${index})">❌ Eliminar</button>
+          <button onclick="actualizarProducto(${p.id})">💾 Guardar</button>
+          <button onclick="eliminarProducto(${p.id})">❌ Eliminar</button>
         </div>
       `;
     });
 
     html += `<button onclick="menuProductos()">⬅ Volver</button>`;
     getContent().innerHTML = html;
+  } catch (err) {
+    console.error("Error cargando productos:", err);
+    alert("No se pudieron cargar los productos ⚠️");
   }
 }
 
-function actualizarProducto(index) {
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-
-  productos[index].nombre = document.getElementById(`nombre-${index}`).value.trim();
-  productos[index].adulto = parseFloat(document.getElementById(`adulto-${index}`).value) || 0;
-  productos[index].nino = parseFloat(document.getElementById(`nino-${index}`).value) || 0;
-
-  localStorage.setItem("productos", JSON.stringify(productos));
-  alert("Producto actualizado ✅");
-  editarProductos();
-}
-
-function eliminarProducto(index) {
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-
-  if (confirm("¿Eliminar este producto?")) {
-    productos.splice(index, 1);
-    localStorage.setItem("productos", JSON.stringify(productos));
-    editarProductos();
-  }
-}
-
-async function actualizarProductoDesdeNube(id) {
+async function actualizarProducto(id) {
   const nombre = document.getElementById(`nombre-${id}`).value.trim();
   const adulto = parseFloat(document.getElementById(`adulto-${id}`).value) || 0;
   const nino = parseFloat(document.getElementById(`nino-${id}`).value) || 0;
@@ -314,15 +339,15 @@ async function actualizarProductoDesdeNube(id) {
 
     if (error) throw error;
 
-    alert("Producto actualizado en la nube ✅");
+    alert("Producto actualizado ✅");
     editarProductos();
   } catch (err) {
-    console.error("Error actualizando producto en la nube:", err);
-    alert("No se pudo actualizar en la nube ⚠️");
+    console.error("Error actualizando producto:", err);
+    alert("No se pudo actualizar el producto ⚠️");
   }
 }
 
-async function eliminarProductoDesdeNube(id) {
+async function eliminarProducto(id) {
   if (!confirm("¿Eliminar este producto?")) return;
 
   try {
@@ -333,11 +358,11 @@ async function eliminarProductoDesdeNube(id) {
 
     if (error) throw error;
 
-    alert("Producto eliminado de la nube ✅");
+    alert("Producto eliminado ✅");
     editarProductos();
   } catch (err) {
-    console.error("Error eliminando producto en la nube:", err);
-    alert("No se pudo eliminar en la nube ⚠️");
+    console.error("Error eliminando producto:", err);
+    alert("No se pudo eliminar el producto ⚠️");
   }
 }
 
@@ -356,150 +381,72 @@ function menuHoteles() {
 }
 
 async function crearHotel() {
-  let productos = [];
-
   try {
-    if (supabaseClient) {
-      const { data, error } = await supabaseClient
-        .from("productos")
-        .select("*")
-        .order("nombre", { ascending: true });
+    const productos = await fetchProductos();
 
-      if (error) throw error;
-      productos = data || [];
-    } else {
-      productos = JSON.parse(localStorage.getItem("productos")) || [];
-    }
-  } catch (err) {
-    console.warn("Productos desde localStorage ⚠️", err);
-    productos = JSON.parse(localStorage.getItem("productos")) || [];
-  }
+    let inputs = productos.map(p => {
+      const id = safeId(p.nombre);
+      return `
+        <label>${p.nombre}</label>
+        <input type="time" id="pickup_${id}">
+      `;
+    }).join("");
 
-  let inputs = productos.map(p => {
-    let id = safeId(p.nombre);
-    return `
-      <label>${p.nombre}</label>
-      <input type="time" id="pickup_${id}">
+    getContent().innerHTML = `
+      <h2>Nuevo Hotel</h2>
+
+      <form id="hotelForm">
+        <input type="text" id="nombreHotel" placeholder="Nombre del hotel" required>
+
+        <h4>Horarios por excursión</h4>
+        ${inputs}
+
+        <button type="submit">Guardar Hotel</button>
+        <button type="button" onclick="menuHoteles()">⬅ Volver</button>
+      </form>
     `;
-  }).join("");
 
-  getContent().innerHTML = `
-    <h2>Nuevo Hotel</h2>
-
-    <form id="hotelForm">
-      <input type="text" id="nombreHotel" placeholder="Nombre del hotel" required>
-
-      <h4>Horarios por excursión</h4>
-      ${inputs}
-
-      <button type="submit">Guardar Hotel</button>
-      <button type="button" onclick="menuHoteles()">⬅ Volver</button>
-    </form>
-  `;
-
-  document.getElementById("hotelForm")
-    .addEventListener("submit", guardarHotel);
+    document.getElementById("hotelForm")
+      .addEventListener("submit", guardarHotel);
+  } catch (err) {
+    console.error("Error cargando productos para hotel:", err);
+    alert("No se pudieron cargar los productos ⚠️");
+  }
 }
 
 async function guardarHotel(e) {
   e.preventDefault();
 
-  let productos = [];
-  let hotel = {
-    nombre: document.getElementById("nombreHotel").value.trim(),
-    pickups: {}
-  };
-
   try {
-    if (supabaseClient) {
-      const { data, error } = await supabaseClient
-        .from("productos")
-        .select("*")
-        .order("nombre", { ascending: true });
+    const productos = await fetchProductos();
 
-      if (error) throw error;
-      productos = data || [];
-    } else {
-      productos = JSON.parse(localStorage.getItem("productos")) || [];
-    }
-  } catch (err) {
-    console.warn("Productos desde localStorage ⚠️", err);
-    productos = JSON.parse(localStorage.getItem("productos")) || [];
-  }
+    const hotel = {
+      nombre: document.getElementById("nombreHotel").value.trim(),
+      pickups: {}
+    };
 
-  productos.forEach(p => {
-    let id = safeId(p.nombre);
-    hotel.pickups[p.nombre] =
-      document.getElementById(`pickup_${id}`).value || "";
-  });
+    productos.forEach(p => {
+      const id = safeId(p.nombre);
+      hotel.pickups[p.nombre] = document.getElementById(`pickup_${id}`).value || "";
+    });
 
-  try {
-    if (supabaseClient) {
-      const { error } = await supabaseClient
-        .from("hoteles")
-        .insert([hotel]);
+    const { error } = await supabaseClient
+      .from("hoteles")
+      .insert([hotel]);
 
-      if (error) throw error;
-    }
+    if (error) throw error;
 
-    let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-    hoteles.push(hotel);
-    localStorage.setItem("hoteles", JSON.stringify(hoteles));
-
-    alert(supabaseClient ? "Hotel guardado en la nube ✅" : "Hotel guardado localmente ✅");
+    alert("Hotel guardado ✅");
     menuHoteles();
   } catch (err) {
     console.error("Error guardando hotel:", err);
-
-    let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-    hoteles.push(hotel);
-    localStorage.setItem("hoteles", JSON.stringify(hoteles));
-
-    alert("Hotel guardado localmente ⚠️");
-    menuHoteles();
+    alert("No se pudo guardar el hotel ⚠️");
   }
 }
 
 async function verHoteles() {
   try {
-    if (supabaseClient) {
-      const { data, error } = await supabaseClient
-        .from("hoteles")
-        .select("*")
-        .order("nombre", { ascending: true });
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        getContent().innerHTML = `<h2>No hay hoteles</h2>`;
-        return;
-      }
-
-      let html = `<h2>Hoteles</h2>`;
-
-      data.forEach((h) => {
-        html += `<h4>${h.nombre}</h4><ul>`;
-
-        for (let exc in h.pickups) {
-          html += `<li>${exc} → ${h.pickups[exc] || "Sin horario"}</li>`;
-        }
-
-        html += `</ul>
-          <button onclick="editarHotelDesdeNube(${h.id})">✏️</button>
-          <button onclick="eliminarHotelDesdeNube(${h.id})">❌</button>
-        `;
-      });
-
-      html += `<br><button onclick="menuHoteles()">⬅ Volver</button>`;
-      getContent().innerHTML = html;
-      return;
-    }
-
-    throw new Error("Supabase no configurado");
-  } catch (err) {
-    console.warn("Hoteles desde localStorage ⚠️", err);
-
-    let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+    const hoteles = await fetchHoteles();
 
     if (hoteles.length === 0) {
       getContent().innerHTML = `<h2>No hay hoteles</h2>`;
@@ -508,7 +455,7 @@ async function verHoteles() {
 
     let html = `<h2>Hoteles</h2>`;
 
-    hoteles.forEach((h, index) => {
+    hoteles.forEach((h) => {
       html += `<h4>${h.nombre}</h4><ul>`;
 
       for (let exc in h.pickups) {
@@ -516,53 +463,20 @@ async function verHoteles() {
       }
 
       html += `</ul>
-        <button onclick="editarHotel(${index})">✏️</button>
-        <button onclick="eliminarHotel(${index})">❌</button>
+        <button onclick="editarHotel(${h.id})">✏️</button>
+        <button onclick="eliminarHotel(${h.id})">❌</button>
       `;
     });
 
     html += `<br><button onclick="menuHoteles()">⬅ Volver</button>`;
     getContent().innerHTML = html;
+  } catch (err) {
+    console.error("Error cargando hoteles:", err);
+    alert("No se pudieron cargar los hoteles ⚠️");
   }
 }
 
-function editarHotel(index) {
-  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-  let hotel = hoteles[index];
-
-  let inputs = productos.map(p => {
-    let id = safeId(p.nombre);
-    let valor = hotel.pickups[p.nombre] || "";
-
-    return `
-      <label>${p.nombre}</label>
-      <input type="time" id="edit_pickup_${id}" value="${valor}">
-    `;
-  }).join("");
-
-  getContent().innerHTML = `
-    <h2>Editar Hotel</h2>
-
-    <form id="editHotelForm">
-      <input type="text" id="edit_nombreHotel" value="${hotel.nombre}" required>
-
-      <h4>Horarios por excursión</h4>
-      ${inputs}
-
-      <button type="submit">💾 Guardar Cambios</button>
-      <button type="button" onclick="verHoteles()">⬅ Volver</button>
-    </form>
-  `;
-
-  document.getElementById("editHotelForm")
-    .addEventListener("submit", function(e) {
-      e.preventDefault();
-      guardarEdicionHotel(index);
-    });
-}
-
-async function editarHotelDesdeNube(id) {
+async function editarHotel(id) {
   try {
     const { data: hotel, error: hotelError } = await supabaseClient
       .from("hoteles")
@@ -572,16 +486,11 @@ async function editarHotelDesdeNube(id) {
 
     if (hotelError) throw hotelError;
 
-    const { data: productos, error: productosError } = await supabaseClient
-      .from("productos")
-      .select("*")
-      .order("nombre", { ascending: true });
+    const productos = await fetchProductos();
 
-    if (productosError) throw productosError;
-
-    let inputs = (productos || []).map(p => {
-      let pid = safeId(p.nombre);
-      let valor = hotel.pickups?.[p.nombre] || "";
+    let inputs = productos.map(p => {
+      const pid = safeId(p.nombre);
+      const valor = hotel.pickups?.[p.nombre] || "";
 
       return `
         <label>${p.nombre}</label>
@@ -606,47 +515,22 @@ async function editarHotelDesdeNube(id) {
     document.getElementById("editHotelForm")
       .addEventListener("submit", function(e) {
         e.preventDefault();
-        guardarEdicionHotelDesdeNube(id);
+        guardarEdicionHotel(id);
       });
 
   } catch (err) {
-    console.error("Error cargando hotel desde nube:", err);
-    alert("No se pudo cargar el hotel desde la nube ⚠️");
+    console.error("Error cargando hotel:", err);
+    alert("No se pudo cargar el hotel ⚠️");
   }
 }
 
-function guardarEdicionHotel(index) {
-  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-  let productos = JSON.parse(localStorage.getItem("productos")) || [];
-  let hotel = hoteles[index];
-
-  hotel.nombre = document.getElementById("edit_nombreHotel").value.trim();
-
-  productos.forEach(p => {
-    let id = safeId(p.nombre);
-    hotel.pickups[p.nombre] =
-      document.getElementById(`edit_pickup_${id}`).value || "";
-  });
-
-  localStorage.setItem("hoteles", JSON.stringify(hoteles));
-
-  alert("Hotel actualizado ✅");
-  verHoteles();
-}
-
-async function guardarEdicionHotelDesdeNube(id) {
+async function guardarEdicionHotel(id) {
   try {
-    const { data: productos, error: productosError } = await supabaseClient
-      .from("productos")
-      .select("*")
-      .order("nombre", { ascending: true });
-
-    if (productosError) throw productosError;
+    const productos = await fetchProductos();
 
     let pickups = {};
-
-    (productos || []).forEach(p => {
-      let pid = safeId(p.nombre);
+    productos.forEach(p => {
+      const pid = safeId(p.nombre);
       pickups[p.nombre] = document.getElementById(`edit_pickup_${pid}`).value || "";
     });
 
@@ -659,25 +543,15 @@ async function guardarEdicionHotelDesdeNube(id) {
 
     if (error) throw error;
 
-    alert("Hotel actualizado en la nube ✅");
+    alert("Hotel actualizado ✅");
     verHoteles();
   } catch (err) {
-    console.error("Error actualizando hotel en nube:", err);
-    alert("No se pudo actualizar el hotel en la nube ⚠️");
+    console.error("Error actualizando hotel:", err);
+    alert("No se pudo actualizar el hotel ⚠️");
   }
 }
 
-function eliminarHotel(index) {
-  let hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-
-  if (confirm("¿Eliminar hotel?")) {
-    hoteles.splice(index, 1);
-    localStorage.setItem("hoteles", JSON.stringify(hoteles));
-    verHoteles();
-  }
-}
-
-async function eliminarHotelDesdeNube(id) {
+async function eliminarHotel(id) {
   if (!confirm("¿Eliminar hotel?")) return;
 
   try {
@@ -688,11 +562,11 @@ async function eliminarHotelDesdeNube(id) {
 
     if (error) throw error;
 
-    alert("Hotel eliminado de la nube ✅");
+    alert("Hotel eliminado ✅");
     verHoteles();
   } catch (err) {
-    console.error("Error eliminando hotel en nube:", err);
-    alert("No se pudo eliminar el hotel de la nube ⚠️");
+    console.error("Error eliminando hotel:", err);
+    alert("No se pudo eliminar el hotel ⚠️");
   }
 }
 
@@ -700,141 +574,101 @@ async function eliminarHotelDesdeNube(id) {
 // 🧾 FORMULARIO RESERVA
 // =======================
 async function loadForm() {
-  let productos = [];
-  let hoteles = [];
-
   try {
-    if (supabaseClient) {
-      const [{ data: productosData, error: productosError }, { data: hotelesData, error: hotelesError }] =
-        await Promise.all([
-          supabaseClient.from("productos").select("*").order("nombre", { ascending: true }),
-          supabaseClient.from("hoteles").select("*").order("nombre", { ascending: true })
-        ]);
+    const productos = await fetchProductos();
+    const hoteles = await fetchHoteles();
 
-      if (productosError) throw productosError;
-      if (hotelesError) throw hotelesError;
+    let opcionesExc = productos.map(p =>
+      `<option value="${p.nombre}">${p.nombre}</option>`
+    ).join("");
 
-      productos = productosData || [];
-      hoteles = hotelesData || [];
-    } else {
-      productos = JSON.parse(localStorage.getItem("productos")) || [];
-      hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-    }
+    let opcionesHoteles = hoteles.map(h =>
+      `<option value="${h.nombre}">${h.nombre}</option>`
+    ).join("");
+
+    getContent().innerHTML = `
+      <h2>Nueva Reserva</h2>
+
+      <form id="reservaForm">
+        <input type="text" id="cliente" placeholder="Nombre del cliente" required>
+        <input type="tel" id="telefono" placeholder="Teléfono" required>
+        <input type="email" id="email" placeholder="Email" required>
+
+        <select id="hotel" required>
+          <option value="">Seleccionar hotel</option>
+          ${opcionesHoteles}
+        </select>
+
+        <select id="excursion" required>
+          <option value="">Seleccionar excursión</option>
+          ${opcionesExc}
+        </select>
+
+        <input type="number" id="adultos" placeholder="Adultos" min="1" required>
+        <input type="number" id="ninos" placeholder="Niños" min="0">
+
+        <label>Pick Up Time</label>
+        <input type="time" id="pickup" readonly>
+
+        <input type="date" id="fecha" required>
+
+        <input type="number" id="precio" placeholder="Precio total" readonly>
+
+        <label>Descuento ($)</label>
+        <input type="number" id="descuento" value="0" min="0">
+
+        <button type="submit">Guardar Reserva</button>
+      </form>
+    `;
+
+    document.getElementById("excursion").addEventListener("change", autoDatos);
+    document.getElementById("hotel").addEventListener("change", autoDatos);
+    document.getElementById("adultos").addEventListener("input", autoDatos);
+    document.getElementById("ninos").addEventListener("input", autoDatos);
+    document.getElementById("descuento").addEventListener("input", autoDatos);
+
+    document.getElementById("reservaForm")
+      .addEventListener("submit", guardarReserva);
+
   } catch (err) {
-    console.warn("Form desde localStorage ⚠️", err);
-    productos = JSON.parse(localStorage.getItem("productos")) || [];
-    hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+    console.error("Error cargando formulario:", err);
+    alert("No se pudo cargar el formulario ⚠️");
   }
-
-  let opcionesExc = productos.map(p =>
-    `<option value="${p.nombre}">${p.nombre}</option>`
-  ).join("");
-
-  let opcionesHoteles = hoteles.map(h =>
-    `<option value="${h.nombre}">${h.nombre}</option>`
-  ).join("");
-
-  getContent().innerHTML = `
-    <h2>Nueva Reserva</h2>
-
-    <form id="reservaForm">
-      <input type="text" id="cliente" placeholder="Nombre del cliente" required>
-      <input type="tel" id="telefono" placeholder="Teléfono" required>
-      <input type="email" id="email" placeholder="Email" required>
-
-      <select id="hotel" required>
-        <option value="">Seleccionar hotel</option>
-        ${opcionesHoteles}
-      </select>
-
-      <select id="excursion" required>
-        <option value="">Seleccionar excursión</option>
-        ${opcionesExc}
-      </select>
-
-      <input type="number" id="adultos" placeholder="Adultos" min="1" required>
-      <input type="number" id="ninos" placeholder="Niños" min="0">
-
-      <label>Pick Up Time</label>
-      <input type="time" id="pickup" readonly>
-
-      <input type="date" id="fecha" required>
-
-      <input type="number" id="precio" placeholder="Precio total" readonly>
-
-      <label>Descuento ($)</label>
-      <input type="number" id="descuento" value="0" min="0">
-
-      <button type="submit">Guardar Reserva</button>
-    </form>
-  `;
-
-  document.getElementById("excursion").addEventListener("change", autoDatos);
-  document.getElementById("hotel").addEventListener("change", autoDatos);
-  document.getElementById("adultos").addEventListener("input", autoDatos);
-  document.getElementById("ninos").addEventListener("input", autoDatos);
-  document.getElementById("descuento").addEventListener("input", autoDatos);
-
-  document.getElementById("reservaForm")
-    .addEventListener("submit", guardarReserva);
 }
 
 async function autoDatos() {
-  let productos = [];
-  let hoteles = [];
-
   try {
-    if (supabaseClient) {
-      const [{ data: productosData, error: productosError }, { data: hotelesData, error: hotelesError }] =
-        await Promise.all([
-          supabaseClient.from("productos").select("*"),
-          supabaseClient.from("hoteles").select("*")
-        ]);
+    const productos = await fetchProductos();
+    const hoteles = await fetchHoteles();
 
-      if (productosError) throw productosError;
-      if (hotelesError) throw hotelesError;
+    const excursion = document.getElementById("excursion").value;
+    const hotelNombre = document.getElementById("hotel").value;
 
-      productos = productosData || [];
-      hoteles = hotelesData || [];
+    const adultos = parseInt(document.getElementById("adultos").value) || 0;
+    const ninos = parseInt(document.getElementById("ninos").value) || 0;
+    const descuento = parseFloat(document.getElementById("descuento").value) || 0;
+
+    const producto = productos.find(p => p.nombre === excursion);
+
+    if (producto) {
+      let total = (adultos * producto.adulto) + (ninos * producto.nino);
+      total = Math.max(0, total - descuento);
+      document.getElementById("precio").value = total;
     } else {
-      productos = JSON.parse(localStorage.getItem("productos")) || [];
-      hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
+      document.getElementById("precio").value = "";
+    }
+
+    const hotel = hoteles.find(h => h.nombre === hotelNombre);
+    if (hotel && hotel.pickups) {
+      document.getElementById("pickup").value = hotel.pickups[excursion] || "";
+    } else {
+      document.getElementById("pickup").value = "";
     }
   } catch (err) {
-    console.warn("AutoDatos desde localStorage ⚠️", err);
-    productos = JSON.parse(localStorage.getItem("productos")) || [];
-    hoteles = JSON.parse(localStorage.getItem("hoteles")) || [];
-  }
-
-  let excursion = document.getElementById("excursion").value;
-  let hotelNombre = document.getElementById("hotel").value;
-
-  let adultos = parseInt(document.getElementById("adultos").value) || 0;
-  let ninos = parseInt(document.getElementById("ninos").value) || 0;
-  let descuento = parseFloat(document.getElementById("descuento").value) || 0;
-
-  let producto = productos.find(p => p.nombre === excursion);
-
-  if (producto) {
-    let total = (adultos * producto.adulto) + (ninos * producto.nino);
-    total = Math.max(0, total - descuento);
-    document.getElementById("precio").value = total;
-  } else {
-    document.getElementById("precio").value = "";
-  }
-
-  let hotel = hoteles.find(h => h.nombre === hotelNombre);
-
-  if (hotel && hotel.pickups) {
-    document.getElementById("pickup").value = hotel.pickups[excursion] || "";
-  } else {
-    document.getElementById("pickup").value = "";
+    console.error("Error calculando datos:", err);
   }
 }
 
-// =======================
-// 🧾 GUARDAR RESERVA
-// =======================
 async function guardarReserva(e) {
   e.preventDefault();
 
@@ -853,91 +687,23 @@ async function guardarReserva(e) {
   };
 
   try {
-    if (supabaseClient) {
-      const { error } = await supabaseClient
-        .from("reservas")
-        .insert([reserva]);
+    const { error } = await supabaseClient
+      .from("reservas")
+      .insert([reserva]);
 
-      if (error) throw error;
-    }
+    if (error) throw error;
 
-    let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-    reservas.push(reserva);
-    localStorage.setItem("reservas", JSON.stringify(reservas));
-
-    alert(supabaseClient ? "Reserva guardada en la nube ✅" : "Reserva guardada localmente ✅");
+    alert("Reserva guardada en la nube ✅");
     mostrarReservas();
   } catch (err) {
     console.error("Error guardando reserva:", err);
-
-    let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-    reservas.push(reserva);
-    localStorage.setItem("reservas", JSON.stringify(reservas));
-
-    alert("Reserva guardada localmente ⚠️");
-    mostrarReservas();
+    alert("No se pudo guardar la reserva ⚠️");
   }
 }
 
-// =======================
-// 📊 MOSTRAR RESERVAS
-// =======================
 async function mostrarReservas() {
   try {
-    if (supabaseClient) {
-      const { data, error } = await supabaseClient
-        .from("reservas")
-        .select("*")
-        .order("fecha", { ascending: false });
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        getContent().innerHTML = "<h2>No hay reservas aún</h2>";
-        return;
-      }
-
-      let tabla = `
-        <h2>Reservas</h2>
-        <table border="1" style="width:100%; border-collapse: collapse;">
-          <tr>
-            <th>Cliente</th>
-            <th>Hotel</th>
-            <th>Excursión</th>
-            <th>Pickup</th>
-            <th>Fecha</th>
-            <th>Precio</th>
-            <th>Acciones</th>
-          </tr>
-      `;
-
-      data.forEach((r) => {
-        tabla += `
-          <tr>
-            <td>${r.cliente}</td>
-            <td>${r.hotel}</td>
-            <td>${r.excursion}</td>
-            <td>${r.pickup || "-"}</td>
-            <td>${r.fecha}</td>
-            <td>$${r.precio}</td>
-            <td>
-              <button onclick="verVoucherDesdeNube(${r.id})">📄</button>
-<button onclick="eliminarReservaDesdeNube(${r.id})">❌</button>
-            </td>
-          </tr>
-        `;
-      });
-
-      tabla += "</table>";
-      getContent().innerHTML = tabla;
-      return;
-    }
-
-    throw new Error("Supabase no configurado");
-  } catch (err) {
-    console.warn("Cargando reservas desde localStorage ⚠️", err);
-
-    let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    const reservas = await fetchReservas();
 
     if (reservas.length === 0) {
       getContent().innerHTML = "<h2>No hay reservas aún</h2>";
@@ -958,7 +724,7 @@ async function mostrarReservas() {
         </tr>
     `;
 
-    reservas.forEach((r, index) => {
+    reservas.forEach((r) => {
       tabla += `
         <tr>
           <td>${r.cliente}</td>
@@ -968,8 +734,8 @@ async function mostrarReservas() {
           <td>${r.fecha}</td>
           <td>$${r.precio}</td>
           <td>
-            <button onclick="verVoucher(${index})">📄</button>
-            <button onclick="eliminarReserva(${index})">❌</button>
+            <button onclick="verVoucher(${r.id})">📄</button>
+            <button onclick="eliminarReserva(${r.id})">❌</button>
           </td>
         </tr>
       `;
@@ -977,9 +743,13 @@ async function mostrarReservas() {
 
     tabla += "</table>";
     getContent().innerHTML = tabla;
+  } catch (err) {
+    console.error("Error cargando reservas:", err);
+    alert("No se pudieron cargar las reservas ⚠️");
   }
 }
-async function eliminarReservaDesdeNube(id) {
+
+async function eliminarReserva(id) {
   if (!confirm("¿Seguro que quieres eliminar esta reserva?")) return;
 
   try {
@@ -990,9 +760,8 @@ async function eliminarReservaDesdeNube(id) {
 
     if (error) throw error;
 
-    alert("Reserva eliminada de la nube ✅");
+    alert("Reserva eliminada ✅");
     mostrarReservas();
-
   } catch (err) {
     console.error("Error eliminando reserva:", err);
     alert("No se pudo eliminar la reserva ⚠️");
@@ -1002,7 +771,7 @@ async function eliminarReservaDesdeNube(id) {
 // =======================
 // 📊 REPORTES
 // =======================
-function menuReportes() {
+async function menuReportes() {
   getContent().innerHTML = `
     <h2>📊 Reportes</h2>
 
@@ -1014,226 +783,119 @@ function menuReportes() {
 }
 
 async function reporteVentas() {
-  let reservas = [];
-
   try {
-    if (supabaseClient) {
-      const { data, error } = await supabaseClient
-        .from("reservas")
-        .select("*")
-        .order("fecha", { ascending: false });
+    const reservas = await fetchReservas();
 
-      if (error) throw error;
-      reservas = data || [];
-    } else {
-      reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    if (reservas.length === 0) {
+      getContent().innerHTML = "<h2>No hay ventas aún</h2>";
+      return;
     }
+
+    let porMes = {};
+    let porDia = {};
+    let totalGeneral = 0;
+
+    reservas.forEach(r => {
+      const mes = (r.fecha || "").slice(0, 7);
+      const dia = r.fecha || "";
+      const precio = parseFloat(r.precio) || 0;
+
+      if (!porMes[mes]) porMes[mes] = 0;
+      porMes[mes] += precio;
+
+      if (!porDia[dia]) porDia[dia] = 0;
+      porDia[dia] += precio;
+
+      totalGeneral += precio;
+    });
+
+    let html = `<h2>📊 Reporte de Ventas</h2>`;
+    html += `<h3>💰 Total General: $${totalGeneral.toFixed(2)}</h3>`;
+
+    html += `<h4>📅 Ventas por Mes</h4><ul>`;
+    Object.keys(porMes).sort().reverse().forEach(mes => {
+      html += `<li>${mes} → $${porMes[mes].toFixed(2)}</li>`;
+    });
+    html += `</ul>`;
+
+    html += `<h4>📆 Ventas por Día</h4><ul>`;
+    Object.keys(porDia).sort().reverse().forEach(dia => {
+      html += `<li>${dia} → $${porDia[dia].toFixed(2)}</li>`;
+    });
+    html += `</ul>`;
+
+    html += `<button onclick="menuReportes()">⬅ Volver</button>`;
+    getContent().innerHTML = html;
   } catch (err) {
-    console.warn("Reporte desde localStorage ⚠️", err);
-    reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+    console.error("Error generando reporte:", err);
+    alert("No se pudo generar el reporte ⚠️");
   }
-
-  if (reservas.length === 0) {
-    getContent().innerHTML = "<h2>No hay ventas aún</h2>";
-    return;
-  }
-
-  let porMes = {};
-  let porDia = {};
-  let totalGeneral = 0;
-
-  reservas.forEach(r => {
-    let mes = (r.fecha || "").slice(0, 7);
-    let dia = r.fecha || "";
-    let precio = parseFloat(r.precio) || 0;
-
-    if (!porMes[mes]) porMes[mes] = 0;
-    porMes[mes] += precio;
-
-    if (!porDia[dia]) porDia[dia] = 0;
-    porDia[dia] += precio;
-
-    totalGeneral += precio;
-  });
-
-  let html = `<h2>📊 Reporte de Ventas</h2>`;
-  html += `<h3>💰 Total General: $${totalGeneral.toFixed(2)}</h3>`;
-
-  html += `<h4>📅 Ventas por Mes</h4><ul>`;
-  Object.keys(porMes).sort().reverse().forEach(mes => {
-    html += `<li>${mes} → $${porMes[mes].toFixed(2)}</li>`;
-  });
-  html += `</ul>`;
-
-  html += `<h4>📆 Ventas por Día</h4><ul>`;
-  Object.keys(porDia).sort().reverse().forEach(dia => {
-    html += `<li>${dia} → $${porDia[dia].toFixed(2)}</li>`;
-  });
-  html += `</ul>`;
-
-  html += `<button onclick="menuReportes()">⬅ Volver</button>`;
-
-  getContent().innerHTML = html;
 }
 
 async function verContactos() {
-  let reservas = [];
-
-  try {
-    if (supabaseClient) {
-      const { data, error } = await supabaseClient
-        .from("reservas")
-        .select("cliente, telefono, email, fecha")
-        .order("fecha", { ascending: false });
-
-      if (error) throw error;
-      reservas = data || [];
-    } else {
-      reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-    }
-  } catch (err) {
-    console.warn("Contactos desde localStorage ⚠️", err);
-    reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-  }
-
-  if (reservas.length === 0) {
-    getContent().innerHTML = "<h2>No hay contactos aún</h2>";
-    return;
-  }
-
-  let contactosMap = new Map();
-
-  reservas.forEach(r => {
-    const key = (r.telefono || r.email || r.cliente || "").trim().toLowerCase();
-    if (!key) return;
-
-    if (!contactosMap.has(key)) {
-      contactosMap.set(key, {
-        nombre: r.cliente || "",
-        telefono: r.telefono || "",
-        email: r.email || "",
-        fecha: r.fecha || ""
-      });
-    }
-  });
-
-  const contactos = Array.from(contactosMap.values());
-
-  let html = `<h2>👥 Contactos</h2><ul>`;
-
-  contactos.forEach(c => {
-    html += `
-      <li style="margin-bottom:12px;">
-        <strong>${c.nombre}</strong><br>
-        📞 ${c.telefono || "-"}<br>
-        ✉️ ${c.email || "-"}<br>
-        📅 Última reserva: ${c.fecha || "-"}
-      </li>
-    `;
-  });
-
-  html += `</ul>
-    <button onclick="menuReportes()">⬅ Volver</button>
-  `;
-
-  getContent().innerHTML = html;
-}
-
-// =======================
-// 🎟️ VOUCHERS
-// =======================
-function verVoucher(index) {
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-  let r = reservas[index];
-
-  getContent().innerHTML = `
-    <div class="voucher-container premium-voucher">
-
-      <div class="voucher-header">
-        <img src="assets/logo.png" class="voucher-logo">
-        <p class="voucher-tagline">Premium Tours & Experiences</p>
-        <p class="voucher-contact">📞 +1 829-331-9938 &nbsp;|&nbsp; 📧 info@puntacanagoing.com</p>
-      </div>
-
-      <div class="voucher-topbar">
-        <div>
-          <h2 class="voucher-title">Reservation Voucher</h2>
-          <p class="voucher-subtitle">Punta Cana Going Tours</p>
-        </div>
-        <div class="voucher-status">CONFIRMED</div>
-      </div>
-
-      <div class="voucher-card">
-        <h3>Client Information</h3>
-        <div class="voucher-grid">
-          <div><span>Client</span><strong>${r.cliente}</strong></div>
-          <div><span>Hotel</span><strong>${r.hotel}</strong></div>
-          <div><span>Date</span><strong>${r.fecha}</strong></div>
-          <div><span>Pick Up</span><strong>${r.pickup || "-"}</strong></div>
-        </div>
-      </div>
-
-      <div class="voucher-card voucher-highlight">
-        <h3>Tour Details</h3>
-        <div class="voucher-grid">
-          <div><span>Excursion</span><strong>${r.excursion}</strong></div>
-          <div><span>Adults</span><strong>${r.adultos}</strong></div>
-          <div><span>Children</span><strong>${r.ninos}</strong></div>
-          <div><span>Total</span><strong class="voucher-total">$${r.precio}</strong></div>
-        </div>
-      </div>
-
-      <div class="voucher-card">
-        <h3>Cancellation & Refund Policies</h3>
-        <div class="voucher-policies">
-          <h4>ES</h4>
-          <p>
-            a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour.<br>
-            b) Se requiere certificado médico en caso de enfermedad.<br>
-            c) No se permiten cambios el mismo día del tour.<br>
-            d) No hay reembolso por no presentación (no show).<br>
-            e) Descuentos aplicados no son reembolsables.<br>
-            f) No cancelaciones para eventos especiales como Cirque du Soleil.
-          </p>
-
-          <h4>EN</h4>
-          <p>
-            a) Cancellation/refund is valid if requested 48 hours before the tour.<br>
-            b) Medical certificate required if applicable.<br>
-            c) No same-day changes allowed.<br>
-            d) No refund for no-show.<br>
-            e) Discounts are non-refundable.<br>
-            f) No cancellations for special events such as Cirque du Soleil.
-          </p>
-        </div>
-      </div>
-
-      <div class="voucher-footer">
-        <p>Thank you for choosing <strong>Punta Cana Going Tours</strong></p>
-      </div>
-
-   <div class="voucher-actions">
-  <button onclick="window.print()">🖨️ Imprimir</button>
-  <button onclick="enviarEmail(${index})">✉️ Email</button>
-  <button onclick="descargarPDFLocal(${index})">📄 Descargar PDF</button>
-  <button onclick="compartirPDFLocal(${index})">📲 Compartir PDF</button>
-  <button onclick="compartirImagenLocal(${index})">🖼️ Compartir Imagen</button>
-</div>
-    </div>
-  `;
-}
-
-async function verVoucherDesdeNube(id) {
   try {
     const { data, error } = await supabaseClient
       .from("reservas")
-      .select("*")
-      .eq("id", id)
-      .single();
+      .select("cliente, telefono, email, fecha")
+      .order("fecha", { ascending: false });
 
     if (error) throw error;
 
-    const r = data;
+    const reservas = data || [];
+
+    if (reservas.length === 0) {
+      getContent().innerHTML = "<h2>No hay contactos aún</h2>";
+      return;
+    }
+
+    const contactosMap = new Map();
+
+    reservas.forEach(r => {
+      const key = (r.telefono || r.email || r.cliente || "").trim().toLowerCase();
+      if (!key) return;
+
+      if (!contactosMap.has(key)) {
+        contactosMap.set(key, {
+          nombre: r.cliente || "",
+          telefono: r.telefono || "",
+          email: r.email || "",
+          fecha: r.fecha || ""
+        });
+      }
+    });
+
+    const contactos = Array.from(contactosMap.values());
+
+    let html = `<h2>👥 Contactos</h2><ul>`;
+
+    contactos.forEach(c => {
+      html += `
+        <li style="margin-bottom:12px;">
+          <strong>${c.nombre}</strong><br>
+          📞 ${c.telefono || "-"}<br>
+          ✉️ ${c.email || "-"}<br>
+          📅 Última reserva: ${c.fecha || "-"}
+        </li>
+      `;
+    });
+
+    html += `</ul>
+      <button onclick="menuReportes()">⬅ Volver</button>
+    `;
+
+    getContent().innerHTML = html;
+  } catch (err) {
+    console.error("Error cargando contactos:", err);
+    alert("No se pudieron cargar los contactos ⚠️");
+  }
+}
+
+// =======================
+// 🎟️ VOUCHER
+// =======================
+async function verVoucher(id) {
+  try {
+    const r = await fetchReservaById(id);
 
     getContent().innerHTML = `
       <div class="voucher-container premium-voucher">
@@ -1301,107 +963,28 @@ async function verVoucherDesdeNube(id) {
           <p>Thank you for choosing <strong>Punta Cana Going Tours</strong></p>
         </div>
 
- <div class="voucher-actions">
-  <button onclick="window.print()">🖨️ Imprimir</button>
-  <button onclick="enviarEmailDesdeNube(${r.id})">✉️ Email</button>
-  <button onclick="descargarPDFDesdeNube(${r.id})">📄 Descargar PDF</button>
-  <button onclick="compartirPDFDesdeNube(${r.id})">📲 Compartir PDF</button>
-  <button onclick="compartirImagenDesdeNube(${r.id})">🖼️ Compartir Imagen</button>
-</div>
+        <div class="voucher-actions">
+          <button onclick="window.print()">🖨️ Imprimir</button>
+          <button onclick="enviarEmail(${r.id})">✉️ Email</button>
+          <button onclick="descargarPDF(${r.id})">📄 Descargar PDF</button>
+          <button onclick="compartirPDF(${r.id})">📲 Compartir PDF</button>
+          <button onclick="compartirImagen(${r.id})">🖼️ Compartir Imagen</button>
+        </div>
       </div>
     `;
   } catch (err) {
-    console.error("Error cargando voucher desde nube:", err);
-    alert("No se pudo cargar el voucher desde la nube ⚠️");
+    console.error("Error cargando voucher:", err);
+    alert("No se pudo cargar el voucher ⚠️");
   }
 }
 
 // =======================
-// 📲 / 📧 ENVÍOS
+// ✉️ EMAIL
 // =======================
-function enviarWhatsApp(index) {
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-  let r = reservas[index];
-
-  let telefono = (r.telefono || "").replace(/\D/g, "");
-  let mensaje = `Hola ${r.cliente},
-Tu reserva está confirmada ✅
-
-Excursión: ${r.excursion}
-Hotel: ${r.hotel}
-Fecha: ${r.fecha}
-Pickup: ${r.pickup}
-Total: $${r.precio}
-
-Punta Cana Going 🌴`;
-
-  let url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-  window.open(url, "_blank");
-}
-
-function enviarEmail(index) {
-  let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-  let r = reservas[index];
-
-  let asunto = "Confirmación de Reserva - Punta Cana Going";
-  let cuerpo = `Hola ${r.cliente},
-
-Tu reserva está confirmada:
-
-Excursión: ${r.excursion}
-Hotel: ${r.hotel}
-Fecha: ${r.fecha}
-Pickup: ${r.pickup}
-Total: $${r.precio}
-
-Gracias por elegir Punta Cana Going 🌴`;
-
-  let mailto = `mailto:${r.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
-  window.open(mailto);
-}
-
-async function enviarWhatsAppDesdeNube(id) {
+async function enviarEmail(id) {
   try {
-    const { data, error } = await supabaseClient
-      .from("reservas")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const r = await fetchReservaById(id);
 
-    if (error) throw error;
-
-    let r = data;
-    let telefono = (r.telefono || "").replace(/\D/g, "");
-
-    let mensaje = `Hola ${r.cliente},
-Tu reserva está confirmada ✅
-
-Excursión: ${r.excursion}
-Hotel: ${r.hotel}
-Fecha: ${r.fecha}
-Pickup: ${r.pickup}
-Total: $${r.precio}
-
-Punta Cana Going 🌴`;
-
-    let url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-    window.open(url, "_blank");
-  } catch (err) {
-    console.error("Error enviando WhatsApp desde nube:", err);
-  }
-}
-
-async function enviarEmailDesdeNube(id) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("reservas")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) throw error;
-
-    let r = data;
     let asunto = "Confirmación de Reserva - Punta Cana Going";
     let cuerpo = `Hola ${r.cliente},
 
@@ -1418,12 +1001,147 @@ Gracias por elegir Punta Cana Going 🌴`;
     let mailto = `mailto:${r.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
     window.open(mailto);
   } catch (err) {
-    console.error("Error enviando email desde nube:", err);
+    console.error("Error enviando email:", err);
+    alert("No se pudo abrir el email ⚠️");
   }
 }
 
 // =======================
-// 👥 MULTI USUARIO
+// 📄 PDF
+// =======================
+async function generarPDFFromElement(element) {
+  const { jsPDF } = window.jspdf;
+
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: "#ffffff"
+  });
+
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+
+  const imgWidth = pageWidth - 10;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+  let position = 5;
+
+  pdf.addImage(imgData, "PNG", 5, position, imgWidth, imgHeight);
+  heightLeft -= (pageHeight - 10);
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight + 5;
+    pdf.addPage();
+    pdf.addImage(imgData, "PNG", 5, position, imgWidth, imgHeight);
+    heightLeft -= (pageHeight - 10);
+  }
+
+  return {
+    pdf,
+    blob: pdf.output("blob")
+  };
+}
+
+async function descargarPDF(id) {
+  try {
+    const r = await fetchReservaById(id);
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) return alert("No se encontró el voucher.");
+
+    const { pdf } = await generarPDFFromElement(voucher);
+    const nombre = (r?.cliente || "voucher").replace(/\s+/g, "_");
+    pdf.save(`Voucher_${nombre}.pdf`);
+  } catch (err) {
+    console.error("Error descargando PDF:", err);
+    alert("No se pudo generar el PDF ⚠️");
+  }
+}
+
+async function compartirPDF(id) {
+  try {
+    const r = await fetchReservaById(id);
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) return alert("No se encontró el voucher.");
+
+    const { blob } = await generarPDFFromElement(voucher);
+    const nombre = (r?.cliente || "voucher").replace(/\s+/g, "_");
+    const file = new File([blob], `Voucher_${nombre}.pdf`, { type: "application/pdf" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: "Voucher Punta Cana Going",
+        text: `Voucher de ${r?.cliente || "cliente"}`,
+        files: [file]
+      });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Voucher_${nombre}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("Tu navegador no permite compartir PDF directamente. Se descargó el archivo.");
+    }
+  } catch (err) {
+    console.error("Error compartiendo PDF:", err);
+    alert("No se pudo compartir el PDF ⚠️");
+  }
+}
+
+// =======================
+// 🖼️ IMAGEN
+// =======================
+async function generarImagenVoucher(element) {
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: "#ffffff"
+  });
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      resolve(blob);
+    }, "image/png");
+  });
+}
+
+async function compartirImagen(id) {
+  try {
+    const r = await fetchReservaById(id);
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) return alert("No se encontró el voucher.");
+
+    const blob = await generarImagenVoucher(voucher);
+    const nombre = (r?.cliente || "voucher").replace(/\s+/g, "_");
+    const file = new File([blob], `Voucher_${nombre}.png`, { type: "image/png" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: "Voucher Punta Cana Going",
+        text: `Voucher de ${r?.cliente || "cliente"}`,
+        files: [file]
+      });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Voucher_${nombre}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("Tu navegador no permite compartir imagen directamente. Se descargó.");
+    }
+  } catch (err) {
+    console.error("Error compartiendo imagen:", err);
+    alert("No se pudo compartir la imagen ⚠️");
+  }
+}
+
+// =======================
+// 👥 USUARIOS
 // =======================
 async function menuUsuarios() {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
@@ -1467,7 +1185,7 @@ async function menuUsuarios() {
         <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
           <strong>${u.username}</strong> — ${u.role}
           <div style="margin-top:10px;">
-            <button onclick="eliminarUsuarioDesdeNube(${u.id})">❌ Eliminar</button>
+            <button onclick="eliminarUsuario(${u.id})">❌ Eliminar</button>
           </div>
         </div>
       `;
@@ -1475,7 +1193,7 @@ async function menuUsuarios() {
 
     getContent().innerHTML = html;
 
-    document.getElementById("userForm").addEventListener("submit", guardarUsuarioDesdeNube);
+    document.getElementById("userForm").addEventListener("submit", guardarUsuario);
 
   } catch (err) {
     console.error("Error cargando usuarios:", err);
@@ -1483,7 +1201,7 @@ async function menuUsuarios() {
   }
 }
 
-async function guardarUsuarioDesdeNube(e) {
+async function guardarUsuario(e) {
   e.preventDefault();
 
   const username = document.getElementById("newUsername").value.trim();
@@ -1517,9 +1235,8 @@ async function guardarUsuarioDesdeNube(e) {
   }
 }
 
-async function eliminarUsuarioDesdeNube(id) {
+async function eliminarUsuario(id) {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-
   if (!confirm("¿Eliminar este usuario?")) return;
 
   try {
@@ -1552,127 +1269,6 @@ async function eliminarUsuarioDesdeNube(id) {
 }
 
 // =======================
-// 🖼️ GENERAR IMAGEN DESDE VOUCHER
-// =======================
-async function generarImagenVoucher(element) {
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff"
-  });
-
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => {
-      resolve(blob);
-    }, "image/png");
-  });
-}
-
-// =======================
-// 🖼️ COMPARTIR IMAGEN LOCAL
-// =======================
-async function compartirImagenLocal(index) {
-  try {
-    const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-    const r = reservas[index];
-
-    const voucher = document.querySelector(".premium-voucher");
-    if (!voucher) {
-      alert("No se encontró el voucher para compartir.");
-      return;
-    }
-
-    const blob = await generarImagenVoucher(voucher);
-    const nombre = (r?.cliente || "voucher").replace(/\s+/g, "_");
-    const file = new File([blob], `Voucher_${nombre}.png`, { type: "image/png" });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        title: "Voucher Punta Cana Going",
-        text: `Voucher de ${r?.cliente || "cliente"}`,
-        files: [file]
-      });
-    } else {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Voucher_${nombre}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-      alert("Tu navegador no permite compartir imágenes directamente. Se descargó la imagen.");
-    }
-  } catch (err) {
-    console.error("Error compartiendo imagen local:", err);
-    alert("No se pudo compartir la imagen ⚠️");
-  }
-}
-
-// =======================
-// 🖼️ COMPARTIR IMAGEN DESDE NUBE
-// =======================
-async function compartirImagenDesdeNube(id) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("reservas")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) throw error;
-
-    const voucher = document.querySelector(".premium-voucher");
-    if (!voucher) {
-      alert("No se encontró el voucher para compartir.");
-      return;
-    }
-
-    const blob = await generarImagenVoucher(voucher);
-    const nombre = (data?.cliente || "voucher").replace(/\s+/g, "_");
-    const file = new File([blob], `Voucher_${nombre}.png`, { type: "image/png" });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        title: "Voucher Punta Cana Going",
-        text: `Voucher de ${data?.cliente || "cliente"}`,
-        files: [file]
-      });
-    } else {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Voucher_${nombre}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-      alert("Tu navegador no permite compartir imágenes directamente. Se descargó la imagen.");
-    }
-  } catch (err) {
-    console.error("Error compartiendo imagen desde nube:", err);
-    alert("No se pudo compartir la imagen ⚠️");
-  }
-}
-
-// =======================
-// 🔄 RESTAURAR SESIÓN
-// =======================
-window.onload = function () {
-  const session = localStorage.getItem("session");
-  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-
-  if (session === "active" && currentUser) {
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("app").style.display = "flex";
-
-    getContent().innerHTML = `
-      <h1>Dashboard</h1>
-      <p>Bienvenido, ${currentUser.username}</p>
-    `;
-  } else {
-    document.getElementById("loginScreen").style.display = "flex";
-    document.getElementById("app").style.display = "none";
-  }
-};
-
-// =======================
 // 📦 SERVICE WORKER
 // =======================
 if ("serviceWorker" in navigator) {
@@ -1681,179 +1277,4 @@ if ("serviceWorker" in navigator) {
       .then(() => console.log("Service Worker registrado ✅"))
       .catch(error => console.log("Error registrando Service Worker ❌", error));
   });
-}
-
-// =======================
-// 📄 GENERAR PDF DESDE ELEMENTO
-// =======================
-async function generarPDFFromElement(element, fileName = "voucher-pcg.pdf") {
-  const { jsPDF } = window.jspdf;
-
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff"
-  });
-
-  const imgData = canvas.toDataURL("image/png");
-
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-
-  const imgWidth = pageWidth - 10;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-  let heightLeft = imgHeight;
-  let position = 5;
-
-  pdf.addImage(imgData, "PNG", 5, position, imgWidth, imgHeight);
-  heightLeft -= (pageHeight - 10);
-
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight + 5;
-    pdf.addPage();
-    pdf.addImage(imgData, "PNG", 5, position, imgWidth, imgHeight);
-    heightLeft -= (pageHeight - 10);
-  }
-
-  return {
-    pdf,
-    blob: pdf.output("blob"),
-    fileName
-  };
-}
-
-// =======================
-// 📄 DESCARGAR PDF LOCAL
-// =======================
-async function descargarPDFLocal(index) {
-  try {
-    const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-    const r = reservas[index];
-
-    const voucher = document.querySelector(".premium-voucher");
-    if (!voucher) {
-      alert("No se encontró el voucher para exportar.");
-      return;
-    }
-
-    const nombre = (r?.cliente || "voucher").replace(/\s+/g, "_");
-    const { pdf } = await generarPDFFromElement(voucher, `Voucher_${nombre}.pdf`);
-    pdf.save(`Voucher_${nombre}.pdf`);
-  } catch (err) {
-    console.error("Error descargando PDF local:", err);
-    alert("No se pudo generar el PDF ⚠️");
-  }
-}
-
-// =======================
-// 📄 COMPARTIR PDF LOCAL
-// =======================
-async function compartirPDFLocal(index) {
-  try {
-    const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-    const r = reservas[index];
-
-    const voucher = document.querySelector(".premium-voucher");
-    if (!voucher) {
-      alert("No se encontró el voucher para compartir.");
-      return;
-    }
-
-    const nombre = (r?.cliente || "voucher").replace(/\s+/g, "_");
-    const { blob } = await generarPDFFromElement(voucher, `Voucher_${nombre}.pdf`);
-    const file = new File([blob], `Voucher_${nombre}.pdf`, { type: "application/pdf" });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        title: "Voucher Punta Cana Going",
-        text: `Voucher de ${r?.cliente || "cliente"}`,
-        files: [file]
-      });
-    } else {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Voucher_${nombre}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-      alert("Tu navegador no permite compartir archivos directamente. Se descargó el PDF.");
-    }
-  } catch (err) {
-    console.error("Error compartiendo PDF local:", err);
-    alert("No se pudo compartir el PDF ⚠️");
-  }
-}
-
-// =======================
-// 📄 DESCARGAR PDF DESDE NUBE
-// =======================
-async function descargarPDFDesdeNube(id) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("reservas")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) throw error;
-
-    const voucher = document.querySelector(".premium-voucher");
-    if (!voucher) {
-      alert("No se encontró el voucher para exportar.");
-      return;
-    }
-
-    const nombre = (data?.cliente || "voucher").replace(/\s+/g, "_");
-    const { pdf } = await generarPDFFromElement(voucher, `Voucher_${nombre}.pdf`);
-    pdf.save(`Voucher_${nombre}.pdf`);
-  } catch (err) {
-    console.error("Error descargando PDF desde nube:", err);
-    alert("No se pudo generar el PDF ⚠️");
-  }
-}
-
-// =======================
-// 📄 COMPARTIR PDF DESDE NUBE
-// =======================
-async function compartirPDFDesdeNube(id) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("reservas")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) throw error;
-
-    const voucher = document.querySelector(".premium-voucher");
-    if (!voucher) {
-      alert("No se encontró el voucher para compartir.");
-      return;
-    }
-
-    const nombre = (data?.cliente || "voucher").replace(/\s+/g, "_");
-    const { blob } = await generarPDFFromElement(voucher, `Voucher_${nombre}.pdf`);
-    const file = new File([blob], `Voucher_${nombre}.pdf`, { type: "application/pdf" });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        title: "Voucher Punta Cana Going",
-        text: `Voucher de ${data?.cliente || "cliente"}`,
-        files: [file]
-      });
-    } else {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Voucher_${nombre}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-      alert("Tu navegador no permite compartir archivos directamente. Se descargó el PDF.");
-    }
-  } catch (err) {
-    console.error("Error compartiendo PDF desde nube:", err);
-    alert("No se pudo compartir el PDF ⚠️");
-  }
 }
