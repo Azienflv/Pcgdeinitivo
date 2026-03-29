@@ -1175,19 +1175,29 @@ async function compartirPDF(id) {
 // 🖼️ IMAGEN
 // =======================
 async function generarImagenVoucher(element) {
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff"
-  });
+  element.classList.add("export-mode");
 
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => {
-      resolve(blob);
-    }, "image/png");
-  });
+  const actions = element.querySelector(".voucher-actions");
+  const oldDisplay = actions ? actions.style.display : "";
+  if (actions) actions.style.display = "none";
+
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff"
+    });
+
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      }, "image/jpeg", 0.95);
+    });
+  } finally {
+    element.classList.remove("export-mode");
+    if (actions) actions.style.display = oldDisplay;
+  }
 }
-
 async function compartirImagen(id) {
   try {
     const r = await fetchReservaById(id);
