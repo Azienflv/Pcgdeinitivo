@@ -389,10 +389,15 @@ async function crearHotel() {
     const productos = await fetchProductos();
 
     let inputs = productos.map(p => {
-      const id = safeId(p.nombre);
+      let id = safeId(p.nombre);
       return `
-        <label>${p.nombre}</label>
-        <input type="time" id="pickup_${id}">
+        <div style="margin-bottom:16px; padding:10px; border:1px solid #334155; border-radius:8px;">
+          <label style="display:block; margin-bottom:8px;"><strong>${p.nombre}</strong></label>
+
+          <input type="time" id="pickup1_${id}" placeholder="Pickup 1">
+          <input type="time" id="pickup2_${id}" placeholder="Pickup 2">
+          <input type="time" id="pickup3_${id}" placeholder="Pickup 3">
+        </div>
       `;
     }).join("");
 
@@ -412,6 +417,7 @@ async function crearHotel() {
 
     document.getElementById("hotelForm")
       .addEventListener("submit", guardarHotel);
+
   } catch (err) {
     console.error("Error cargando productos para hotel:", err);
     alert("No se pudieron cargar los productos ⚠️");
