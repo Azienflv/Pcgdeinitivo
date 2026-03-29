@@ -557,9 +557,17 @@ async function guardarEdicionHotel(id) {
     const productos = await fetchProductos();
 
     let pickups = {};
+
     productos.forEach(p => {
-      const pid = safeId(p.nombre);
-      pickups[p.nombre] = document.getElementById(`edit_pickup_${pid}`).value || "";
+      let pid = safeId(p.nombre);
+
+      let horarios = [
+        document.getElementById(`edit_pickup1_${pid}`).value,
+        document.getElementById(`edit_pickup2_${pid}`).value,
+        document.getElementById(`edit_pickup3_${pid}`).value
+      ].filter(h => h && h.trim() !== "");
+
+      pickups[p.nombre] = horarios;
     });
 
     const nombre = document.getElementById("edit_nombreHotel").value.trim();
@@ -573,6 +581,7 @@ async function guardarEdicionHotel(id) {
 
     alert("Hotel actualizado ✅");
     verHoteles();
+
   } catch (err) {
     console.error("Error actualizando hotel:", err);
     alert("No se pudo actualizar el hotel ⚠️");
