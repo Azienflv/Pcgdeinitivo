@@ -794,6 +794,11 @@ async function mostrarReservas() {
           <td>
             <button onclick="verVoucher(${r.id})">📄</button>
             <button onclick="eliminarReserva(${r.id})">❌</button>
+            <td>
+  <button onclick="verVoucher(${r.id})">📄</button>
+  <button onclick="editarReserva(${r.id})">✏️</button>
+  <button onclick="eliminarReserva(${r.id})">❌</button>
+</td>
           </td>
         </tr>
       `;
