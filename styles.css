@@ -18,6 +18,14 @@ body {
 }
 
 /* ========================= */
+/* APP LAYER */
+/* ========================= */
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================= */
 /* 🔐 LOGIN PREMIUM */
 /* ========================= */
 .login-screen {
@@ -39,6 +47,8 @@ body {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
   text-align: center;
   animation: fadeIn 0.4s ease;
+  position: relative;
+  z-index: 10000;
 }
 
 .login-logo {
@@ -62,6 +72,9 @@ body {
   border: 1px solid #cbd5e1;
   outline: none;
   transition: 0.2s;
+  font-size: 16px;
+  position: relative;
+  z-index: 10000;
 }
 
 .login-box input:focus {
@@ -79,38 +92,13 @@ body {
   cursor: pointer;
   font-weight: bold;
   transition: 0.3s;
+  position: relative;
+  z-index: 10000;
 }
 
 .login-box button:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* ========================= */
-/* 🍎 FIX LOGIN IPHONE */
-/* ========================= */
-.login-screen {
-  z-index: 9999;
-}
-
-.mobile-overlay {
-  z-index: 999;
-}
-
-#app {
-  position: relative;
-  z-index: 1;
-}
-
-.login-box,
-.login-box input,
-.login-box button {
-  position: relative;
-  z-index: 10000;
-}
-
-.login-box input {
-  font-size: 16px;
 }
 
 /* ========================= */
@@ -136,11 +124,10 @@ body {
   margin-bottom: 25px;
   padding: 18px 10px;
   border-radius: 14px;
-
   background: linear-gradient(145deg, rgba(15, 59, 120, 0.25), rgba(14, 165, 198, 0.15));
   backdrop-filter: blur(6px);
-
   border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.3s;
 }
 
 .logo::before {
@@ -160,6 +147,11 @@ body {
   letter-spacing: 1px;
   margin-top: 4px;
   color: #94a3b8;
+}
+
+.logo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
 .sidebar-logo {
@@ -469,6 +461,7 @@ button:hover {
 /* ========================= */
 .mobile-overlay {
   display: none;
+  z-index: 999;
 }
 
 /* ========================= */
@@ -620,7 +613,7 @@ button:hover {
 /* 📄 EXPORT MODE VOUCHER */
 /* ========================= */
 .export-mode {
-  width: 794px !important; /* aprox A4 visual */
+  width: 794px !important;
   max-width: 794px !important;
   margin: 0 auto !important;
   padding: 14px !important;
@@ -727,10 +720,4 @@ button:hover {
 
 .export-mode .voucher-actions {
   display: none !important;
-}
-
-.logo:hover {
-  transform: translateY(-2px);
-  transition: 0.3s;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
