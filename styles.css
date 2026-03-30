@@ -87,6 +87,33 @@ body {
 }
 
 /* ========================= */
+/* 🍎 FIX LOGIN IPHONE */
+/* ========================= */
+.login-screen {
+  z-index: 9999;
+}
+
+.mobile-overlay {
+  z-index: 999;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+.login-box,
+.login-box input,
+.login-box button {
+  position: relative;
+  z-index: 10000;
+}
+
+.login-box input {
+  font-size: 16px;
+}
+
+/* ========================= */
 /* SIDEBAR PREMIUM */
 /* ========================= */
 .sidebar {
