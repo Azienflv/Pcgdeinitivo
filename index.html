@@ -1,54 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Punta Cana Going Dashboard</title>
-
   <link rel="stylesheet" href="styles.css">
 
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f172a">
 
-  <!-- iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PCG Tours">
-  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 </head>
-
 <body>
 
-  <!-- 🔐 LOGIN -->
+  <!-- LOGIN -->
   <div id="loginScreen" class="login-screen">
     <div class="login-box">
-
-      <img src="assets/logo.png" class="login-logo">
+      <img src="assets/logo.png" alt="Punta Cana Going Tours" class="login-logo">
 
       <h2>Acceso Punta Cana Going</h2>
 
-      <input type="text" id="username" placeholder="Usuario">
-      <input type="password" id="password" placeholder="Contraseña">
+      <input
+        type="text"
+        id="username"
+        name="username"
+        placeholder="Usuario"
+        autocapitalize="off"
+        autocomplete="username"
+        autocorrect="off"
+        spellcheck="false"
+      >
 
-      <button onclick="login()">Entrar</button>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Contraseña"
+        autocapitalize="off"
+        autocomplete="current-password"
+        autocorrect="off"
+        spellcheck="false"
+      >
 
-      <p id="loginError">Datos incorrectos</p>
+      <button type="button" onclick="login()">Entrar</button>
+
+      <p id="loginError" style="display:none; color:red; margin-top:10px;">
+        Datos incorrectos
+      </p>
     </div>
   </div>
 
-  <!-- 🚀 APP -->
+  <!-- APP -->
   <div id="app" style="display:none;">
-
-    <!-- OVERLAY (solo app, NO login) -->
+    <!-- OVERLAY SOLO PARA APP, NO PARA LOGIN -->
     <div id="mobileOverlay" class="mobile-overlay"></div>
 
     <!-- SIDEBAR -->
-    <div class="sidebar" id="sidebar">
-
+    <aside class="sidebar" id="sidebar">
       <div class="logo">
-        <img src="assets/logo.png" class="sidebar-logo">
+        <img src="assets/logo.png" alt="Punta Cana Going Tours" class="sidebar-logo">
       </div>
 
       <a href="#" class="menu-item active">Reservas</a>
@@ -57,21 +71,18 @@
       <a href="#" class="menu-item">Reportes</a>
       <a href="#" class="menu-item">Usuarios</a>
 
-      <button onclick="logout()">Cerrar sesión</button>
-    </div>
+      <button type="button" onclick="logout()">Cerrar sesión</button>
+    </aside>
 
     <!-- MAIN -->
-    <div class="main" id="main">
-
-      <button id="toggleBtn">☰</button>
+    <main class="main" id="main">
+      <button type="button" id="toggleBtn">☰</button>
 
       <div id="content">
         <h1>Dashboard</h1>
-        <p>Bienvenido</p>
+        <p>Bienvenido a Punta Cana Going</p>
       </div>
-
-    </div>
-
+    </main>
   </div>
 
   <!-- LIBRERÍAS -->
@@ -79,7 +90,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <!-- APP -->
   <script src="app.js"></script>
-
 </body>
 </html>
