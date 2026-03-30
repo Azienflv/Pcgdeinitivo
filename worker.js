@@ -1,4 +1,4 @@
-const CACHE_NAME = "pcg-tours-v5"; // 🔥 cambia versión cada vez que actualices
+const CACHE_NAME = "pcg-tours-v6"; // 🔥 cambia versión cada vez que actualices
 
 const ASSETS = [
   "./",
