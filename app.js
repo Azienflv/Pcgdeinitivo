@@ -1553,6 +1553,32 @@ Gracias por elegir Punta Cana Going 🌴`;
   }
 }
 
+async function enviarEmailWeb(id) {
+  try {
+    const reservaWeb = await fetchWebReservationById(id);
+    const r = normalizeVoucherData(reservaWeb, "web");
+
+    let asunto = "Confirmación de Reserva - Punta Cana Going";
+    let cuerpo = `Hola ${r.cliente},
+
+Tu reserva está confirmada:
+
+Excursión: ${r.excursion}
+Hotel: ${r.hotel}
+Fecha: ${r.fecha}
+Pickup: ${r.pickup}
+Total: $${r.precio}
+
+Gracias por elegir Punta Cana Going 🌴`;
+
+    let mailto = `mailto:${r.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+    window.open(mailto);
+  } catch (err) {
+    console.error("Error enviando email web:", err);
+    alert("No se pudo abrir el email ⚠️");
+  }
+}
+
 // =======================
 // 📄 PDF
 // =======================
@@ -1626,6 +1652,83 @@ async function descargarPDF(id) {
   } catch (err) {
     console.error("Error descargando PDF:", err);
     alert("No se pudo generar el PDF ⚠️");
+  }
+}
+
+async function descargarPDFWeb(id) {
+  try {
+    const r = await fetchWebReservationById(id);
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) return alert("No se encontró el voucher.");
+
+    const { pdf } = await generarPDFFromElement(voucher);
+    const nombre = (r?.client_name || "voucher").replace(/\s+/g, "_");
+    pdf.save(`Voucher_${nombre}.pdf`);
+  } catch (err) {
+    console.error("Error descargando PDF web:", err);
+    alert("No se pudo generar el PDF ⚠️");
+  }
+}
+
+async function compartirPDFWeb(id) {
+  try {
+    const r = await fetchWebReservationById(id);
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) return alert("No se encontró el voucher.");
+
+    const { blob } = await generarPDFFromElement(voucher);
+    const nombre = (r?.client_name || "voucher").replace(/\s+/g, "_");
+    const file = new File([blob], `Voucher_${nombre}.pdf`, { type: "application/pdf" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: "Voucher Punta Cana Going",
+        text: `Voucher de ${r?.client_name || "cliente"}`,
+        files: [file]
+      });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Voucher_${nombre}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("Tu navegador no permite compartir PDF directamente. Se descargó el archivo.");
+    }
+  } catch (err) {
+    console.error("Error compartiendo PDF web:", err);
+    alert("No se pudo compartir el PDF ⚠️");
+  }
+}
+
+async function compartirImagenWeb(id) {
+  try {
+    const r = await fetchWebReservationById(id);
+    const voucher = document.querySelector(".premium-voucher");
+    if (!voucher) return alert("No se encontró el voucher.");
+
+    const blob = await generarImagenVoucher(voucher);
+    const nombre = (r?.client_name || "voucher").replace(/\s+/g, "_");
+    const file = new File([blob], `Voucher_${nombre}.png`, { type: "image/png" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: "Voucher Punta Cana Going",
+        text: `Voucher de ${r?.client_name || "cliente"}`,
+        files: [file]
+      });
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Voucher_${nombre}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("Tu navegador no permite compartir imagen directamente. Se descargó.");
+    }
+  } catch (err) {
+    console.error("Error compartiendo imagen web:", err);
+    alert("No se pudo compartir la imagen ⚠️");
   }
 }
 
