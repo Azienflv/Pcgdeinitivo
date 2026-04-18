@@ -1408,6 +1408,92 @@ async function verVoucher(id) {
   }
 }
 
+async function verVoucherWeb(id) {
+  try {
+    const reservaWeb = await fetchWebReservationById(id);
+    const r = normalizeVoucherData(reservaWeb, "web");
+
+    getContent().innerHTML = `
+      <div class="voucher-container premium-voucher">
+
+        <div class="voucher-header">
+          <img src="assets/logo.png" class="voucher-logo">
+          <p class="voucher-tagline">Premium Tours & Experiences</p>
+          <p class="voucher-contact">📞 +1 829-331-9938 &nbsp;|&nbsp; 📧 info@puntacanagoing.com</p>
+        </div>
+
+        <div class="voucher-topbar">
+          <div>
+            <h2 class="voucher-title">Reservation Voucher</h2>
+            <p class="voucher-subtitle">Punta Cana Going Tours</p>
+          </div>
+          <div class="voucher-status">PENDING</div>
+        </div>
+
+        <div class="voucher-card">
+          <h3>Client Information</h3>
+          <div class="voucher-grid">
+            <div><span>Client</span><strong>${r.cliente}</strong></div>
+            <div><span>Hotel</span><strong>${r.hotel}</strong></div>
+            <div><span>Date</span><strong>${r.fecha}</strong></div>
+            <div><span>Pick Up</span><strong>${r.pickup || "-"}</strong></div>
+          </div>
+        </div>
+
+        <div class="voucher-card voucher-highlight">
+          <h3>Tour Details</h3>
+          <div class="voucher-grid">
+            <div><span>Excursion</span><strong>${r.excursion}</strong></div>
+            <div><span>Adults</span><strong>${r.adultos}</strong></div>
+            <div><span>Children</span><strong>${r.ninos}</strong></div>
+            <div><span>Total</span><strong class="voucher-total">$${r.precio}</strong></div>
+          </div>
+        </div>
+
+        <div class="voucher-card">
+          <h3>Cancellation & Refund Policies</h3>
+          <div class="voucher-policies">
+            <h4>ES</h4>
+            <p>
+              a) Cancelaciones/reembolsos proceden con más de 48 horas antes del inicio del tour.<br>
+              b) Se requiere certificado médico en caso de enfermedad.<br>
+              c) No se permiten cambios el mismo día del tour.<br>
+              d) No hay reembolso por no presentación (no show).<br>
+              e) Descuentos aplicados no son reembolsables.<br>
+              f) No cancelaciones para eventos especiales como Cirque du Soleil.
+            </p>
+
+            <h4>EN</h4>
+            <p>
+              a) Cancellation/refund is valid if requested 48 hours before the tour.<br>
+              b) Medical certificate required if applicable.<br>
+              c) No same-day changes allowed.<br>
+              d) No refund for no-show.<br>
+              e) Discounts are non-refundable.<br>
+              f) No cancellations for special events such as Cirque du Soleil.
+            </p>
+          </div>
+        </div>
+
+        <div class="voucher-footer">
+          <p>Thank you for choosing <strong>Punta Cana Going Tours</strong></p>
+        </div>
+
+        <div class="voucher-actions">
+          <button onclick="window.print()">🖨️ Imprimir</button>
+          <button onclick="enviarEmailWeb(${reservaWeb.id})">✉️ Email</button>
+          <button onclick="descargarPDFWeb(${reservaWeb.id})">📄 Descargar PDF</button>
+          <button onclick="compartirPDFWeb(${reservaWeb.id})">📲 Compartir PDF</button>
+          <button onclick="compartirImagenWeb(${reservaWeb.id})">🖼️ Compartir Imagen</button>
+          <button onclick="mostrarReservas()">⬅ Volver</button>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    console.error("Error cargando voucher web:", err);
+    alert("No se pudo cargar el voucher web ⚠️");
+  }
+}
 // =======================
 // ✉️ EMAIL
 // =======================
