@@ -231,6 +231,94 @@ async function fetchReservaById(id) {
   return data;
 }
 
+async function fetchWebReservations() {
+  const { data, error } = await supabaseClient
+    .from("reservations")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchWebReservationById(id) {
+  const { data, error } = await supabaseClient
+    .from("reservations")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+function normalizePanelReservation(r) {
+  return {
+    id: r.id,
+    tipo: "panel",
+    cliente: r.cliente || "-",
+    telefono: r.telefono || "-",
+    email: r.email || "-",
+    hotel: r.hotel || "-",
+    excursion: r.excursion || "-",
+    pickup: r.pickup || "-",
+    fecha: r.fecha || "-",
+    adultos: r.adultos || 0,
+    ninos: r.ninos || 0,
+    precio: r.precio || 0,
+    estado: "manual",
+    fuente: "panel"
+  };
+}
+
+function normalizeWebReservation(r) {
+  return {
+    id: r.id,
+    tipo: "web",
+    cliente: r.client_name || "-",
+    telefono: r.phone || "-",
+    email: r.email || "-",
+    hotel: r.hotel_name || "-",
+    excursion: r.tour_name || r.tour_slug || "-",
+    pickup: r.pickup_time || "-",
+    fecha: r.selected_date || "-",
+    adultos: r.adults || 0,
+    ninos: r.children || 0,
+    precio: r.total || 0,
+    estado: r.status || "pending",
+    fuente: r.source || "web"
+  };
+}
+
+function normalizeVoucherData(reserva, tipo = "panel") {
+  if (tipo === "panel") {
+    return {
+      cliente: reserva.cliente || "-",
+      telefono: reserva.telefono || "-",
+      email: reserva.email || "-",
+      hotel: reserva.hotel || "-",
+      excursion: reserva.excursion || "-",
+      pickup: reserva.pickup || "-",
+      fecha: reserva.fecha || "-",
+      adultos: reserva.adultos || 0,
+      ninos: reserva.ninos || 0,
+      precio: reserva.precio || 0
+    };
+  }
+
+  return {
+    cliente: reserva.client_name || "-",
+    telefono: reserva.phone || "-",
+    email: reserva.email || "-",
+    hotel: reserva.hotel_name || "-",
+    excursion: reserva.tour_name || reserva.tour_slug || "-",
+    pickup: reserva.pickup_time || "-",
+    fecha: reserva.selected_date || "-",
+    adultos: reserva.adults || 0,
+    ninos: reserva.children || 0,
+    precio: reserva.total || 0
+  };
+}
 // =======================
 // 📦 MENÚ PRODUCTOS
 // =======================
