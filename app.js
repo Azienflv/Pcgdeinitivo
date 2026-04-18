@@ -882,6 +882,61 @@ async function editarReserva(id) {
   }
 }
 
+async function fetchWebReservations() {
+  const { data, error } = await supabaseClient
+    .from("reservations")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchWebReservationById(id) {
+  const { data, error } = await supabaseClient
+    .from("reservations")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+function normalizePanelReservation(r) {
+  return {
+    id: r.id,
+    tipo: "panel",
+    cliente: r.cliente || "-",
+    telefono: r.telefono || "-",
+    email: r.email || "-",
+    hotel: r.hotel || "-",
+    excursion: r.excursion || "-",
+    pickup: r.pickup || "-",
+    fecha: r.fecha || "-",
+    precio: r.precio || 0,
+    estado: "manual",
+    fuente: "panel"
+  };
+}
+
+function normalizeWebReservation(r) {
+  return {
+    id: r.id,
+    tipo: "web",
+    cliente: r.client_name || "-",
+    telefono: r.phone || "-",
+    email: r.email || "-",
+    hotel: r.hotel_name || "-",
+    excursion: r.tour_name || r.tour_slug || "-",
+    pickup: r.pickup_time || "-",
+    fecha: r.selected_date || "-",
+    precio: r.total || 0,
+    estado: r.status || "pending",
+    fuente: r.source || "web"
+  };
+}
+
 // =======================
 // ⚡ AUTO DATOS EDICIÓN
 // =======================
