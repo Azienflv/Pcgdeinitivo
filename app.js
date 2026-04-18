@@ -319,6 +319,47 @@ function normalizeVoucherData(reserva, tipo = "panel") {
     precio: reserva.total || 0
   };
 }
+
+function getEstadoBadge(estado) {
+  const value = (estado || "").toLowerCase();
+
+  if (value === "pending_cash") {
+    return `<span class="badge badge-cash">Pending Cash</span>`;
+  }
+
+  if (value === "pending_payment") {
+    return `<span class="badge badge-payment">Pending Payment</span>`;
+  }
+
+  if (value === "paid") {
+    return `<span class="badge badge-paid">Paid</span>`;
+  }
+
+  if (value === "confirmed") {
+    return `<span class="badge badge-confirmed">Confirmed</span>`;
+  }
+
+  if (value === "manual") {
+    return `<span class="badge badge-manual">Manual</span>`;
+  }
+
+  return `<span class="badge badge-default">${estado || "-"}</span>`;
+}
+
+function getFuenteBadge(fuente) {
+  const value = (fuente || "").toLowerCase();
+
+  if (value === "web") {
+    return `<span class="badge badge-web">Web</span>`;
+  }
+
+  if (value === "panel") {
+    return `<span class="badge badge-panel">Panel</span>`;
+  }
+
+  return `<span class="badge badge-default">${fuente || "-"}</span>`;
+}
+
 // =======================
 // 📦 MENÚ PRODUCTOS
 // =======================
