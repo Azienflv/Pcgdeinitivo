@@ -1523,6 +1523,25 @@ async function eliminarUsuario(id) {
   }
 }
 
+async function loadReservationsFromSupabase() {
+  if (!supabaseClient) {
+    console.error("Supabase client not available");
+    return [];
+  }
+
+  const { data, error } = await supabaseClient
+    .from("reservations")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error loading reservations:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
 // =======================
 // 📦 SERVICE WORKER
 // =======================
