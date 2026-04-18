@@ -911,57 +911,114 @@ async function mostrarReservas() {
       return;
     }
 
-    let tabla = `
+    getContent().innerHTML = `
       <h2>Reservas</h2>
-      <table border="1" style="width:100%; border-collapse: collapse;">
-        <tr>
-          <th>Cliente</th>
-          <th>Teléfono</th>
-          <th>Hotel</th>
-          <th>Excursión</th>
-          <th>Pickup</th>
-          <th>Fecha</th>
-          <th>Precio</th>
-          <th>Estado</th>
-          <th>Fuente</th>
-          <th>Acciones</th>
-        </tr>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+        <select id="filterFuente">
+          <option value="">Todas las fuentes</option>
+          <option value="panel">Panel</option>
+          <option value="web">Web</option>
+        </select>
+
+        <select id="filterEstado">
+          <option value="">Todos los estados</option>
+          <option value="manual">Manual</option>
+          <option value="pending_cash">Pending Cash</option>
+          <option value="pending_payment">Pending Payment</option>
+          <option value="paid">Paid</option>
+          <option value="confirmed">Confirmed</option>
+        </select>
+      </div>
+
+      <div id="reservasTablaWrap"></div>
     `;
 
-    reservasNormalizadas.forEach((r) => {
-      let acciones = "";
+    const filterFuente = document.getElementById("filterFuente");
+    const filterEstado = document.getElementById("filterEstado");
+    const tablaWrap = document.getElementById("reservasTablaWrap");
 
-      if (r.tipo === "panel") {
-        acciones = `
-          <button onclick="verVoucher(${r.id})">📄</button>
-          <button onclick="editarReserva(${r.id})">✏️</button>
-          <button onclick="eliminarReserva(${r.id})">❌</button>
-        `;
-      } else {
-        acciones = `
-          <button onclick="verVoucherWeb(${r.id})">📄</button>
-          <button onclick="abrirWhatsAppReservaWeb(${r.id})">💬</button>
-        `;
+    function renderTabla(data) {
+      if (!data.length) {
+        tablaWrap.innerHTML = "<p>No hay reservas con ese filtro.</p>";
+        return;
       }
 
-      tabla += `
-        <tr>
-          <td>${r.cliente}</td>
-          <td>${r.telefono}</td>
-          <td>${r.hotel}</td>
-          <td>${r.excursion}</td>
-          <td>${r.pickup}</td>
-          <td>${r.fecha}</td>
-          <td>$${r.precio}</td>
-          <td>${r.estado}</td>
-          <td>${r.fuente}</td>
-          <td>${acciones}</td>
-        </tr>
+      let tabla = `
+        <table class="reservations-table">
+          <tr>
+            <th>Cliente</th>
+            <th>Teléfono</th>
+            <th>Hotel</th>
+            <th>Excursión</th>
+            <th>Pickup</th>
+            <th>Fecha</th>
+            <th>Precio</th>
+            <th>Estado</th>
+            <th>Fuente</th>
+            <th>Acciones</th>
+          </tr>
       `;
-    });
 
-    tabla += "</table>";
-    getContent().innerHTML = tabla;
+      data.forEach((r) => {
+        let acciones = "";
+
+        if (r.tipo === "panel") {
+          acciones = `
+            <button onclick="verVoucher(${r.id})">📄</button>
+            <button onclick="editarReserva(${r.id})">✏️</button>
+            <button onclick="eliminarReserva(${r.id})">❌</button>
+          `;
+        } else {
+          acciones = `
+            <button onclick="verVoucherWeb(${r.id})">📄</button>
+            <button onclick="editarReservaWeb(${r.id})">✏️</button>
+            <button onclick="abrirWhatsAppReservaWeb(${r.id})">💬</button>
+          `;
+        }
+
+        tabla += `
+          <tr>
+            <td>${r.cliente}</td>
+            <td>${r.telefono}</td>
+            <td>${r.hotel}</td>
+            <td>${r.excursion}</td>
+            <td>${r.pickup}</td>
+            <td>${r.fecha}</td>
+            <td>$${r.precio}</td>
+            <td>${getEstadoBadge(r.estado)}</td>
+            <td>${getFuenteBadge(r.fuente)}</td>
+            <td>${acciones}</td>
+          </tr>
+        `;
+      });
+
+      tabla += `</table>`;
+      tablaWrap.innerHTML = tabla;
+    }
+
+    function applyFilters() {
+      const fuente = filterFuente.value;
+      const estado = filterEstado.value;
+
+      let filtradas = [...reservasNormalizadas];
+
+      if (fuente) {
+        filtradas = filtradas.filter(r => (r.fuente || "").toLowerCase() === fuente.toLowerCase());
+      }
+
+      if (estado) {
+        filtradas = filtradas.filter(r => (r.estado || "").toLowerCase() === estado.toLowerCase());
+      }
+
+      renderTabla(filtradas);
+    }
+
+    filterFuente.addEventListener("change", applyFilters);
+    filterEstado.addEventListener("change", applyFilters);
+
+    renderTabla(reservasNormalizadas);
+
   } catch (err) {
     console.error("Error cargando reservas:", err);
     alert("No se pudieron cargar las reservas ⚠️");
