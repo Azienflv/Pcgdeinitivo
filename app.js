@@ -898,6 +898,7 @@ async function mostrarReservas() {
         `;
       } else {
         acciones = `
+          <button onclick="verVoucherWeb(${r.id})">📄</button>
           <button onclick="abrirWhatsAppReservaWeb(${r.id})">💬</button>
         `;
       }
@@ -920,7 +921,6 @@ async function mostrarReservas() {
 
     tabla += "</table>";
     getContent().innerHTML = tabla;
-
   } catch (err) {
     console.error("Error cargando reservas:", err);
     alert("No se pudieron cargar las reservas ⚠️");
