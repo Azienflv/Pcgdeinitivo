@@ -761,9 +761,23 @@ async function guardarReserva(e) {
 
 async function mostrarReservas() {
   try {
-    const reservas = await fetchReservas();
+    const [reservasPanel, reservasWeb] = await Promise.all([
+      fetchReservas(),
+      fetchWebReservations()
+    ]);
 
-    if (reservas.length === 0) {
+    const reservasNormalizadas = [
+      ...(reservasPanel || []).map(normalizePanelReservation),
+      ...(reservasWeb || []).map(normalizeWebReservation)
+    ];
+
+    reservasNormalizadas.sort((a, b) => {
+      const fechaA = new Date(a.fecha || 0).getTime();
+      const fechaB = new Date(b.fecha || 0).getTime();
+      return fechaB - fechaA;
+    });
+
+    if (reservasNormalizadas.length === 0) {
       getContent().innerHTML = "<h2>No hay reservas aún</h2>";
       return;
     }
@@ -773,34 +787,52 @@ async function mostrarReservas() {
       <table border="1" style="width:100%; border-collapse: collapse;">
         <tr>
           <th>Cliente</th>
+          <th>Teléfono</th>
           <th>Hotel</th>
           <th>Excursión</th>
           <th>Pickup</th>
           <th>Fecha</th>
           <th>Precio</th>
+          <th>Estado</th>
+          <th>Fuente</th>
           <th>Acciones</th>
         </tr>
     `;
 
-    reservas.forEach((r) => {
+    reservasNormalizadas.forEach((r) => {
+      let acciones = "";
+
+      if (r.tipo === "panel") {
+        acciones = `
+          <button onclick="verVoucher(${r.id})">📄</button>
+          <button onclick="editarReserva(${r.id})">✏️</button>
+          <button onclick="eliminarReserva(${r.id})">❌</button>
+        `;
+      } else {
+        acciones = `
+          <button onclick="abrirWhatsAppReservaWeb(${r.id})">💬</button>
+        `;
+      }
+
       tabla += `
         <tr>
           <td>${r.cliente}</td>
+          <td>${r.telefono}</td>
           <td>${r.hotel}</td>
           <td>${r.excursion}</td>
-          <td>${r.pickup || "-"}</td>
+          <td>${r.pickup}</td>
           <td>${r.fecha}</td>
           <td>$${r.precio}</td>
-          <td>
-  <button onclick="verVoucher(${r.id})">📄</button>
-  <button onclick="editarReserva(${r.id})">✏️</button>
-  <button onclick="eliminarReserva(${r.id})">❌</button>
-</td>
+          <td>${r.estado}</td>
+          <td>${r.fuente}</td>
+          <td>${acciones}</td>
+        </tr>
       `;
     });
 
     tabla += "</table>";
     getContent().innerHTML = tabla;
+
   } catch (err) {
     console.error("Error cargando reservas:", err);
     alert("No se pudieron cargar las reservas ⚠️");
