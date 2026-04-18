@@ -1198,6 +1198,37 @@ async function abrirWhatsAppReservaWeb(id) {
   }
 }
 
+async function abrirWhatsAppReservaWeb(id) {
+  try {
+    const r = await fetchWebReservationById(id);
+
+    const message =
+      `Hola ${r.client_name || ""}, te escribimos de Punta Cana Going.\n\n` +
+      `Tu reserva fue recibida correctamente:\n` +
+      `Tour: ${r.tour_name || r.tour_slug || "-"}\n` +
+      `Fecha: ${r.selected_date || "-"}\n` +
+      `Hora: ${r.selected_time || "-"}\n` +
+      `Hotel: ${r.hotel_name || "-"}\n` +
+      `Adultos: ${r.adults || 0}\n` +
+      `Niños: ${r.children || 0}\n` +
+      `Total: $${r.total || 0} USD`;
+
+    const phone = (r.phone || "").replace(/[^\d]/g, "");
+
+    if (!phone) {
+      alert("Esta reserva no tiene teléfono ⚠️");
+      return;
+    }
+
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+
+  } catch (err) {
+    console.error("Error abriendo WhatsApp:", err);
+    alert("No se pudo abrir WhatsApp ⚠️");
+  }
+}
+
 // =======================
 // 📊 REPORTES
 // =======================
