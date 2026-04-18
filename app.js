@@ -1246,6 +1246,91 @@ async function guardarEdicionReserva(id) {
   }
 }
 
+async function editarReservaWeb(id) {
+  try {
+    const reserva = await fetchWebReservationById(id);
+
+    getContent().innerHTML = `
+      <h2>Editar Reserva Web</h2>
+
+      <form id="editReservaWebForm">
+        <input type="text" id="edit_web_cliente" placeholder="Nombre del cliente" value="${reserva.client_name || ""}" required>
+        <input type="tel" id="edit_web_telefono" placeholder="Teléfono" value="${reserva.phone || ""}" required>
+        <input type="email" id="edit_web_email" placeholder="Email" value="${reserva.email || ""}" required>
+
+        <input type="text" id="edit_web_hotel" placeholder="Hotel" value="${reserva.hotel_name || ""}" required>
+        <input type="text" id="edit_web_excursion" placeholder="Excursión" value="${reserva.tour_name || reserva.tour_slug || ""}" required>
+        <input type="text" id="edit_web_pickup" placeholder="Pickup" value="${reserva.pickup_time || ""}">
+
+        <input type="date" id="edit_web_fecha" value="${reserva.selected_date || ""}" required>
+        <input type="text" id="edit_web_hora" placeholder="Hora" value="${reserva.selected_time || ""}" required>
+
+        <input type="number" id="edit_web_adultos" placeholder="Adultos" min="1" value="${reserva.adults || 1}" required>
+        <input type="number" id="edit_web_ninos" placeholder="Niños" min="0" value="${reserva.children || 0}" required>
+
+        <input type="number" id="edit_web_total" placeholder="Total" value="${reserva.total || 0}" required>
+
+        <select id="edit_web_status">
+          <option value="pending_cash" ${(reserva.status || "") === "pending_cash" ? "selected" : ""}>Pending Cash</option>
+          <option value="pending_payment" ${(reserva.status || "") === "pending_payment" ? "selected" : ""}>Pending Payment</option>
+          <option value="paid" ${(reserva.status || "") === "paid" ? "selected" : ""}>Paid</option>
+          <option value="confirmed" ${(reserva.status || "") === "confirmed" ? "selected" : ""}>Confirmed</option>
+          <option value="cancelled" ${(reserva.status || "") === "cancelled" ? "selected" : ""}>Cancelled</option>
+        </select>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+          <button type="submit">💾 Guardar Cambios</button>
+          <button type="button" onclick="mostrarReservas()">⬅ Volver</button>
+        </div>
+      </form>
+    `;
+
+    document.getElementById("editReservaWebForm")
+      .addEventListener("submit", function(e) {
+        e.preventDefault();
+        guardarEdicionReservaWeb(id, reserva.tour_slug);
+      });
+
+  } catch (err) {
+    console.error("Error cargando reserva web para editar:", err);
+    alert("No se pudo cargar la reserva web ⚠️");
+  }
+}
+
+async function guardarEdicionReservaWeb(id, originalTourSlug) {
+  try {
+    const reservaActualizada = {
+      client_name: document.getElementById("edit_web_cliente").value.trim(),
+      phone: document.getElementById("edit_web_telefono").value.trim(),
+      email: document.getElementById("edit_web_email").value.trim(),
+      hotel_name: document.getElementById("edit_web_hotel").value.trim(),
+      tour_name: document.getElementById("edit_web_excursion").value.trim(),
+      pickup_time: document.getElementById("edit_web_pickup").value.trim(),
+      selected_date: document.getElementById("edit_web_fecha").value,
+      selected_time: document.getElementById("edit_web_hora").value.trim(),
+      adults: parseInt(document.getElementById("edit_web_adultos").value) || 1,
+      children: parseInt(document.getElementById("edit_web_ninos").value) || 0,
+      total: parseFloat(document.getElementById("edit_web_total").value) || 0,
+      status: document.getElementById("edit_web_status").value,
+      tour_slug: originalTourSlug
+    };
+
+    const { error } = await supabaseClient
+      .from("reservations")
+      .update(reservaActualizada)
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Reserva web actualizada ✅");
+    mostrarReservas();
+
+  } catch (err) {
+    console.error("Error actualizando reserva web:", err);
+    alert("No se pudo actualizar la reserva web ⚠️");
+  }
+}
+
 async function eliminarReserva(id) {
   if (!confirm("¿Seguro que quieres eliminar esta reserva?")) return;
 
