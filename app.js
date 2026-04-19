@@ -436,23 +436,69 @@ async function editarProductos() {
       return;
     }
 
-    let html = `<h2>Editar Productos</h2>`;
+    let html = `<h2>Editar Excursiones Web</h2>`;
 
     productos.forEach((p) => {
+      const horariosTexto = Array.isArray(p.horarios)
+        ? p.horarios.join(", ")
+        : "";
+
       html += `
-        <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
-          <input type="text" value="${p.nombre}" id="nombre-${p.id}">
-          <input type="number" value="${p.adulto}" id="adulto-${p.id}">
-          <input type="number" value="${p.nino}" id="nino-${p.id}">
-          <br><br>
-          <button onclick="actualizarProducto(${p.id})">💾 Guardar</button>
-          <button onclick="eliminarProducto(${p.id})">❌ Eliminar</button>
+        <div style="border:1px solid #334155; padding:14px; margin-bottom:14px; border-radius:10px; background:#111827;">
+          <div style="display:grid; gap:10px;">
+
+            <label style="font-size:13px; color:#94a3b8;">Nombre visible</label>
+            <input type="text" value="${p.nombre || ""}" id="nombre-${p.id}">
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div>
+                <label style="font-size:13px; color:#94a3b8;">Precio adulto</label>
+                <input type="number" value="${p.adulto || 0}" id="adulto-${p.id}">
+              </div>
+
+              <div>
+                <label style="font-size:13px; color:#94a3b8;">Precio niño</label>
+                <input type="number" value="${p.nino || 0}" id="nino-${p.id}">
+              </div>
+            </div>
+
+            <label style="font-size:13px; color:#94a3b8;">Horarios</label>
+            <input
+              type="text"
+              value="${horariosTexto}"
+              id="horarios-${p.id}"
+              placeholder="Ej: 7:00 AM, 8:20 AM, 9:45 AM"
+            >
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div>
+                <label style="font-size:13px; color:#94a3b8;">Slug (solo lectura)</label>
+                <input type="text" value="${p.slug || ""}" readonly style="background:#1f2937; color:#9ca3af;">
+              </div>
+
+              <div>
+                <label style="font-size:13px; color:#94a3b8;">Family (solo lectura)</label>
+                <input type="text" value="${p.family || ""}" readonly style="background:#1f2937; color:#9ca3af;">
+              </div>
+            </div>
+
+            <label style="display:flex; align-items:center; gap:8px; font-size:14px;">
+              <input type="checkbox" id="activo-${p.id}" ${p.activo_web ? "checked" : ""} style="width:auto; margin:0;">
+              Activa en la web
+            </label>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+              <button onclick="actualizarProducto(${p.id})">💾 Guardar</button>
+              <button onclick="eliminarProducto(${p.id})">❌ Eliminar</button>
+            </div>
+          </div>
         </div>
       `;
     });
 
     html += `<button onclick="menuProductos()">⬅ Volver</button>`;
     getContent().innerHTML = html;
+
   } catch (err) {
     console.error("Error cargando productos:", err);
     alert("No se pudieron cargar los productos ⚠️");
@@ -463,20 +509,36 @@ async function actualizarProducto(id) {
   const nombre = document.getElementById(`nombre-${id}`).value.trim();
   const adulto = parseFloat(document.getElementById(`adulto-${id}`).value) || 0;
   const nino = parseFloat(document.getElementById(`nino-${id}`).value) || 0;
+  const activo_web = document.getElementById(`activo-${id}`).checked;
+
+  const horariosInput = document.getElementById(`horarios-${id}`).value.trim();
+
+  const horarios = horariosInput
+    ? horariosInput
+        .split(",")
+        .map(h => h.trim())
+        .filter(Boolean)
+    : [];
 
   try {
     const { error } = await supabaseClient
       .from("productos")
-      .update({ nombre, adulto, nino })
+      .update({
+        nombre,
+        adulto,
+        nino,
+        horarios,
+        activo_web
+      })
       .eq("id", id);
 
     if (error) throw error;
 
-    alert("Producto actualizado ✅");
+    alert("Excursión actualizada ✅");
     editarProductos();
   } catch (err) {
     console.error("Error actualizando producto:", err);
-    alert("No se pudo actualizar el producto ⚠️");
+    alert("No se pudo actualizar la excursión ⚠️");
   }
 }
 
