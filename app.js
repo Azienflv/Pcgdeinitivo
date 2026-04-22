@@ -149,6 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (text === "Reservas") await mostrarReservas();
         else if (text === "Nuevo Producto") menuProductos();
         else if (text === "Usuarios") await menuUsuarios();
+        else if (text === "Reviews") await menuReviews();
 
         closeSidebarMobile();
       });
