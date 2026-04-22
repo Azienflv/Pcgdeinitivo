@@ -562,6 +562,13 @@ async function eliminarProducto(id) {
   }
 }
 
+async function menuReviews() {
+  getContent().innerHTML = `
+    <h2>Reviews</h2>
+    <p>Aquí podrás aprobar o eliminar comentarios de clientes.</p>
+  `;
+}
+
 // =======================
 // 🏨 HOTELES
 // =======================
