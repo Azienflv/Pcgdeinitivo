@@ -2236,6 +2236,7 @@ if ("serviceWorker" in navigator) {
 // reviwrs
 // =======================
 
+
 async function fetchPendingReviews() {
   const { data, error } = await supabaseClient
     .from("reviews")
@@ -2247,30 +2248,138 @@ async function fetchPendingReviews() {
   return data || [];
 }
 
-async function aprobarReview(id) {
-  const { error } = await supabaseClient
+async function fetchApprovedReviews() {
+  const { data, error } = await supabaseClient
     .from("reviews")
-    .update({ status: "approved" })
-    .eq("id", id);
+    .select("*")
+    .eq("status", "approved")
+    .order("created_at", { ascending: false });
 
-  if (error) {
-    alert("No se pudo aprobar el comentario");
-    return;
-  }
-
-  alert("Comentario aprobado ✅");
-
+  if (error) throw error;
+  return data || [];
 }
-async function eliminarReview(id) {
-  const { error } = await supabaseClient
-    .from("reviews")
-    .delete()
-    .eq("id", id);
 
-  if (error) {
-    alert("No se pudo eliminar el comentario");
-    return;
+async function menuReviews() {
+  try {
+    const pending = await fetchPendingReviews();
+    const approved = await fetchApprovedReviews();
+
+    let html = `
+      <h2>Reviews</h2>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+        <button type="button" onclick="menuReviews()">🔄 Refresh</button>
+      </div>
+    `;
+
+    html += `<h3>Pending Reviews</h3>`;
+
+    if (!pending.length) {
+      html += `<p>No pending reviews.</p>`;
+    } else {
+      pending.forEach((review) => {
+        html += `
+          <div style="border:1px solid #334155; padding:14px; border-radius:10px; margin-bottom:12px; background:#111827;">
+            <div style="margin-bottom:8px;">
+              <strong>${review.client_name || "Traveler"}</strong>
+              <span style="color:#94a3b8;"> — ${review.tour_slug || "-"}</span>
+            </div>
+
+            <div style="margin-bottom:8px; color:#facc15;">
+              ${"⭐".repeat(review.rating || 0)}
+            </div>
+
+            <div style="margin-bottom:8px; color:#e5e7eb;">
+              ${review.comment || ""}
+            </div>
+
+            <div style="margin-bottom:12px; color:#94a3b8; font-size:13px;">
+              ${review.client_email || "-"}<br>
+              ${review.created_at || ""}
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button type="button" onclick="aprobarReview(${review.id})">✅ Approve</button>
+              <button type="button" onclick="eliminarReview(${review.id})">❌ Delete</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    html += `<h3 style="margin-top:30px;">Approved Reviews</h3>`;
+
+    if (!approved.length) {
+      html += `<p>No approved reviews yet.</p>`;
+    } else {
+      approved.forEach((review) => {
+        html += `
+          <div style="border:1px solid #334155; padding:14px; border-radius:10px; margin-bottom:12px; background:#0f172a;">
+            <div style="margin-bottom:8px;">
+              <strong>${review.client_name || "Traveler"}</strong>
+              <span style="color:#94a3b8;"> — ${review.tour_slug || "-"}</span>
+            </div>
+
+            <div style="margin-bottom:8px; color:#facc15;">
+              ${"⭐".repeat(review.rating || 0)}
+            </div>
+
+            <div style="margin-bottom:8px; color:#e5e7eb;">
+              ${review.comment || ""}
+            </div>
+
+            <div style="margin-bottom:12px; color:#94a3b8; font-size:13px;">
+              ${review.client_email || "-"}<br>
+              ${review.created_at || ""}
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button type="button" onclick="eliminarReview(${review.id})">🗑️ Delete</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    getContent().innerHTML = html;
+  } catch (err) {
+    console.error("Error loading reviews:", err);
+    alert("Could not load reviews ⚠️");
   }
+}
 
-  alert("Comentario eliminado ✅");
+async function aprobarReview(id) {
+  try {
+    const { error } = await supabaseClient
+      .from("reviews")
+      .update({ status: "approved" })
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Review approved ✅");
+    menuReviews();
+  } catch (err) {
+    console.error("Error approving review:", err);
+    alert("Could not approve review ⚠️");
+  }
+}
+
+async function eliminarReview(id) {
+  if (!confirm("Delete this review?")) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from("reviews")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Review deleted ✅");
+    menuReviews();
+  } catch (err) {
+    console.error("Error deleting review:", err);
+    alert("Could not delete review ⚠️");
+  }
 }
