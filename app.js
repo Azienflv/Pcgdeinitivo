@@ -2223,3 +2223,46 @@ if ("serviceWorker" in navigator) {
       .catch(error => console.log("Error registrando Service Worker ❌", error));
   });
 }
+
+// =======================
+// reviwrs
+// =======================
+
+async function fetchPendingReviews() {
+  const { data, error } = await supabaseClient
+    .from("reviews")
+    .select("*")
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function aprobarReview(id) {
+  const { error } = await supabaseClient
+    .from("reviews")
+    .update({ status: "approved" })
+    .eq("id", id);
+
+  if (error) {
+    alert("No se pudo aprobar el comentario");
+    return;
+  }
+
+  alert("Comentario aprobado ✅");
+
+}
+async function eliminarReview(id) {
+  const { error } = await supabaseClient
+    .from("reviews")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("No se pudo eliminar el comentario");
+    return;
+  }
+
+  alert("Comentario eliminado ✅");
+}
