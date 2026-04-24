@@ -2256,7 +2256,9 @@ async function menuReviews() {
   try {
     const pending = await fetchPendingReviews();
     const approved = await fetchApprovedReviews();
-
+console.log("Pending reviews:", pending);
+console.log("Approved reviews:", approved);
+alert(`Pending: ${pending.length} / Approved: ${approved.length}`);
     let html = `
       <h2>Reviews</h2>
 
