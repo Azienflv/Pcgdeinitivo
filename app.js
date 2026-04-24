@@ -581,17 +581,34 @@ async function crearHotel() {
     const productos = await fetchProductos();
 
     let inputs = productos.map(p => {
-      let id = safeId(p.nombre);
-      return `
-        <div style="margin-bottom:16px; padding:10px; border:1px solid #334155; border-radius:8px;">
-          <label style="display:block; margin-bottom:8px;"><strong>${p.nombre}</strong></label>
+  const id = safeId(p.slug || p.nombre);
+  const horarios = Array.isArray(p.horarios) && p.horarios.length
+    ? p.horarios
+    : ["default"];
 
-          <input type="time" id="pickup1_${id}" placeholder="Pickup 1">
-          <input type="time" id="pickup2_${id}" placeholder="Pickup 2">
-          <input type="time" id="pickup3_${id}" placeholder="Pickup 3">
+  return `
+    <div style="margin-bottom:16px; padding:12px; border:1px solid #334155; border-radius:10px;">
+      <label style="display:block; margin-bottom:10px;">
+        <strong>${p.nombre}</strong>
+      </label>
+
+      ${horarios.map((hora, index) => `
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:13px; color:#94a3b8; margin-bottom:5px;">
+            ${hora === "default" ? "Pickup" : `Pickup for ${hora}`}
+          </label>
+
+          <input
+            type="time"
+            id="pickup_${id}_${index}"
+            data-tour-key="${p.slug || p.nombre}"
+            data-tour-time="${hora}"
+          >
         </div>
-      `;
-    }).join("");
+      `).join("")}
+    </div>
+  `;
+}).join("");
 
     getContent().innerHTML = `
       <h2>Nuevo Hotel</h2>
