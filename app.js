@@ -560,7 +560,7 @@ async function eliminarProducto(id) {
     console.error("Error eliminando producto:", err);
     alert("No se pudo eliminar el producto ⚠️");
   }
-
+}
 
 // =======================
 // 🏨 HOTELES
