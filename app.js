@@ -645,16 +645,23 @@ async function guardarHotel(e) {
     };
 
     productos.forEach(p => {
-      let id = safeId(p.nombre);
+  const key = p.slug || p.nombre;
+  const id = safeId(key);
+  const horarios = Array.isArray(p.horarios) && p.horarios.length
+    ? p.horarios
+    : ["default"];
 
-      let horarios = [
-        document.getElementById(`pickup1_${id}`).value,
-        document.getElementById(`pickup2_${id}`).value,
-        document.getElementById(`pickup3_${id}`).value
-      ].filter(h => h && h.trim() !== "");
+  hotel.pickups[key] = {};
 
-      hotel.pickups[p.nombre] = horarios;
-    });
+  horarios.forEach((hora, index) => {
+    const input = document.getElementById(`pickup_${id}_${index}`);
+    const pickupValue = input?.value || "";
+
+    if (pickupValue) {
+      hotel.pickups[key][hora] = pickupValue;
+    }
+  });
+});
 
     const { error } = await supabaseClient
       .from("hoteles")
