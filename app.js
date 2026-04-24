@@ -723,24 +723,51 @@ async function editarHotel(id) {
     const productos = await fetchProductos();
 
     let inputs = productos.map(p => {
-      let pid = safeId(p.nombre);
+  const key = p.slug || p.nombre;
+  const pid = safeId(key);
 
-      let horariosGuardados = hotel.pickups?.[p.nombre] || [];
+  const horariosProducto = Array.isArray(p.horarios) && p.horarios.length
+    ? p.horarios
+    : ["default"];
 
-      if (!Array.isArray(horariosGuardados)) {
-        horariosGuardados = horariosGuardados ? [horariosGuardados] : [];
-      }
+  const savedBySlug = hotel.pickups?.[p.slug];
+  const savedByName = hotel.pickups?.[p.nombre];
+  const savedPickup = savedBySlug || savedByName || {};
 
-      return `
-        <div style="margin-bottom:16px; padding:10px; border:1px solid #334155; border-radius:8px;">
-          <label style="display:block; margin-bottom:8px;"><strong>${p.nombre}</strong></label>
+  function getSavedPickup(hora, index) {
+    if (Array.isArray(savedPickup)) {
+      return savedPickup[index] || "";
+    }
 
-          <input type="time" id="edit_pickup1_${pid}" value="${horariosGuardados[0] || ""}">
-          <input type="time" id="edit_pickup2_${pid}" value="${horariosGuardados[1] || ""}">
-          <input type="time" id="edit_pickup3_${pid}" value="${horariosGuardados[2] || ""}">
+    if (typeof savedPickup === "object" && savedPickup !== null) {
+      return savedPickup[hora] || savedPickup.default || "";
+    }
+
+    return savedPickup || "";
+  }
+
+  return `
+    <div style="margin-bottom:16px; padding:12px; border:1px solid #334155; border-radius:10px;">
+      <label style="display:block; margin-bottom:10px;">
+        <strong>${p.nombre}</strong>
+      </label>
+
+      ${horariosProducto.map((hora, index) => `
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:13px; color:#94a3b8; margin-bottom:5px;">
+            ${hora === "default" ? "Pickup" : `Pickup for ${hora}`}
+          </label>
+
+          <input
+            type="time"
+            id="edit_pickup_${pid}_${index}"
+            value="${getSavedPickup(hora, index)}"
+          >
         </div>
-      `;
-    }).join("");
+      `).join("")}
+    </div>
+  `;
+}).join("");
 
     getContent().innerHTML = `
       <h2>Editar Hotel</h2>
