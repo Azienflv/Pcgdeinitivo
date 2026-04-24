@@ -801,17 +801,25 @@ async function guardarEdicionHotel(id) {
 
     let pickups = {};
 
-    productos.forEach(p => {
-      let pid = safeId(p.nombre);
+productos.forEach(p => {
+  const key = p.slug || p.nombre;
+  const pid = safeId(key);
 
-      let horarios = [
-        document.getElementById(`edit_pickup1_${pid}`).value,
-        document.getElementById(`edit_pickup2_${pid}`).value,
-        document.getElementById(`edit_pickup3_${pid}`).value
-      ].filter(h => h && h.trim() !== "");
+  const horariosProducto = Array.isArray(p.horarios) && p.horarios.length
+    ? p.horarios
+    : ["default"];
 
-      pickups[p.nombre] = horarios;
-    });
+  pickups[key] = {};
+
+  horariosProducto.forEach((hora, index) => {
+    const input = document.getElementById(`edit_pickup_${pid}_${index}`);
+    const value = input?.value || "";
+
+    if (value) {
+      pickups[key][hora] = value;
+    }
+  });
+});
 
     const nombre = document.getElementById("edit_nombreHotel").value.trim();
 
