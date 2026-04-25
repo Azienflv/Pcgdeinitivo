@@ -539,6 +539,31 @@ async function actualizarProducto(id) {
         .filter(Boolean)
     : [];
 
+const diasSemana = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday"
+];
+
+const dias_disponibles = diasSemana.filter((dia) => {
+  const checkbox = document.getElementById(`dia-${dia}-${id}`);
+  return checkbox && checkbox.checked;
+});
+
+const hora_limite_reserva =
+  document.getElementById(`hora-limite-${id}`)?.value || null;
+
+const fechasInput =
+  document.getElementById(`fechas-bloqueadas-${id}`)?.value.trim() || "";
+
+const fechas_bloqueadas = fechasInput
+  ? fechasInput.split(",").map(f => f.trim()).filter(Boolean)
+  : [];
+  
   try {
     const { error } = await supabaseClient
       .from("productos")
