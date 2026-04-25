@@ -566,14 +566,16 @@ const fechas_bloqueadas = fechasInput
   
   try {
     const { error } = await supabaseClient
-      .from("productos")
       .update({
-        nombre,
-        adulto,
-        nino,
-        horarios,
-        activo_web
-      })
+  nombre,
+  adulto,
+  nino,
+  horarios,
+  activo_web,
+  dias_disponibles,
+  hora_limite_reserva,
+  fechas_bloqueadas
+})
       .eq("id", id);
 
     if (error) throw error;
