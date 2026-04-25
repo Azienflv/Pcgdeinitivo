@@ -444,6 +444,24 @@ async function editarProductos() {
         ? p.horarios.join(", ")
         : "";
 
+const diasDisponibles = Array.isArray(p.dias_disponibles)
+  ? p.dias_disponibles
+  : [];
+
+const fechasBloqueadasTexto = Array.isArray(p.fechas_bloqueadas)
+  ? p.fechas_bloqueadas.join(", ")
+  : "";
+
+const diasSemana = [
+  ["monday", "Monday"],
+  ["tuesday", "Tuesday"],
+  ["wednesday", "Wednesday"],
+  ["thursday", "Thursday"],
+  ["friday", "Friday"],
+  ["saturday", "Saturday"],
+  ["sunday", "Sunday"]
+];
+      
       html += `
         <div style="border:1px solid #334155; padding:14px; margin-bottom:14px; border-radius:10px; background:#111827;">
           <div style="display:grid; gap:10px;">
