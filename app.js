@@ -481,6 +481,14 @@ async function editarProductos() {
               </div>
             </div>
 
+            <label style="font-size:13px; color:#94a3b8;">Capacidad máxima</label>
+            <input
+            type="number"
+           id="capacidad-${p.id}"
+            value="${p.capacidad_maxima || 0}"
+            placeholder="Ej: 20"
+            />
+           
             <label style="font-size:13px; color:#94a3b8;">Horarios disponibles</label>
             <input
               type="text"
