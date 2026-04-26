@@ -600,29 +600,34 @@ const fechasInput =
 const fechas_bloqueadas = fechasInput
   ? fechasInput.split(",").map(f => f.trim()).filter(Boolean)
   : [];
-  
-  try {
-    const { error } = await supabaseClient
-      .update({
-  nombre,
-  adulto,
-  nino,
-  horarios,
-  activo_web,
-  dias_disponibles,
-  hora_limite_reserva,
-  fechas_bloqueadas
-})
-      .eq("id", id);
 
-    if (error) throw error;
+const capacidad_maxima =
+  parseInt(document.getElementById(`capacidad-${id}`)?.value) || 0;
 
-    alert("Excursión actualizada ✅");
-    editarProductos();
-  } catch (err) {
-    console.error("Error actualizando producto:", err);
-    alert("No se pudo actualizar la excursión ⚠️");
-  }
+try {
+  const { error } = await supabaseClient
+    .from("productos")
+    .update({
+      nombre,
+      adulto,
+      nino,
+      horarios,
+      activo_web,
+      dias_disponibles,
+      hora_limite_reserva,
+      fechas_bloqueadas,
+      capacidad_maxima
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+
+  alert("Excursión actualizada ✅");
+  editarProductos();
+
+} catch (err) {
+  console.error("Error actualizando producto:", err);
+  alert("No se pudo actualizar la excursión ⚠️");
 }
 
 async function eliminarProducto(id) {
