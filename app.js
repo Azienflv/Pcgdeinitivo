@@ -444,24 +444,24 @@ async function editarProductos() {
         ? p.horarios.join(", ")
         : "";
 
-const diasDisponibles = Array.isArray(p.dias_disponibles)
-  ? p.dias_disponibles
-  : [];
+      const diasDisponibles = Array.isArray(p.dias_disponibles)
+        ? p.dias_disponibles
+        : [];
 
-const fechasBloqueadasTexto = Array.isArray(p.fechas_bloqueadas)
-  ? p.fechas_bloqueadas.join(", ")
-  : "";
+      const fechasBloqueadasTexto = Array.isArray(p.fechas_bloqueadas)
+        ? p.fechas_bloqueadas.join(", ")
+        : "";
 
-const diasSemana = [
-  ["monday", "Monday"],
-  ["tuesday", "Tuesday"],
-  ["wednesday", "Wednesday"],
-  ["thursday", "Thursday"],
-  ["friday", "Friday"],
-  ["saturday", "Saturday"],
-  ["sunday", "Sunday"]
-];
-      
+      const diasSemana = [
+        ["monday", "Monday"],
+        ["tuesday", "Tuesday"],
+        ["wednesday", "Wednesday"],
+        ["thursday", "Thursday"],
+        ["friday", "Friday"],
+        ["saturday", "Saturday"],
+        ["sunday", "Sunday"]
+      ];
+
       html += `
         <div style="border:1px solid #334155; padding:14px; margin-bottom:14px; border-radius:10px; background:#111827;">
           <div style="display:grid; gap:10px;">
@@ -481,12 +481,42 @@ const diasSemana = [
               </div>
             </div>
 
-            <label style="font-size:13px; color:#94a3b8;">Horarios</label>
+            <label style="font-size:13px; color:#94a3b8;">Horarios disponibles</label>
             <input
               type="text"
               value="${horariosTexto}"
               id="horarios-${p.id}"
               placeholder="Ej: 7:00 AM, 8:20 AM, 9:45 AM"
+            >
+
+            <label style="font-size:13px; color:#94a3b8;">Available days</label>
+            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px;">
+              ${diasSemana.map(([value, label]) => `
+                <label style="display:flex; align-items:center; gap:8px; font-size:14px;">
+                  <input
+                    type="checkbox"
+                    id="dia-${value}-${p.id}"
+                    ${diasDisponibles.includes(value) ? "checked" : ""}
+                    style="width:auto; margin:0;"
+                  >
+                  ${label}
+                </label>
+              `).join("")}
+            </div>
+
+            <label style="font-size:13px; color:#94a3b8;">Booking cut-off time</label>
+            <input
+              type="time"
+              id="hora-limite-${p.id}"
+              value="${p.hora_limite_reserva || ""}"
+            >
+
+            <label style="font-size:13px; color:#94a3b8;">Blocked dates</label>
+            <input
+              type="text"
+              id="fechas-bloqueadas-${p.id}"
+              value="${fechasBloqueadasTexto}"
+              placeholder="Ej: 2026-05-10, 2026-05-18"
             >
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -523,7 +553,6 @@ const diasSemana = [
     alert("No se pudieron cargar los productos ⚠️");
   }
 }
-
 async function actualizarProducto(id) {
   const nombre = document.getElementById(`nombre-${id}`).value.trim();
   const adulto = parseFloat(document.getElementById(`adulto-${id}`).value) || 0;
