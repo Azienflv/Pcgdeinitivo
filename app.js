@@ -629,7 +629,7 @@ try {
   console.error("Error actualizando producto:", err);
   alert("No se pudo actualizar la excursión ⚠️");
 }
-
+}
 async function eliminarProducto(id) {
   if (!confirm("¿Eliminar este producto?")) return;
 
