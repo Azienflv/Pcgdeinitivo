@@ -60,7 +60,7 @@ async function login() {
     if (loginError) loginError.style.display = "block";
   }
 }
-}
+
 function logout() {
   localStorage.removeItem("session");
   localStorage.removeItem("currentUser");
