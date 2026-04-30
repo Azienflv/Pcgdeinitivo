@@ -1287,7 +1287,12 @@ async function editarReserva(id) {
 
         <input type="date" id="edit_fecha" value="${reserva.fecha || ""}" required>
 
-        <input type="number" id="edit_precio" placeholder="Precio total" value="${reserva.precio || 0}" readonly>
+        <input type="number" id="edit_precio" placeholder="Precio total" value="${reserva.precio || 0}" min="0" step="0.01">
+
+<label style="display:flex; align-items:center; gap:8px; font-size:14px;">
+  <input type="checkbox" id="edit_precioManual" style="width:auto;">
+  🔒 Precio manual
+</label>
 
         <label>Descuento ($)</label>
         <input type="number" id="edit_descuento" value="${reserva.descuento || 0}" min="0">
