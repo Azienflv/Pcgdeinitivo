@@ -1379,8 +1379,12 @@ async function autoDatosEdicion(pickupActual = "") {
     const ninos = parseInt(document.getElementById("edit_ninos").value) || 0;
     const descuento = parseFloat(document.getElementById("edit_descuento").value) || 0;
 
-    const producto = productos.find(p => p.nombre === excursion);
+    // ✅ IMPORTANTE: buscar por slug o nombre
+    const producto = productos.find(p => (p.slug || p.nombre) === excursion);
 
+    // =====================
+    // 💰 CALCULAR PRECIO
+    // =====================
     if (producto) {
       let total = (adultos * producto.adulto) + (ninos * producto.nino);
       total = Math.max(0, total - descuento);
@@ -1389,36 +1393,32 @@ async function autoDatosEdicion(pickupActual = "") {
       document.getElementById("edit_precio").value = "";
     }
 
+    // =====================
+    // 🚐 PICKUPS
+    // =====================
     const pickupSelect = document.getElementById("edit_pickup");
-pickupSelect.innerHTML = `<option value="">Seleccionar pickup</option>`;
+    pickupSelect.innerHTML = `<option value="">Seleccionar pickup</option>`;
 
-const hotel = hoteles.find(h => h.nombre === hotelNombre);
+    const hotel = hoteles.find(h => h.nombre === hotelNombre);
 
-if (hotel && hotel.pickups && hotel.pickups[excursion]) {
-  const horariosObj = hotel.pickups[excursion];
+    if (hotel && hotel.pickups && hotel.pickups[excursion]) {
+      const horariosObj = hotel.pickups[excursion];
 
-  if (horariosObj && typeof horariosObj === "object" && !Array.isArray(horariosObj)) {
-    Object.entries(horariosObj).forEach(([horaTour, pickup]) => {
-      if (pickup && pickup.trim() !== "") {
-        pickupSelect.innerHTML += `
-          <option value="${pickup}">
-            ${horaTour} → ${pickup}
-          </option>
-        `;
+      if (horariosObj && typeof horariosObj === "object" && !Array.isArray(horariosObj)) {
+        Object.entries(horariosObj).forEach(([horaTour, pickup]) => {
+          if (pickup && pickup.trim() !== "") {
+            pickupSelect.innerHTML += `
+              <option value="${pickup}">
+                ${horaTour} → ${pickup}
+              </option>
+            `;
+          }
+        });
       }
-    });
-  }
 
-  if (pickupActual) {
-    pickupSelect.value = pickupActual;
-  }
-}
-
-      // Si existe el pickup actual, lo deja seleccionado
-      if (pickupActual && horarios.includes(pickupActual)) {
+      // ✅ Mantener seleccionado el pickup actual
+      if (pickupActual) {
         pickupSelect.value = pickupActual;
-      } else if (horarios.length === 1) {
-        pickupSelect.value = horarios[0];
       }
     }
 
