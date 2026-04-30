@@ -1248,8 +1248,8 @@ async function editarReserva(id) {
     const hoteles = await fetchHoteles();
 
     let opcionesExc = productos.map(p =>
-      `<option value="${p.nombre}" ${p.nombre === reserva.excursion ? "selected" : ""}>${p.nombre}</option>`
-    ).join("");
+  `<option value="${p.slug || p.nombre}">${p.nombre}</option>`
+).join("");
 
     let opcionesHoteles = hoteles.map(h =>
       `<option value="${h.nombre}" ${h.nombre === reserva.hotel ? "selected" : ""}>${h.nombre}</option>`
