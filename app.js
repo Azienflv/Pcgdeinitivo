@@ -633,7 +633,7 @@ try {
     "Error: " + (err.message || JSON.stringify(err))
   );
 }
-  
+}  
 async function eliminarProducto(id) {
   if (!confirm("¿Eliminar este producto?")) return;
 
