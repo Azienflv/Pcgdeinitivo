@@ -1045,24 +1045,20 @@ async function autoDatos() {
     const hotel = hoteles.find(h => h.nombre === hotelNombre);
 
     if (hotel && hotel.pickups && hotel.pickups[excursion]) {
-      let horarios = hotel.pickups[excursion];
+  const horariosObj = hotel.pickups[excursion];
 
-      // Compatibilidad con hoteles viejos
-      if (!Array.isArray(horarios)) {
-        horarios = horarios ? [horarios] : [];
+  if (horariosObj && typeof horariosObj === "object" && !Array.isArray(horariosObj)) {
+    Object.entries(horariosObj).forEach(([horaTour, pickup]) => {
+      if (pickup && pickup.trim() !== "") {
+        pickupSelect.innerHTML += `
+          <option value="${pickup}">
+            ${horaTour} → ${pickup}
+          </option>
+        `;
       }
-
-      horarios = horarios.filter(h => h && h.trim() !== "");
-
-      horarios.forEach(hora => {
-        pickupSelect.innerHTML += `<option value="${hora}">${hora}</option>`;
-      });
-
-      // Si solo hay uno, lo selecciona automático
-      if (horarios.length === 1) {
-        pickupSelect.value = horarios[0];
-      }
-    }
+    });
+  }
+}
 
   } catch (err) {
     console.error("Error calculando datos:", err);
