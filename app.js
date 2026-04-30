@@ -983,7 +983,12 @@ async function loadForm() {
           ${opcionesExc}
         </select>
 
-        <input type="number" id="adultos" placeholder="Adultos" min="1" required>
+        <input type="number" id="precio" placeholder="Precio total" min="0" step="0.01">
+
+<label style="display:flex; align-items:center; gap:8px; font-size:14px;">
+  <input type="checkbox" id="precioManual" style="width:auto;">
+  🔒 Precio manual
+</label>
         <input type="number" id="ninos" placeholder="Niños" min="0">
 
         <label>Pick Up Time</label>
