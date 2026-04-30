@@ -1024,6 +1024,9 @@ async function loadForm() {
 
 async function autoDatos() {
   try {
+    const precioManual = document.getElementById("precioManual")?.checked;
+
+if (precioManual) return;
     const productos = await fetchProductos();
     const hoteles = await fetchHoteles();
 
