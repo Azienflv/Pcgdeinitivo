@@ -1394,22 +1394,29 @@ async function autoDatosEdicion(pickupActual = "") {
     }
 
     const pickupSelect = document.getElementById("edit_pickup");
-    pickupSelect.innerHTML = `<option value="">Seleccionar pickup</option>`;
+pickupSelect.innerHTML = `<option value="">Seleccionar pickup</option>`;
 
-    const hotel = hoteles.find(h => h.nombre === hotelNombre);
+const hotel = hoteles.find(h => h.nombre === hotelNombre);
 
-    if (hotel && hotel.pickups && hotel.pickups[excursion]) {
-      let horarios = hotel.pickups[excursion];
+if (hotel && hotel.pickups && hotel.pickups[excursion]) {
+  const horariosObj = hotel.pickups[excursion];
 
-      if (!Array.isArray(horarios)) {
-        horarios = horarios ? [horarios] : [];
+  if (horariosObj && typeof horariosObj === "object" && !Array.isArray(horariosObj)) {
+    Object.entries(horariosObj).forEach(([horaTour, pickup]) => {
+      if (pickup && pickup.trim() !== "") {
+        pickupSelect.innerHTML += `
+          <option value="${pickup}">
+            ${horaTour} → ${pickup}
+          </option>
+        `;
       }
+    });
+  }
 
-      horarios = horarios.filter(h => h && h.trim() !== "");
-
-      horarios.forEach((hora, index) => {
-        pickupSelect.innerHTML += `<option value="${hora}">Pickup ${index + 1} - ${hora}</option>`;
-      });
+  if (pickupActual) {
+    pickupSelect.value = pickupActual;
+  }
+}
 
       // Si existe el pickup actual, lo deja seleccionado
       if (pickupActual && horarios.includes(pickupActual)) {
