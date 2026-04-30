@@ -627,9 +627,13 @@ try {
 
 } catch (err) {
   console.error("Error actualizando producto:", err);
-  alert("No se pudo actualizar la excursión ⚠️");
+
+  alert(
+    "No se pudo actualizar la excursión ⚠️\n\n" +
+    "Error: " + (err.message || JSON.stringify(err))
+  );
 }
-}
+  
 async function eliminarProducto(id) {
   if (!confirm("¿Eliminar este producto?")) return;
 
