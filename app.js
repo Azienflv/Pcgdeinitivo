@@ -1029,7 +1029,7 @@ async function autoDatos() {
     const ninos = parseInt(document.getElementById("ninos").value) || 0;
     const descuento = parseFloat(document.getElementById("descuento").value) || 0;
 
-    const producto = productos.find(p => p.nombre === excursion);
+    const producto = productos.find(p => (p.slug || p.nombre) === excursion);
 
     if (producto) {
       let total = (adultos * producto.adulto) + (ninos * producto.nino);
