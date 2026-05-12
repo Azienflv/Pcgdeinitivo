@@ -958,8 +958,8 @@ async function loadForm() {
     const hoteles = await fetchHoteles();
 
     let opcionesExc = productos.map(p =>
-  `<option value="${p.slug || p.nombre}">${p.nombre}</option>`
-).join("");
+      `<option value="${p.slug || p.nombre}">${p.nombre}</option>`
+    ).join("");
 
     let opcionesHoteles = hoteles.map(h =>
       `<option value="${h.nombre}">${h.nombre}</option>`
@@ -983,13 +983,8 @@ async function loadForm() {
           ${opcionesExc}
         </select>
 
-        <input type="number" id="precio" placeholder="Precio total" min="0" step="0.01">
-
-<label style="display:flex; align-items:center; gap:8px; font-size:14px;">
-  <input type="checkbox" id="precioManual" style="width:auto;">
-  🔒 Precio manual
-</label>
-        <input type="number" id="ninos" placeholder="Niños" min="0">
+        <input type="number" id="adultos" placeholder="Adultos" min="1" value="1" required>
+        <input type="number" id="ninos" placeholder="Niños" min="0" value="0">
 
         <label>Pick Up Time</label>
         <select id="pickup" required>
@@ -998,10 +993,15 @@ async function loadForm() {
 
         <input type="date" id="fecha" required>
 
-        <input type="number" id="precio" placeholder="Precio total" readonly>
-
         <label>Descuento ($)</label>
         <input type="number" id="descuento" value="0" min="0">
+
+        <input type="number" id="precio" placeholder="Precio total" min="0" step="0.01">
+
+        <label style="display:flex; align-items:center; gap:8px; font-size:14px;">
+          <input type="checkbox" id="precioManual" style="width:auto;">
+          🔒 Precio manual
+        </label>
 
         <button type="submit">Guardar Reserva</button>
       </form>
@@ -1012,6 +1012,7 @@ async function loadForm() {
     document.getElementById("adultos").addEventListener("input", autoDatos);
     document.getElementById("ninos").addEventListener("input", autoDatos);
     document.getElementById("descuento").addEventListener("input", autoDatos);
+    document.getElementById("precioManual").addEventListener("change", autoDatos);
 
     document.getElementById("reservaForm")
       .addEventListener("submit", guardarReserva);
