@@ -1025,9 +1025,6 @@ async function loadForm() {
 
 async function autoDatos() {
   try {
-    const precioManual = document.getElementById("precioManual")?.checked;
-
-if (precioManual) return;
     const productos = await fetchProductos();
     const hoteles = await fetchHoteles();
 
@@ -1037,37 +1034,46 @@ if (precioManual) return;
     const adultos = parseInt(document.getElementById("adultos").value) || 0;
     const ninos = parseInt(document.getElementById("ninos").value) || 0;
     const descuento = parseFloat(document.getElementById("descuento").value) || 0;
+    const precioManual = document.getElementById("precioManual")?.checked;
+
+    const precioInput = document.getElementById("precio");
+    const pickupSelect = document.getElementById("pickup");
 
     const producto = productos.find(p => (p.slug || p.nombre) === excursion);
 
-    if (producto) {
-      let total = (adultos * producto.adulto) + (ninos * producto.nino);
-      total = Math.max(0, total - descuento);
-      document.getElementById("precio").value = total;
-    } else {
-      document.getElementById("precio").value = "";
+    if (!precioManual) {
+      if (producto) {
+        let total = (adultos * (parseFloat(producto.adulto) || 0)) + (ninos * (parseFloat(producto.nino) || 0));
+        total = Math.max(0, total - descuento);
+        precioInput.value = total;
+      } else {
+        precioInput.value = "";
+      }
     }
 
-    const pickupSelect = document.getElementById("pickup");
     pickupSelect.innerHTML = `<option value="">Seleccionar pickup</option>`;
 
     const hotel = hoteles.find(h => h.nombre === hotelNombre);
 
     if (hotel && hotel.pickups && hotel.pickups[excursion]) {
-  const horariosObj = hotel.pickups[excursion];
+      const horariosObj = hotel.pickups[excursion];
 
-  if (horariosObj && typeof horariosObj === "object" && !Array.isArray(horariosObj)) {
-    Object.entries(horariosObj).forEach(([horaTour, pickup]) => {
-      if (pickup && pickup.trim() !== "") {
-        pickupSelect.innerHTML += `
-          <option value="${pickup}">
-            ${horaTour} → ${pickup}
-          </option>
-        `;
+      if (horariosObj && typeof horariosObj === "object" && !Array.isArray(horariosObj)) {
+        Object.entries(horariosObj).forEach(([horaTour, pickup]) => {
+          if (pickup && String(pickup).trim() !== "") {
+            pickupSelect.innerHTML += `
+              <option value="${pickup}">
+                ${horaTour === "default" ? pickup : `${horaTour} → ${pickup}`}
+              </option>
+            `;
+          }
+        });
       }
-    });
-  }
-}
+
+      if (pickupSelect.options.length === 2) {
+        pickupSelect.selectedIndex = 1;
+      }
+    }
 
   } catch (err) {
     console.error("Error calculando datos:", err);
