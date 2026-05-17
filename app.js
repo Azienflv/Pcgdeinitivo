@@ -2583,43 +2583,73 @@ async function eliminarReview(id) {
   }
 }
 
+
+// =======================
+// SubirImagen 
+// =======================
+
 async function subirImagenProducto(productoId) {
   try {
     const input = document.getElementById(`imagen-${productoId}`);
     const file = input.files[0];
 
     if (!file) {
-      alert("Selecciona una imagen primero");
+      alert("Selecciona una imagen");
       return;
     }
 
     const fileExt = file.name.split(".").pop();
     const fileName = `producto-${productoId}-${Date.now()}.${fileExt}`;
 
+    // subir imagen
     const { error: uploadError } = await supabaseClient.storage
       .from("product-images")
       .upload(fileName, file);
 
     if (uploadError) throw uploadError;
 
+    // obtener url pública
     const { data } = supabaseClient.storage
       .from("product-images")
       .getPublicUrl(fileName);
 
-    const imagen_url = data.publicUrl;
+    const imageUrl = data.publicUrl;
 
+    // buscar producto actual
+    const { data: productoActual, error: fetchError } =
+      await supabaseClient
+        .from("productos")
+        .select("imagenes_urls")
+        .eq("id", productoId)
+        .single();
+
+    if (fetchError) throw fetchError;
+
+    const galeriaActual =
+      Array.isArray(productoActual.imagenes_urls)
+        ? productoActual.imagenes_urls
+        : [];
+
+    // agregar nueva imagen
+    const nuevaGaleria = [...galeriaActual, imageUrl];
+
+    // actualizar producto
     const { error: updateError } = await supabaseClient
       .from("productos")
-      .update({ imagen_url })
+      .update({
+        imagen_url: imageUrl,
+        imagenes_urls: nuevaGaleria
+      })
       .eq("id", productoId);
 
     if (updateError) throw updateError;
 
-    alert("Imagen subida correctamente ✅");
+    alert("Imagen agregada a la galería ✅");
+
     editarProductos();
 
   } catch (err) {
-    console.error("Error subiendo imagen:", err);
+    console.error(err);
     alert("No se pudo subir la imagen ⚠️");
   }
 }
