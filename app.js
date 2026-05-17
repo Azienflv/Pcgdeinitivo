@@ -544,21 +544,32 @@ async function editarProductos() {
               Activa en la web
             </label>
 
-            ${p.imagen_url ? `
-  <img 
-    src="${p.imagen_url}" 
-    style="
-      width:140px;
-      height:90px;
-      border-radius:12px;
-      margin-top:10px;
-      margin-bottom:10px;
-      display:block;
-      object-fit:cover;
-      border:1px solid #334155;
-    "
-  >
-` : ""}
+           <div style="
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+  margin-bottom:10px;
+">
+  ${
+    Array.isArray(p.imagenes_urls)
+      ? p.imagenes_urls.map(img => `
+        <div style="position:relative;">
+          <img
+            src="${img}"
+            style="
+              width:120px;
+              height:90px;
+              object-fit:cover;
+              border-radius:10px;
+              border:1px solid #334155;
+            "
+          >
+        </div>
+      `).join("")
+      : ""
+  }
+</div>
 
 <input 
   type="file" 
