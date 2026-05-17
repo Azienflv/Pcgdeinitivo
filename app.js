@@ -2549,3 +2549,44 @@ async function eliminarReview(id) {
     alert("Could not delete review ⚠️");
   }
 }
+
+async function subirImagenProducto(productoId) {
+  try {
+    const input = document.getElementById(`imagen-${productoId}`);
+    const file = input.files[0];
+
+    if (!file) {
+      alert("Selecciona una imagen primero");
+      return;
+    }
+
+    const fileExt = file.name.split(".").pop();
+    const fileName = `producto-${productoId}-${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from("product-images")
+      .upload(fileName, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabaseClient.storage
+      .from("product-images")
+      .getPublicUrl(fileName);
+
+    const imagen_url = data.publicUrl;
+
+    const { error: updateError } = await supabaseClient
+      .from("productos")
+      .update({ imagen_url })
+      .eq("id", productoId);
+
+    if (updateError) throw updateError;
+
+    alert("Imagen subida correctamente ✅");
+    editarProductos();
+
+  } catch (err) {
+    console.error("Error subiendo imagen:", err);
+    alert("No se pudo subir la imagen ⚠️");
+  }
+}
