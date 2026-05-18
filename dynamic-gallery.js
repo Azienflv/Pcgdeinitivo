@@ -63,3 +63,8 @@ console.log("Error:", error);
 }
 
 document.addEventListener("DOMContentLoaded", loadDynamicTourGallery);
+
+
+alert("Tour: " + tourSlug);
+
+alert(JSON.stringify(data));
