@@ -15,10 +15,13 @@ async function loadDynamicTourGallery() {
     const tourSlug = widget.dataset.tour;
 
     const { data, error } = await supabaseGallery
-      .from("productos")
-      .select("imagen_url, imagenes_urls")
-      .eq("slug", tourSlug)
-      .single();
+  .from("productos")
+  .select("*")
+  .eq("slug", tourSlug)
+  .single();
+
+console.log("Tour dinámico:", data);
+console.log("Error:", error);
 
     if (error || !data) {
       console.warn("No dynamic gallery found, using manual images");
