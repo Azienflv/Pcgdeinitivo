@@ -1787,35 +1787,83 @@ async function reporteVentas() {
 
 async function verContactos() {
   try {
-    const { data, error } = await supabaseClient
-      .from("reservas")
-      .select("cliente, telefono, email, fecha")
-      .order("fecha", { ascending: false });
+    const [{ data: reservasPanel, error: errorPanel }, { data: reservasWeb, error: errorWeb }] =
+      await Promise.all([
+        supabaseClient
+          .from("reservas")
+          .select("cliente, telefono, email, fecha")
+          .order("fecha", { ascending: false }),
+        supabaseClient
+          .from("reservations")
+          .select("client_name, phone, email, selected_date")
+          .order("selected_date", { ascending: false }),
+      ]);
 
-    if (error) throw error;
+    if (errorPanel) throw errorPanel;
+    if (errorWeb) throw errorWeb;
 
-    const reservas = data || [];
+    // Normalizamos ambas fuentes al mismo formato antes de juntarlas
+    const todas = [
+      ...(reservasPanel || []).map(r => ({
+        nombre: r.cliente || "",
+        telefono: r.telefono || "",
+        email: r.email || "",
+        fecha: r.fecha || "",
+      })),
+      ...(reservasWeb || []).map(r => ({
+        nombre: r.client_name || "",
+        telefono: r.phone || "",
+        email: r.email || "",
+        fecha: r.selected_date || "",
+      })),
+    ];
 
-    if (reservas.length === 0) {
+    if (todas.length === 0) {
       getContent().innerHTML = "<h2>No hay contactos aún</h2>";
       return;
     }
 
+    // Ordenamos por fecha más reciente primero (juntando ambas fuentes)
+    todas.sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+
     const contactosMap = new Map();
 
-    reservas.forEach(r => {
-      const key = (r.telefono || r.email || r.cliente || "").trim().toLowerCase();
+    todas.forEach(r => {
+      const key = (r.telefono || r.email || r.nombre || "").trim().toLowerCase();
       if (!key) return;
 
+      // Como ya viene ordenado por fecha desc, el primero que aparece
+      // por cada contacto es su reserva más reciente
       if (!contactosMap.has(key)) {
-        contactosMap.set(key, {
-          nombre: r.cliente || "",
-          telefono: r.telefono || "",
-          email: r.email || "",
-          fecha: r.fecha || ""
-        });
+        contactosMap.set(key, r);
       }
     });
+
+    const contactos = Array.from(contactosMap.values());
+
+    let html = `<h2>👥 Contactos</h2><ul>`;
+
+    contactos.forEach(c => {
+      html += `
+        <li style="margin-bottom:12px;">
+          <strong>${c.nombre}</strong><br>
+          📞 ${c.telefono || "-"}<br>
+          ✉️ ${c.email || "-"}<br>
+          📅 Última reserva: ${c.fecha || "-"}
+        </li>
+      `;
+    });
+
+    html += `</ul>
+      <button onclick="menuReportes()">⬅ Volver</button>
+    `;
+
+    getContent().innerHTML = html;
+  } catch (err) {
+    console.error("Error cargando contactos:", err);
+    alert("No se pudieron cargar los contactos ⚠️");
+  }
+}
 
     const contactos = Array.from(contactosMap.values());
 
