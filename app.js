@@ -510,6 +510,24 @@ async function editarProductos() {
               </div>
             </div>
 
+            
+            <label style="display:flex; align-items:center; gap:8px; font-size:14px; margin-top:6px;">
+              <input type="checkbox" id="promo-${p.id}" ${p.en_promocion ? "checked" : ""} style="width:auto; margin:0;">
+              🔥 En promoción
+            </label>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div>
+                <label style="font-size:13px; color:#94a3b8;">Precio promo adulto</label>
+                <input type="number" value="${p.precio_promo_adulto || ""}" id="promo-adulto-${p.id}" placeholder="Ej: 69">
+              </div>
+
+              <div>
+                <label style="font-size:13px; color:#94a3b8;">Precio promo niño</label>
+                <input type="number" value="${p.precio_promo_nino || ""}" id="promo-nino-${p.id}" placeholder="Ej: 35">
+              </div>
+            </div>
+
             <label style="font-size:13px; color:#94a3b8;">Capacidad máxima</label>
             <input
             type="number"
