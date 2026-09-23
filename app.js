@@ -699,7 +699,7 @@ const capacidad_maxima =
   parseInt(document.getElementById(`capacidad-${id}`)?.value) || 0;
 
 try {
-  const { error } = await supabaseClient
+    const { error } = await supabaseClient
     .from("productos")
     .update({
       nombre,
@@ -710,7 +710,10 @@ try {
       dias_disponibles,
       hora_limite_reserva,
       fechas_bloqueadas,
-      capacidad_maxima
+      capacidad_maxima,
+      en_promocion,
+      precio_promo_adulto,
+      precio_promo_nino
     })
     .eq("id", id);
 
