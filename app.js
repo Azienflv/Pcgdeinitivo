@@ -25,27 +25,42 @@ if (typeof supabase !== "undefined" && SUPABASE_URL && SUPABASE_ANON_KEY) {
 // 🔐 LOGIN / LOGOUT
 // =======================
 async function login() {
-  const user = document.getElementById("username")?.value.trim();
+  // Nota: ahora el campo "username" del formulario debe contener el EMAIL
+  // (el que usaste para crear la cuenta en Supabase Auth), no un usuario corto.
+  const email = document.getElementById("username")?.value.trim();
   const pass = document.getElementById("password")?.value.trim();
   const loginError = document.getElementById("loginError");
 
   try {
     if (!supabaseClient) throw new Error("Supabase no está conectado");
 
-    const { data, error } = await supabaseClient
-      .from("usuarios")
-      .select("*")
-      .eq("username", user)
-      .eq("password", pass)
-      .single();
+    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password: pass,
+    });
 
-    if (error || !data) {
+    if (authError || !authData?.user) {
       if (loginError) loginError.style.display = "block";
       return;
     }
 
-    localStorage.setItem("session", "active");
-    localStorage.setItem("currentUser", JSON.stringify(data));
+    const { data: perfil, error: perfilError } = await supabaseClient
+      .from("perfiles")
+      .select("*")
+      .eq("id", authData.user.id)
+      .single();
+
+    if (perfilError || !perfil) {
+      // Tiene cuenta en Auth pero NO tiene perfil asignado -> sin acceso al panel
+      await supabaseClient.auth.signOut();
+      if (loginError) {
+        loginError.style.display = "block";
+        loginError.textContent = "Esta cuenta no tiene acceso al panel.";
+      }
+      return;
+    }
+
+    localStorage.setItem("currentUser", JSON.stringify(perfil));
 
     if (loginError) loginError.style.display = "none";
     document.getElementById("loginScreen").style.display = "none";
@@ -53,7 +68,7 @@ async function login() {
 
     getContent().innerHTML = `
       <h1>Dashboard</h1>
-      <p>Bienvenido, ${data.username}</p>
+      <p>Bienvenido, ${perfil.nombre}</p>
     `;
   } catch (err) {
     console.error("Error en login:", err);
@@ -61,8 +76,8 @@ async function login() {
   }
 }
 
-function logout() {
-  localStorage.removeItem("session");
+async function logout() {
+  await supabaseClient.auth.signOut();
   localStorage.removeItem("currentUser");
 
   document.getElementById("app").style.display = "none";
@@ -170,17 +185,31 @@ document.addEventListener("DOMContentLoaded", () => {
 // =======================
 // 🔄 RESTAURAR SESIÓN
 // =======================
-window.onload = function () {
-  const session = localStorage.getItem("session");
-  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+window.onload = async function () {
+  const { data: { session } } = await supabaseClient.auth.getSession();
 
-  if (session === "active" && currentUser) {
+  if (session) {
+    const { data: perfil, error: perfilError } = await supabaseClient
+      .from("perfiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    if (perfilError || !perfil) {
+      // Sesión válida en Auth pero sin perfil de panel -> se cierra la sesión
+      await supabaseClient.auth.signOut();
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("app").style.display = "none";
+      return;
+    }
+
+    localStorage.setItem("currentUser", JSON.stringify(perfil));
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("app").style.display = "flex";
 
     getContent().innerHTML = `
       <h1>Dashboard</h1>
-      <p>Bienvenido, ${currentUser.username}</p>
+      <p>Bienvenido, ${perfil.nombre}</p>
     `;
   } else {
     document.getElementById("loginScreen").style.display = "flex";
@@ -2287,10 +2316,13 @@ async function compartirImagen(id) {
 // =======================
 // 👥 USUARIOS
 // =======================
+// =======================
+// 👥 USUARIOS (perfiles)
+// =======================
 async function menuUsuarios() {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
 
-  if (!currentUser || currentUser.role !== "admin") {
+  if (!currentUser || currentUser.rol !== "admin") {
     getContent().innerHTML = `
       <h2>Acceso denegado</h2>
       <p>Solo el administrador puede gestionar usuarios.</p>
@@ -2300,26 +2332,18 @@ async function menuUsuarios() {
 
   try {
     const { data, error } = await supabaseClient
-      .from("usuarios")
+      .from("perfiles")
       .select("*")
-      .order("username", { ascending: true });
+      .order("nombre", { ascending: true });
 
     if (error) throw error;
 
     let html = `
-      <h2>Usuarios</h2>
-
-      <form id="userForm" style="margin-bottom:20px;">
-        <input type="text" id="newUsername" placeholder="Nuevo usuario" required>
-        <input type="password" id="newPassword" placeholder="Contraseña" required>
-
-        <select id="newRole">
-          <option value="seller">Vendedor</option>
-          <option value="admin">Administrador</option>
-        </select>
-
-        <button type="submit">Agregar usuario</button>
-      </form>
+      <h2>Usuarios del panel</h2>
+      <p style="color:#666; font-size:0.9em;">
+        Para agregar a alguien nuevo: créale la cuenta en Supabase
+        (Authentication → Users → Add user) y pídeme que le asigne perfil.
+      </p>
 
       <h3>Lista de usuarios</h3>
     `;
@@ -2327,21 +2351,43 @@ async function menuUsuarios() {
     (data || []).forEach((u) => {
       html += `
         <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
-          <strong>${u.username}</strong> — ${u.role}
+          <strong>${u.nombre}</strong> — ${u.rol === "admin" ? "Administrador" : "Vendedor"}
           <div style="margin-top:10px;">
-            <button onclick="eliminarUsuario(${u.id})">❌ Eliminar</button>
+            <button onclick="eliminarUsuario('${u.id}')">❌ Quitar acceso</button>
           </div>
         </div>
       `;
     });
 
     getContent().innerHTML = html;
-
-    document.getElementById("userForm").addEventListener("submit", guardarUsuario);
-
   } catch (err) {
     console.error("Error cargando usuarios:", err);
     alert("No se pudieron cargar los usuarios ⚠️");
+  }
+}
+
+async function eliminarUsuario(id) {
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+  if (!confirm("¿Quitar el acceso al panel de este usuario?")) return;
+
+  if (currentUser && id === currentUser.id) {
+    alert("No puedes quitarte el acceso a ti mismo mientras estás logueado");
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from("perfiles")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Acceso eliminado ✅");
+    menuUsuarios();
+  } catch (err) {
+    console.error("Error eliminando usuario:", err);
+    alert("No se pudo quitar el acceso ⚠️");
   }
 }
 
