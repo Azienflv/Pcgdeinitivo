@@ -657,6 +657,9 @@ async function actualizarProducto(id) {
   const adulto = parseFloat(document.getElementById(`adulto-${id}`).value) || 0;
   const nino = parseFloat(document.getElementById(`nino-${id}`).value) || 0;
   const activo_web = document.getElementById(`activo-${id}`).checked;
+  const en_promocion = document.getElementById(`promo-${id}`).checked;
+  const precio_promo_adulto = parseFloat(document.getElementById(`promo-adulto-${id}`).value) || null;
+  const precio_promo_nino = parseFloat(document.getElementById(`promo-nino-${id}`).value) || null;
 
   const horariosInput = document.getElementById(`horarios-${id}`).value.trim();
 
