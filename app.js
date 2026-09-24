@@ -25,8 +25,8 @@ if (typeof supabase !== "undefined" && SUPABASE_URL && SUPABASE_ANON_KEY) {
 // 🔐 LOGIN / LOGOUT
 // =======================
 async function login() {
-  // Nota: ahora el campo "username" del formulario debe contener el EMAIL
-  // (el que usaste para crear la cuenta en Supabase Auth), no un usuario corto.
+  // El campo "username" del formulario ahora debe contener el EMAIL
+  // (el que se usó para crear la cuenta en Supabase Auth).
   const email = document.getElementById("username")?.value.trim();
   const pass = document.getElementById("password")?.value.trim();
   const loginError = document.getElementById("loginError");
@@ -51,7 +51,7 @@ async function login() {
       .single();
 
     if (perfilError || !perfil) {
-      // Tiene cuenta en Auth pero NO tiene perfil asignado -> sin acceso al panel
+      // Tiene cuenta en Auth pero no tiene perfil asignado -> sin acceso al panel
       await supabaseClient.auth.signOut();
       if (loginError) {
         loginError.style.display = "block";
@@ -510,7 +510,6 @@ async function editarProductos() {
               </div>
             </div>
 
-            
             <label style="display:flex; align-items:center; gap:8px; font-size:14px; margin-top:6px;">
               <input type="checkbox" id="promo-${p.id}" ${p.en_promocion ? "checked" : ""} style="width:auto; margin:0;">
               🔥 En promoción
@@ -699,7 +698,7 @@ const capacidad_maxima =
   parseInt(document.getElementById(`capacidad-${id}`)?.value) || 0;
 
 try {
-    const { error } = await supabaseClient
+  const { error } = await supabaseClient
     .from("productos")
     .update({
       nombre,
@@ -1889,32 +1888,6 @@ async function verContactos() {
   }
 }
 
-    const contactos = Array.from(contactosMap.values());
-
-    let html = `<h2>👥 Contactos</h2><ul>`;
-
-    contactos.forEach(c => {
-      html += `
-        <li style="margin-bottom:12px;">
-          <strong>${c.nombre}</strong><br>
-          📞 ${c.telefono || "-"}<br>
-          ✉️ ${c.email || "-"}<br>
-          📅 Última reserva: ${c.fecha || "-"}
-        </li>
-      `;
-    });
-
-    html += `</ul>
-      <button onclick="menuReportes()">⬅ Volver</button>
-    `;
-
-    getContent().innerHTML = html;
-  } catch (err) {
-    console.error("Error cargando contactos:", err);
-    alert("No se pudieron cargar los contactos ⚠️");
-  }
-}
-
 // =======================
 // 🎟️ VOUCHER
 // =======================
@@ -2388,9 +2361,6 @@ async function compartirImagen(id) {
 // =======================
 // 👥 USUARIOS
 // =======================
-// =======================
-// 👥 USUARIOS (perfiles)
-// =======================
 async function menuUsuarios() {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
 
@@ -2432,6 +2402,7 @@ async function menuUsuarios() {
     });
 
     getContent().innerHTML = html;
+
   } catch (err) {
     console.error("Error cargando usuarios:", err);
     alert("No se pudieron cargar los usuarios ⚠️");
@@ -2460,73 +2431,6 @@ async function eliminarUsuario(id) {
   } catch (err) {
     console.error("Error eliminando usuario:", err);
     alert("No se pudo quitar el acceso ⚠️");
-  }
-}
-
-async function guardarUsuario(e) {
-  e.preventDefault();
-
-  const username = document.getElementById("newUsername").value.trim();
-  const password = document.getElementById("newPassword").value.trim();
-  const role = document.getElementById("newRole").value;
-
-  try {
-    const { data: existing, error: existingError } = await supabaseClient
-      .from("usuarios")
-      .select("*")
-      .eq("username", username);
-
-    if (existingError) throw existingError;
-
-    if (existing && existing.length > 0) {
-      alert("Ese usuario ya existe");
-      return;
-    }
-
-    const { error } = await supabaseClient
-      .from("usuarios")
-      .insert([{ username, password, role }]);
-
-    if (error) throw error;
-
-    alert("Usuario creado ✅");
-    menuUsuarios();
-  } catch (err) {
-    console.error("Error creando usuario:", err);
-    alert("No se pudo crear el usuario ⚠️");
-  }
-}
-
-async function eliminarUsuario(id) {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-  if (!confirm("¿Eliminar este usuario?")) return;
-
-  try {
-    const { data, error: userError } = await supabaseClient
-      .from("usuarios")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (userError) throw userError;
-
-    if (currentUser && data.username === currentUser.username) {
-      alert("No puedes eliminar tu propio usuario mientras estás logueado");
-      return;
-    }
-
-    const { error } = await supabaseClient
-      .from("usuarios")
-      .delete()
-      .eq("id", id);
-
-    if (error) throw error;
-
-    alert("Usuario eliminado ✅");
-    menuUsuarios();
-  } catch (err) {
-    console.error("Error eliminando usuario:", err);
-    alert("No se pudo eliminar el usuario ⚠️");
   }
 }
 
