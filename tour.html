@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title id="pageTitle">PCG Tours</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css?v=32"/>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <a href="index.html" class="logo">
+      <img src="assets/imagines/logo.png" class="site-logo" alt="PCG Logo">
+      <span class="logo-text">Punta Cana Going Tours</span>
+    </a>
+
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="excursions.html">Excursions</a>
+    </nav>
+  </div>
+</header>
+
+<main class="tour-page-main" style="padding-top:100px;">
+  <section class="section">
+    <div class="container booking-layout">
+
+      <!-- LEFT -->
+      <div class="booking-main" id="tourMain">
+        <p style="text-align:center; padding:60px 0;">Loading tour...</p>
+      </div>
+
+      <!-- RIGHT -->
+      <aside class="booking-sidebar">
+        <div class="tour-sticky-box">
+          <div class="tour-sticky-top">
+            <div class="tour-sticky-rating" id="stickyRating"></div>
+            <div class="tour-sticky-activity" id="stickyActivity">🔥 Frequently booked by Punta Cana travelers</div>
+          </div>
+
+          <div id="booking-widget" data-tour=""></div>
+
+          <div class="tour-guarantees">
+            <div>✔ Instant confirmation</div>
+            <div>✔ Secure online booking</div>
+            <div>✔ WhatsApp support available</div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+</main>
+
+<!-- LIGHTBOX -->
+<div id="tourLightbox" class="tour-lightbox" aria-hidden="true">
+  <button class="tour-lightbox-close" id="lightboxClose" type="button">✕</button>
+  <div class="tour-lightbox-counter" id="lightboxCounter">1 / 4</div>
+  <button class="tour-lightbox-nav tour-lightbox-prev" id="lightboxPrev" type="button">‹</button>
+  <div class="tour-lightbox-content">
+    <img id="lightboxImage" src="" alt="Gallery image">
+  </div>
+  <button class="tour-lightbox-nav tour-lightbox-next" id="lightboxNext" type="button">›</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.paypal.com/sdk/js?client-id=ASqatHJyuAstbG5v1wNY7UkCXN6W-8gssX6oHqVjVaC3PI6SMu3AoIPP4FvMG5oO4hBQzdH41rA0HP2h&currency=USD&intent=capture"></script>
+<script src="data/tours.js?v=9"></script>
+<script src="booking.js?v=99"></script>
+<script src="reviews.js?v=1"></script>
+
+<!-- 🔥 BOOKING MODAL -->
+<div id="bookingModal" class="booking-modal">
+  <div class="booking-modal-content">
+    <button onclick="closeBooking()" class="close-btn">✕</button>
+    <div id="booking-widget-mobile" data-tour=""></div>
+    <p id="booking-loading" style="text-align:center; margin-top:10px;">Checking availability...</p>
+  </div>
+</div>
+
+<!-- 📱 MOBILE BAR -->
+<div class="mobile-booking-bar" id="mobileBar">
+  <span class="price" id="mobileBarPrice">Loading...</span>
+  <button onclick="openBooking()">Reserve now</button>
+</div>
+
+<!-- ⚙️ CARGA DINÁMICA DEL TOUR -->
+<script>
+// Reutiliza el cliente "supabaseClient" que ya crea booking.js (se carga antes que este script).
+
+function esc(str) {
+  return String(str ?? "").replace(/[&<>"']/g, (m) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[m]));
+}
+
+function renderList(items, className) {
+  if (!Array.isArray(items) || items.length === 0) return "";
+  return `<ul class="${className}">${items.map(i => `<li>${esc(i)}</li>`).join("")}</ul>`;
+}
+
+function renderIncludedGrid(items) {
+  if (!Array.isArray(items) || items.length === 0) return "";
+  return `<div class="tour-included-grid">${items.map(i => `<div>✔ ${esc(i)}</div>`).join("")}</div>`;
+}
+
+const WHY_BOOK_DEFAULT = [
+  { titulo: "Top-rated local operator", texto: "Trusted by travelers across Punta Cana" },
+  { titulo: "Complete experience", texto: "Everything you need is included in the price" },
+  { titulo: "Easy booking", texto: "Reserve online quickly and confirm your spot in minutes" },
+  { titulo: "Local support", texto: "Direct assistance before and after your reservation" }
+];
+
+async function loadTour() {
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get("slug");
+
+  if (!slug) {
+    document.getElementById("tourMain").innerHTML = "<h2>Tour not found</h2>";
+    return;
+  }
+
+  const { data: p, error } = await supabaseClient
+    .from("productos")
+    .select("*")
+    .eq("slug", slug)
+    .eq("activo_web", true)
+    .single();
+
+  if (error || !p) {
+    document.getElementById("tourMain").innerHTML = "<h2>Tour not found</h2>";
+    return;
+  }
+
+  const c = (p.contenido && typeof p.contenido === "object") ? p.contenido : {};
+  const gallery = Array.isArray(p.imagenes_urls) && p.imagenes_urls.length
+    ? p.imagenes_urls
+    : (p.imagen_url ? [p.imagen_url] : []);
+
+  document.title = `${p.nombre} | PCG Tours`;
+
+  // Widget data-tour
+  document.getElementById("booking-widget").dataset.tour = p.slug;
+  document.getElementById("booking-widget-mobile").dataset.tour = p.slug;
+
+  // Sticky sidebar
+  if (c.rating) {
+    document.getElementById("stickyRating").innerHTML =
+      `⭐ ${esc(c.rating)} ${c.rating_label ? `<span>${esc(c.rating_label)}</span>` : ""}`;
+  }
+
+  // Mobile bar
+  document.getElementById("mobileBarPrice").textContent =
+    `From $${p.adulto} · ${esc(p.nombre)}`;
+
+  const whyBook = Array.isArray(c.why_book) && c.why_book.length ? c.why_book : WHY_BOOK_DEFAULT;
+
+  document.getElementById("tourMain").innerHTML = `
+    <div class="tour-breadcrumbs">
+      <a href="index.html">Home</a>
+      <span>›</span>
+      <a href="excursions.html">Excursions</a>
+      <span>›</span>
+      <span>${esc(p.nombre)}</span>
+    </div>
+
+    <div class="tour-top-meta">
+      ${c.rating ? `
+      <div class="tour-rating">
+        ⭐ <strong>${esc(c.rating)}</strong> ${c.rating_label ? `<span>${esc(c.rating_label)}</span>` : ""}
+      </div>` : ""}
+
+      ${Array.isArray(c.badges) && c.badges.length ? `
+      <div class="tour-badges">
+        ${c.badges.map(b => `<span class="badge best-seller">${esc(b)}</span>`).join("")}
+      </div>` : ""}
+    </div>
+
+    <h1 class="tour-main-title">${esc(p.nombre)}</h1>
+
+    ${c.subtitulo ? `<p class="tour-subtitle">${esc(c.subtitulo)}</p>` : ""}
+
+    ${Array.isArray(c.quick_info) && c.quick_info.length ? `
+    <div class="tour-quick-info">
+      ${c.quick_info.map(q => `<span>${esc(q)}</span>`).join("")}
+    </div>` : ""}
+
+    ${c.urgency ? `<div class="tour-urgency">${esc(c.urgency)}</div>` : ""}
+
+    ${gallery.length ? `
+    <div class="tour-gallery-gyg">
+      <div class="tour-gallery-main">
+        <img src="${esc(gallery[0])}" alt="${esc(p.nombre)}">
+      </div>
+      ${gallery.length > 1 ? `
+      <div class="tour-gallery-grid">
+        ${gallery.slice(1, 4).map((img, i) => `<img src="${esc(img)}" alt="${esc(p.nombre)} ${i + 2}">`).join("")}
+        ${gallery.length > 4 ? `<div class="tour-gallery-more"><span>View all photos</span></div>` : ""}
+      </div>` : ""}
+    </div>` : ""}
+
+    <div class="booking-copy">
+
+      ${Array.isArray(c.highlights) && c.highlights.length ? `
+      <div class="tour-info-block">
+        <h2>Highlights</h2>
+        ${renderList(c.highlights, "tour-feature-list")}
+      </div>` : ""}
+
+      ${Array.isArray(c.about) && c.about.length ? `
+      <div class="tour-info-block">
+        <h2>About this activity</h2>
+        ${c.about.map(par => `<p>${esc(par)}</p>`).join("")}
+      </div>` : ""}
+
+      ${Array.isArray(c.incluye) && c.incluye.length ? `
+      <div class="tour-info-block">
+        <h2>What's included</h2>
+        ${renderIncludedGrid(c.incluye)}
+      </div>` : ""}
+
+      ${Array.isArray(c.no_incluye) && c.no_incluye.length ? `
+      <div class="tour-info-block">
+        <h2>Not included</h2>
+        ${renderList(c.no_incluye, "tour-feature-list")}
+      </div>` : ""}
+
+      ${Array.isArray(c.good_to_know) && c.good_to_know.length ? `
+      <div class="tour-info-block">
+        <h2>Good to know</h2>
+        ${renderList(c.good_to_know, "tour-feature-list")}
+      </div>` : ""}
+
+      <div class="tour-info-block tour-why-book">
+        <h2>Why book with PCG Tours</h2>
+        <div class="tour-why-grid">
+          ${whyBook.map(w => `
+            <div class="tour-why-card">
+              <strong>${esc(w.titulo)}</strong>
+              <span>${esc(w.texto)}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <!-- REVIEWS -->
+      <section class="tour-reviews-section">
+        <div class="reviews-section-head">
+          <h2>Traveler reviews</h2>
+          <p>Read what other guests say about this experience.</p>
+        </div>
+
+        <div id="reviews-average-box"></div>
+
+        <div id="reviews-login-box" class="reviews-login-box">
+          <p>Sign in with Google to leave a review.</p>
+          <button id="google-review-login" class="btn btn-primary" type="button">Continue with Google</button>
+        </div>
+
+        <div id="reviews-user-box" class="reviews-user-box" style="display:none;">
+          <p id="reviews-user-text"></p>
+          <button id="google-review-logout" class="btn" type="button">Sign out</button>
+        </div>
+
+        <form id="review-form" class="review-form" style="display:none;">
+          <div class="review-field">
+            <label for="review-rating">Rating</label>
+            <select id="review-rating" required>
+              <option value="">Select rating</option>
+              <option value="5">5 - Excellent</option>
+              <option value="4">4 - Very good</option>
+              <option value="3">3 - Good</option>
+              <option value="2">2 - Fair</option>
+              <option value="1">1 - Poor</option>
+            </select>
+          </div>
+
+          <div class="review-field">
+            <label for="review-comment">Comment</label>
+            <textarea id="review-comment" rows="5" placeholder="Tell other travelers about your experience..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Submit review</button>
+          <p id="review-message"></p>
+        </form>
+
+        <div id="approved-reviews-list" class="approved-reviews-list"></div>
+      </section>
+
+    </div>
+  `;
+
+  // Ahora que el widget existe en el DOM con su data-tour correcto, inicializa booking y reviews.
+  if (window.renderBookingWidget) renderBookingWidget();
+  if (window.initBookingWidget) initBookingWidget("#booking-widget-mobile");
+  if (window.setupReviewsSection) setupReviewsSection();
+
+  setTimeout(() => {
+    const loader = document.getElementById("booking-loading");
+    if (loader) loader.style.display = "none";
+  }, 1200);
+}
+
+document.addEventListener("DOMContentLoaded", loadTour);
+</script>
+
+<!-- 🎯 MODAL CONTROL -->
+<script>
+function openBooking() {
+  document.getElementById("bookingModal").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+function closeBooking() {
+  document.getElementById("bookingModal").classList.remove("active");
+  document.body.style.overflow = "auto";
+}
+document.getElementById("bookingModal").addEventListener("click", function(e) {
+  if (e.target === this) closeBooking();
+});
+</script>
+
+</body>
+</html>
