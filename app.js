@@ -22,6 +22,26 @@ if (typeof supabase !== "undefined" && SUPABASE_URL && SUPABASE_ANON_KEY) {
 }
 
 // =======================
+// 📧 NOTIFICACIONES POR CORREO (Zoho, vía Edge Function)
+// =======================
+// No detiene ni rompe el guardado si el correo falla: solo avisa en consola.
+async function notificarCliente(tipo, datos) {
+  try {
+    if (!datos.to) {
+      console.warn("No se envió notificación: la reserva no tiene email.");
+      return;
+    }
+    const { data, error } = await supabaseClient.functions.invoke("notificar-reserva", {
+      body: { tipo, ...datos }
+    });
+    if (error) throw error;
+    console.log("Notificación enviada:", data);
+  } catch (err) {
+    console.error("No se pudo enviar la notificación al cliente:", err);
+  }
+}
+
+// =======================
 // 🔐 LOGIN / LOGOUT
 // =======================
 async function login() {
@@ -1569,6 +1589,17 @@ async function guardarEdicionReserva(id) {
 
     if (error) throw error;
 
+    notificarCliente("editada", {
+      to: reservaActualizada.email,
+      cliente: reservaActualizada.cliente,
+      excursion: reservaActualizada.excursion,
+      fecha: reservaActualizada.fecha,
+      hotel: reservaActualizada.hotel,
+      adultos: reservaActualizada.adultos,
+      ninos: reservaActualizada.ninos,
+      precio: reservaActualizada.precio
+    });
+
     alert("Reserva actualizada ✅");
     mostrarReservas();
 
@@ -1654,6 +1685,20 @@ async function guardarEdicionReservaWeb(id, originalTourSlug) {
 
     if (error) throw error;
 
+    notificarCliente(
+      reservaActualizada.status === "cancelled" ? "cancelada" : "editada",
+      {
+        to: reservaActualizada.email,
+        cliente: reservaActualizada.client_name,
+        excursion: reservaActualizada.tour_name,
+        fecha: reservaActualizada.selected_date,
+        hotel: reservaActualizada.hotel_name,
+        adultos: reservaActualizada.adults,
+        ninos: reservaActualizada.children,
+        precio: reservaActualizada.total
+      }
+    );
+
     alert("Reserva web actualizada ✅");
     mostrarReservas();
 
@@ -1667,12 +1712,25 @@ async function eliminarReserva(id) {
   if (!confirm("¿Seguro que quieres eliminar esta reserva?")) return;
 
   try {
+    const { data: reservaAEliminar } = await supabaseClient
+      .from("reservas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
     const { error } = await supabaseClient
       .from("reservas")
       .delete()
       .eq("id", id);
 
     if (error) throw error;
+
+    if (reservaAEliminar) {
+      notificarCliente("cancelada", {
+        to: reservaAEliminar.email,
+        cliente: reservaAEliminar.cliente
+      });
+    }
 
     alert("Reserva eliminada ✅");
     mostrarReservas();
