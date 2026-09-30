@@ -3488,6 +3488,17 @@ async function abrirReservaCatalogo(productoId) {
 
     const opcionesHoteles = hoteles.map(h => `<option value="${h.nombre}">${h.nombre}</option>`).join("");
 
+    const horariosProducto = Array.isArray(producto.horarios) && producto.horarios.length
+      ? producto.horarios
+      : [];
+
+    const turnoHTML = horariosProducto.length > 0 ? `
+      <label style="font-size:13px; color:#94a3b8;">Turno / Horario</label>
+      <select id="cat-turno">
+        ${horariosProducto.map(h => `<option value="${h}">${h}</option>`).join("")}
+      </select>
+    ` : "";
+
     getContent().innerHTML = `
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
         <button type="button" onclick="menuCatalogoReservas()">⬅ Volver al catálogo</button>
@@ -3518,10 +3529,16 @@ async function abrirReservaCatalogo(productoId) {
           </div>
         </div>
 
-        <label style="font-size:13px; color:#94a3b8;">Pick Up Time</label>
-        <select id="cat-pickup" required>
-          <option value="">Seleccionar pickup</option>
+        ${turnoHTML}
+
+        <label style="font-size:13px; color:#94a3b8;">Pickup guardado para este hotel</label>
+        <select id="cat-pickup-guardados">
+          <option value="">— Elegir uno guardado o escribir nuevo abajo —</option>
         </select>
+
+        <label style="font-size:13px; color:#94a3b8;">Pick Up Time</label>
+        <input type="text" id="cat-pickup" placeholder="Ej: 7:15 AM Lobby" required>
+        <small id="cat-pickup-hint" style="color:#64748b; font-size:12px; margin-top:-4px;"></small>
 
         <label style="font-size:13px; color:#94a3b8;">Fecha</label>
         <input type="date" id="cat-fecha" required>
@@ -3545,11 +3562,22 @@ async function abrirReservaCatalogo(productoId) {
       </form>
     `;
 
-    document.getElementById("cat-hotel").addEventListener("change", autoDatosCatalogo);
+    document.getElementById("cat-hotel").addEventListener("change", () => {
+      autoDatosCatalogo();
+      sugerirPickupCatalogo();
+    });
     document.getElementById("cat-adultos").addEventListener("input", autoDatosCatalogo);
     document.getElementById("cat-ninos").addEventListener("input", autoDatosCatalogo);
     document.getElementById("cat-descuento").addEventListener("input", autoDatosCatalogo);
     document.getElementById("cat-precioManual").addEventListener("change", autoDatosCatalogo);
+
+    document.getElementById("cat-turno")?.addEventListener("change", sugerirPickupCatalogo);
+
+    document.getElementById("cat-pickup-guardados").addEventListener("change", (e) => {
+      if (e.target.value) {
+        document.getElementById("cat-pickup").value = e.target.value;
+      }
+    });
 
     document.getElementById("catalogoReservaForm")
       .addEventListener("submit", guardarReservaCatalogo);
@@ -3574,7 +3602,6 @@ function autoDatosCatalogo() {
   const precioManual = document.getElementById("cat-precioManual")?.checked;
 
   const precioInput = document.getElementById("cat-precio");
-  const pickupSelect = document.getElementById("cat-pickup");
   const totalPreview = document.getElementById("cat-total-preview");
 
   let total = (adultos * (parseFloat(producto.adulto) || 0)) + (ninos * (parseFloat(producto.nino) || 0));
@@ -3588,32 +3615,66 @@ function autoDatosCatalogo() {
     const totalMostrado = precioManual ? (parseFloat(precioInput?.value) || 0) : total;
     totalPreview.textContent = totalMostrado.toFixed(2);
   }
+}
 
-  if (pickupSelect) {
-    pickupSelect.innerHTML = `<option value="">Seleccionar pickup</option>`;
+// Devuelve el turno seleccionado en el formulario, o "default" si la
+// excursión no tiene turnos/horarios configurados
+function getTurnoActualCatalogo() {
+  return document.getElementById("cat-turno")?.value || "default";
+}
 
-    const excursionKey = producto.slug || producto.nombre;
-    const hotel = hoteles.find(h => h.nombre === hotelNombre);
+// Busca el pickup recordado para hotel + excursión + turno específico
+// (se guarda automáticamente cada vez que se hace una reserva manual)
+function obtenerPickupRecordado(hotel, excursionKey, turno) {
+  if (!hotel || !hotel.pickups || !hotel.pickups[excursionKey]) return "";
 
-    if (hotel && hotel.pickups && hotel.pickups[excursionKey]) {
-      const horariosObj = hotel.pickups[excursionKey];
+  const guardado = hotel.pickups[excursionKey];
+  if (!guardado || typeof guardado !== "object") return "";
 
-      if (horariosObj && typeof horariosObj === "object" && !Array.isArray(horariosObj)) {
-        Object.entries(horariosObj).forEach(([horaTour, pickup]) => {
-          if (pickup && String(pickup).trim() !== "") {
-            pickupSelect.innerHTML += `
-              <option value="${pickup}">
-                ${horaTour === "default" ? pickup : `${horaTour} → ${pickup}`}
-              </option>
-            `;
-          }
-        });
-      }
+  if (guardado[turno]) return guardado[turno];
 
-      if (pickupSelect.options.length === 2) {
-        pickupSelect.selectedIndex = 1;
-      }
-    }
+  // Compatibilidad: si no hay nada para este turno pero sí un "default"
+  // (reservas hechas antes de tener turnos), lo usamos como respaldo
+  if (turno !== "default" && guardado.default) return guardado.default;
+
+  return "";
+}
+
+// Rellena el desplegable de pickups guardados (todos los turnos de este
+// hotel+excursión) y sugiere el que corresponde al turno seleccionado.
+// El usuario puede sobreescribirlo a mano antes de guardar.
+function sugerirPickupCatalogo() {
+  const producto = window.__catalogoProductoActual;
+  const hoteles = window.__catalogoHoteles || [];
+  const pickupInput = document.getElementById("cat-pickup");
+  const pickupGuardados = document.getElementById("cat-pickup-guardados");
+  const hint = document.getElementById("cat-pickup-hint");
+  if (!producto || !pickupInput) return;
+
+  const hotelNombre = document.getElementById("cat-hotel")?.value || "";
+  const excursionKey = producto.slug || producto.nombre;
+  const turno = getTurnoActualCatalogo();
+  const hotel = hoteles.find(h => h.nombre === hotelNombre);
+
+  // Lista de pickups guardados para cualquier turno de esta combinación
+  if (pickupGuardados) {
+    const guardado = (hotel?.pickups && hotel.pickups[excursionKey]) || {};
+    const entradas = Object.entries(guardado).filter(([, v]) => v && String(v).trim() !== "");
+
+    pickupGuardados.innerHTML = `<option value="">— Elegir uno guardado o escribir nuevo abajo —</option>` +
+      entradas.map(([t, v]) => `
+        <option value="${v}">${t === "default" ? v : `${t} → ${v}`}</option>
+      `).join("");
+  }
+
+  const recordado = obtenerPickupRecordado(hotel, excursionKey, turno);
+
+  if (recordado) {
+    pickupInput.value = recordado;
+    if (hint) hint.textContent = `📌 Pickup guardado para ${hotelNombre}${turno !== "default" ? ` (${turno})` : ""}: "${recordado}" — edítalo si cambió`;
+  } else {
+    pickupInput.value = "";
+    if (hint) hint.textContent = hotelNombre ? "Sin pickup guardado aún para este turno, escríbelo y se recordará." : "";
   }
 }
 
@@ -3646,6 +3707,10 @@ async function guardarReservaCatalogo(e) {
 
     if (error) throw error;
 
+    // Recuerda el pickup escrito a mano para la próxima vez que se use
+    // este mismo hotel + excursión + turno, hasta que alguien lo cambie manualmente.
+    await recordarPickupCatalogo(reserva.hotel, reserva.excursion, getTurnoActualCatalogo(), reserva.pickup);
+
     alert("Reserva guardada en la nube ✅");
     mostrarReservas();
   } catch (err) {
@@ -3654,5 +3719,43 @@ async function guardarReservaCatalogo(e) {
       "No se pudo guardar la reserva ⚠️\n\n" +
       "Error: " + (err.message || JSON.stringify(err))
     );
+  }
+}
+
+// Guarda/actualiza en hoteles.pickups el pickup usado para hotel+excursión+turno,
+// para que el próximo que reserve esa combinación (mismo turno) lo vea sugerido.
+async function recordarPickupCatalogo(hotelNombre, excursionKey, turno, pickupValue) {
+  if (!hotelNombre || !excursionKey || !pickupValue || !pickupValue.trim()) return;
+
+  try {
+    const hotel = (window.__catalogoHoteles || []).find(h => h.nombre === hotelNombre);
+    if (!hotel) return;
+
+    const pickupsActual = (hotel.pickups && typeof hotel.pickups === "object") ? hotel.pickups : {};
+    const pickupsExcursion = (pickupsActual[excursionKey] && typeof pickupsActual[excursionKey] === "object")
+      ? pickupsActual[excursionKey]
+      : {};
+
+    const nuevosPickups = {
+      ...pickupsActual,
+      [excursionKey]: {
+        ...pickupsExcursion,
+        [turno || "default"]: pickupValue.trim()
+      }
+    };
+
+    const { error } = await supabaseClient
+      .from("hoteles")
+      .update({ pickups: nuevosPickups })
+      .eq("id", hotel.id);
+
+    if (error) throw error;
+
+    // Actualiza la copia en memoria por si se hace otra reserva sin recargar
+    hotel.pickups = nuevosPickups;
+
+  } catch (err) {
+    // No bloqueamos el flujo de reserva por esto, solo lo dejamos en consola
+    console.error("No se pudo recordar el pickup para la próxima vez:", err);
   }
 }
