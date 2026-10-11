@@ -6,6 +6,108 @@ function safeId(text) {
   return String(text || "").replace(/\s+/g, "_").replace(/[^\w]/g, "");
 }
 
+function slugify(text) {
+  return String(text || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "") // quita acentos
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// Lista de líneas no vacías, a partir de un textarea (una por línea)
+function lineasA(texto) {
+  return String(texto || "")
+    .split("\n")
+    .map(l => l.trim())
+    .filter(Boolean);
+}
+
+// Lista separada por comas
+function comasA(texto) {
+  return String(texto || "")
+    .split(",")
+    .map(l => l.trim())
+    .filter(Boolean);
+}
+
+// Párrafos separados por línea en blanco
+function parrafosA(texto) {
+  return String(texto || "")
+    .split(/\n\s*\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
+}
+
+// =======================
+// 📝 CAMPOS DE CONTENIDO (para plantilla dinámica tour.html)
+// =======================
+function renderContenidoFields(prefix, c) {
+  c = c && typeof c === "object" ? c : {};
+  return `
+    <div style="border-top:1px dashed #334155; margin-top:14px; padding-top:14px;">
+      <h4 style="margin:0 0 10px 0; color:#e2e8f0;">📝 Contenido de la página (web)</h4>
+
+      <label style="font-size:13px; color:#94a3b8;">Subtítulo</label>
+      <input type="text" id="c-subtitulo-${prefix}" value="${(c.subtitulo || "").replace(/"/g, "&quot;")}" placeholder="Frase corta debajo del título">
+
+      <label style="font-size:13px; color:#94a3b8;">Aviso de urgencia</label>
+      <input type="text" id="c-urgency-${prefix}" value="${(c.urgency || "").replace(/"/g, "&quot;")}" placeholder="Ej: ⚠️ Cupos limitados">
+
+      <div style="display:grid; grid-template-columns:1fr 2fr; gap:10px;">
+        <div>
+          <label style="font-size:13px; color:#94a3b8;">Calificación (1-5)</label>
+          <input type="number" step="0.1" min="0" max="5" id="c-rating-${prefix}" value="${c.rating || ""}" placeholder="Ej: 4.5">
+        </div>
+        <div>
+          <label style="font-size:13px; color:#94a3b8;">Texto junto a la calificación</label>
+          <input type="text" id="c-rating-label-${prefix}" value="${(c.rating_label || "").replace(/"/g, "&quot;")}" placeholder="Ej: (popular choice)">
+        </div>
+      </div>
+
+      <label style="font-size:13px; color:#94a3b8;">Insignias (separadas por coma)</label>
+      <input type="text" id="c-badges-${prefix}" value="${(Array.isArray(c.badges) ? c.badges.join(", ") : "")}" placeholder="Ej: 🔥 Best Seller, 🌴 Most Popular">
+
+      <label style="font-size:13px; color:#94a3b8;">Info rápida (separada por coma)</label>
+      <input type="text" id="c-quickinfo-${prefix}" value="${(Array.isArray(c.quick_info) ? c.quick_info.join(", ") : "")}" placeholder="Ej: ⏱ Full day, 🚐 Hotel pickup included">
+
+      <label style="font-size:13px; color:#94a3b8;">Highlights (uno por línea)</label>
+      <textarea id="c-highlights-${prefix}" rows="4" placeholder="Un punto destacado por línea">${(Array.isArray(c.highlights) ? c.highlights.join("\n") : "")}</textarea>
+
+      <label style="font-size:13px; color:#94a3b8;">Descripción / About (párrafos separados por línea en blanco)</label>
+      <textarea id="c-about-${prefix}" rows="5" placeholder="Un párrafo, línea en blanco, otro párrafo...">${(Array.isArray(c.about) ? c.about.join("\n\n") : "")}</textarea>
+
+      <label style="font-size:13px; color:#94a3b8;">Qué incluye (uno por línea)</label>
+      <textarea id="c-incluye-${prefix}" rows="4" placeholder="Un ítem por línea">${(Array.isArray(c.incluye) ? c.incluye.join("\n") : "")}</textarea>
+
+      <label style="font-size:13px; color:#94a3b8;">No incluye (uno por línea)</label>
+      <textarea id="c-no-incluye-${prefix}" rows="3" placeholder="Un ítem por línea">${(Array.isArray(c.no_incluye) ? c.no_incluye.join("\n") : "")}</textarea>
+
+      <label style="font-size:13px; color:#94a3b8;">Good to know (uno por línea)</label>
+      <textarea id="c-good-${prefix}" rows="3" placeholder="Un ítem por línea">${(Array.isArray(c.good_to_know) ? c.good_to_know.join("\n") : "")}</textarea>
+    </div>
+  `;
+}
+
+// Lee los campos de contenido del formulario y arma el objeto "contenido".
+// whyBookExistente se conserva tal cual (esa sección no tiene UI propia todavía).
+function leerContenidoFields(prefix, whyBookExistente) {
+  const rating = parseFloat(document.getElementById(`c-rating-${prefix}`)?.value);
+  return {
+    subtitulo: document.getElementById(`c-subtitulo-${prefix}`)?.value.trim() || "",
+    urgency: document.getElementById(`c-urgency-${prefix}`)?.value.trim() || "",
+    rating: isNaN(rating) ? null : rating,
+    rating_label: document.getElementById(`c-rating-label-${prefix}`)?.value.trim() || "",
+    badges: comasA(document.getElementById(`c-badges-${prefix}`)?.value),
+    quick_info: comasA(document.getElementById(`c-quickinfo-${prefix}`)?.value),
+    highlights: lineasA(document.getElementById(`c-highlights-${prefix}`)?.value),
+    about: parrafosA(document.getElementById(`c-about-${prefix}`)?.value),
+    incluye: lineasA(document.getElementById(`c-incluye-${prefix}`)?.value),
+    no_incluye: lineasA(document.getElementById(`c-no-incluye-${prefix}`)?.value),
+    good_to_know: lineasA(document.getElementById(`c-good-${prefix}`)?.value),
+    why_book: Array.isArray(whyBookExistente) ? whyBookExistente : []
+  };
+}
+
 // =======================
 // ☁️ SUPABASE
 // =======================
@@ -22,30 +124,65 @@ if (typeof supabase !== "undefined" && SUPABASE_URL && SUPABASE_ANON_KEY) {
 }
 
 // =======================
+// 📧 NOTIFICACIONES POR CORREO (Zoho, vía Edge Function)
+// =======================
+// No detiene ni rompe el guardado si el correo falla: solo avisa en consola.
+async function notificarCliente(tipo, datos) {
+  try {
+    if (!datos.to) {
+      console.warn("No se envió notificación: la reserva no tiene email.");
+      return;
+    }
+    const { data, error } = await supabaseClient.functions.invoke("notificar-reserva", {
+      body: { tipo, ...datos }
+    });
+    if (error) throw error;
+    console.log("Notificación enviada:", data);
+  } catch (err) {
+    console.error("No se pudo enviar la notificación al cliente:", err);
+  }
+}
+
+// =======================
 // 🔐 LOGIN / LOGOUT
 // =======================
 async function login() {
-  const user = document.getElementById("username")?.value.trim();
+  // El campo "username" del formulario ahora debe contener el EMAIL
+  // (el que se usó para crear la cuenta en Supabase Auth).
+  const email = document.getElementById("username")?.value.trim();
   const pass = document.getElementById("password")?.value.trim();
   const loginError = document.getElementById("loginError");
 
   try {
     if (!supabaseClient) throw new Error("Supabase no está conectado");
 
-    const { data, error } = await supabaseClient
-      .from("usuarios")
-      .select("*")
-      .eq("username", user)
-      .eq("password", pass)
-      .single();
+    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password: pass,
+    });
 
-    if (error || !data) {
+    if (authError || !authData?.user) {
       if (loginError) loginError.style.display = "block";
       return;
     }
 
-    localStorage.setItem("session", "active");
-    localStorage.setItem("currentUser", JSON.stringify(data));
+    const { data: perfil, error: perfilError } = await supabaseClient
+      .from("perfiles")
+      .select("*")
+      .eq("id", authData.user.id)
+      .single();
+
+    if (perfilError || !perfil) {
+      // Tiene cuenta en Auth pero no tiene perfil asignado -> sin acceso al panel
+      await supabaseClient.auth.signOut();
+      if (loginError) {
+        loginError.style.display = "block";
+        loginError.textContent = "Esta cuenta no tiene acceso al panel.";
+      }
+      return;
+    }
+
+    localStorage.setItem("currentUser", JSON.stringify(perfil));
 
     if (loginError) loginError.style.display = "none";
     document.getElementById("loginScreen").style.display = "none";
@@ -53,7 +190,7 @@ async function login() {
 
     getContent().innerHTML = `
       <h1>Dashboard</h1>
-      <p>Bienvenido, ${data.username}</p>
+      <p>Bienvenido, ${perfil.nombre}</p>
     `;
   } catch (err) {
     console.error("Error en login:", err);
@@ -61,8 +198,8 @@ async function login() {
   }
 }
 
-function logout() {
-  localStorage.removeItem("session");
+async function logout() {
+  await supabaseClient.auth.signOut();
   localStorage.removeItem("currentUser");
 
   document.getElementById("app").style.display = "none";
@@ -118,6 +255,32 @@ function closeSidebarMobile() {
 document.addEventListener("DOMContentLoaded", () => {
   console.log("App cargada correctamente ✅");
 
+  // 🆕 Inyectar nuevos ítems de menú (Catálogo / Proveedores) sin tocar index.html
+  const sidebarEl = document.getElementById("sidebar");
+  if (sidebarEl && !sidebarEl.querySelector('[data-menu="catalogo"]')) {
+    const logoutBtn = sidebarEl.querySelector("button");
+
+    const catalogoLink = document.createElement("a");
+    catalogoLink.href = "#";
+    catalogoLink.className = "menu-item";
+    catalogoLink.dataset.menu = "catalogo";
+    catalogoLink.textContent = "Catálogo (Beta)";
+
+    const proveedoresLink = document.createElement("a");
+    proveedoresLink.href = "#";
+    proveedoresLink.className = "menu-item";
+    proveedoresLink.dataset.menu = "proveedores";
+    proveedoresLink.textContent = "Proveedores";
+
+    if (logoutBtn) {
+      sidebarEl.insertBefore(catalogoLink, logoutBtn);
+      sidebarEl.insertBefore(proveedoresLink, logoutBtn);
+    } else {
+      sidebarEl.appendChild(catalogoLink);
+      sidebarEl.appendChild(proveedoresLink);
+    }
+  }
+
   const toggleBtn = document.getElementById("toggleBtn");
   const menuItems = document.querySelectorAll(".menu-item");
   const overlay = document.getElementById("mobileOverlay");
@@ -150,6 +313,8 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (text === "Nuevo Producto") menuProductos();
         else if (text === "Usuarios") await menuUsuarios();
         else if (text === "Reviews") await menuReviews();
+        else if (item.dataset.menu === "catalogo") await menuCatalogoReservas();
+        else if (item.dataset.menu === "proveedores") await menuProveedores();
 
         closeSidebarMobile();
       });
@@ -170,17 +335,31 @@ document.addEventListener("DOMContentLoaded", () => {
 // =======================
 // 🔄 RESTAURAR SESIÓN
 // =======================
-window.onload = function () {
-  const session = localStorage.getItem("session");
-  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+window.onload = async function () {
+  const { data: { session } } = await supabaseClient.auth.getSession();
 
-  if (session === "active" && currentUser) {
+  if (session) {
+    const { data: perfil, error: perfilError } = await supabaseClient
+      .from("perfiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    if (perfilError || !perfil) {
+      // Sesión válida en Auth pero sin perfil de panel -> se cierra la sesión
+      await supabaseClient.auth.signOut();
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("app").style.display = "none";
+      return;
+    }
+
+    localStorage.setItem("currentUser", JSON.stringify(perfil));
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("app").style.display = "flex";
 
     getContent().innerHTML = `
       <h1>Dashboard</h1>
-      <p>Bienvenido, ${currentUser.username}</p>
+      <p>Bienvenido, ${perfil.nombre}</p>
     `;
   } else {
     document.getElementById("loginScreen").style.display = "flex";
@@ -194,6 +373,16 @@ window.onload = function () {
 async function fetchProductos() {
   const { data, error } = await supabaseClient
     .from("productos")
+    .select("*")
+    .order("nombre", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchProveedores() {
+  const { data, error } = await supabaseClient
+    .from("proveedores")
     .select("*")
     .order("nombre", { ascending: true });
 
@@ -251,44 +440,6 @@ async function fetchWebReservationById(id) {
 
   if (error) throw error;
   return data;
-}
-
-function normalizePanelReservation(r) {
-  return {
-    id: r.id,
-    tipo: "panel",
-    cliente: r.cliente || "-",
-    telefono: r.telefono || "-",
-    email: r.email || "-",
-    hotel: r.hotel || "-",
-    excursion: r.excursion || "-",
-    pickup: r.pickup || "-",
-    fecha: r.fecha || "-",
-    adultos: r.adultos || 0,
-    ninos: r.ninos || 0,
-    precio: r.precio || 0,
-    estado: "manual",
-    fuente: "panel"
-  };
-}
-
-function normalizeWebReservation(r) {
-  return {
-    id: r.id,
-    tipo: "web",
-    cliente: r.client_name || "-",
-    telefono: r.phone || "-",
-    email: r.email || "-",
-    hotel: r.hotel_name || "-",
-    excursion: r.tour_name || r.tour_slug || "-",
-    pickup: r.pickup_time || "-",
-    fecha: r.selected_date || "-",
-    adultos: r.adults || 0,
-    ninos: r.children || 0,
-    precio: r.total || 0,
-    estado: r.status || "pending",
-    fuente: r.source || "web"
-  };
 }
 
 function normalizeVoucherData(reserva, tipo = "panel") {
@@ -379,17 +530,63 @@ function menuProductos() {
 // =======================
 // ➕ CREAR PRODUCTO
 // =======================
-function loadProducto() {
+async function loadProducto() {
+  let familiasExistentes = [];
+  try {
+    const productos = await fetchProductos();
+    familiasExistentes = [...new Set(productos.map(p => p.family).filter(Boolean))];
+  } catch (err) {
+    console.warn("No se pudieron cargar familias existentes:", err);
+  }
+
   getContent().innerHTML = `
     <h2>Nueva Excursión</h2>
+    <p style="color:#94a3b8; font-size:13px;">
+      Esto crea una excursión nueva, completa, que va a aparecer en la web usando la plantilla
+      dinámica (tour.html). Después de guardarla podrás subirle imágenes desde "Editar Productos".
+    </p>
 
     <form id="productoForm">
-      <input type="text" id="nombreExcursion" placeholder="Nombre de la excursión" required>
-      <input type="number" id="precioAdulto" placeholder="Precio Adulto" required>
-      <input type="number" id="precioNino" placeholder="Precio Niño" required>
+      <label style="font-size:13px; color:#94a3b8;">Nombre visible</label>
+      <input type="text" id="nombreExcursion" placeholder="Ej: Saona Premium" required oninput="
+        document.getElementById('slugExcursion').value = slugify(this.value);
+      ">
 
-      <button type="submit">Guardar Producto</button>
-      <button type="button" onclick="menuProductos()">⬅ Volver</button>
+      <label style="font-size:13px; color:#94a3b8;">Slug (URL, se genera solo, puedes editarlo)</label>
+      <input type="text" id="slugExcursion" placeholder="Ej: saona-premium" required>
+
+      <label style="font-size:13px; color:#94a3b8;">Familia (agrupa variantes, ej: "saona"). ${familiasExistentes.length ? "Ya existen: " + familiasExistentes.join(", ") : ""}</label>
+      <input type="text" id="familyExcursion" list="familiasList" placeholder="Ej: saona">
+      <datalist id="familiasList">
+        ${familiasExistentes.map(f => `<option value="${f}">`).join("")}
+      </datalist>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div>
+          <label style="font-size:13px; color:#94a3b8;">Precio adulto</label>
+          <input type="number" id="precioAdulto" placeholder="Precio Adulto" required>
+        </div>
+        <div>
+          <label style="font-size:13px; color:#94a3b8;">Precio niño</label>
+          <input type="number" id="precioNino" placeholder="Precio Niño" required>
+        </div>
+      </div>
+
+      <label style="font-size:13px; color:#94a3b8;">Capacidad máxima</label>
+      <input type="number" id="capacidadExcursion" placeholder="Ej: 20">
+
+      <label style="font-size:13px; color:#94a3b8;">Horarios disponibles (separados por coma)</label>
+      <input type="text" id="horariosExcursion" placeholder="Ej: 7:00 AM, 8:20 AM, 9:45 AM">
+
+      <label style="display:flex; align-items:center; gap:8px; font-size:14px; margin-top:6px;">
+        <input type="checkbox" id="activoExcursion" checked style="width:auto; margin:0;">
+        Activa en la web
+      </label>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+        <button type="submit">💾 Guardar Excursión</button>
+        <button type="button" onclick="menuProductos()">⬅ Volver</button>
+      </div>
     </form>
   `;
 
@@ -400,10 +597,26 @@ function loadProducto() {
 async function guardarProducto(e) {
   e.preventDefault();
 
+  const nombre = document.getElementById("nombreExcursion").value.trim();
+  const slug = slugify(document.getElementById("slugExcursion").value) || slugify(nombre);
+  const family = document.getElementById("familyExcursion").value.trim() || null;
+  const adulto = parseFloat(document.getElementById("precioAdulto").value) || 0;
+  const nino = parseFloat(document.getElementById("precioNino").value) || 0;
+  const capacidad_maxima = parseInt(document.getElementById("capacidadExcursion").value) || 0;
+  const activo_web = document.getElementById("activoExcursion").checked;
+
+  const horariosInput = document.getElementById("horariosExcursion").value.trim();
+  const horarios = horariosInput ? comasA(horariosInput) : [];
+
   const producto = {
-    nombre: document.getElementById("nombreExcursion").value.trim(),
-    adulto: parseFloat(document.getElementById("precioAdulto").value) || 0,
-    nino: parseFloat(document.getElementById("precioNino").value) || 0
+    nombre,
+    slug,
+    family,
+    adulto,
+    nino,
+    capacidad_maxima,
+    activo_web,
+    horarios
   };
 
   try {
@@ -416,8 +629,8 @@ async function guardarProducto(e) {
       throw error;
     }
 
-    alert("Excursión guardada en la nube ✅");
-    document.getElementById("productoForm").reset();
+    alert("Excursión guardada ✅ Ahora puedes subirle imágenes desde 'Editar Productos'.");
+    editarProductos();
 
   } catch (err) {
     console.error("Error guardando producto:", err);
@@ -427,7 +640,10 @@ async function guardarProducto(e) {
 
 async function editarProductos() {
   try {
-    const productos = await fetchProductos();
+    const [productos, proveedores] = await Promise.all([
+      fetchProductos(),
+      fetchProveedores()
+    ]);
 
     if (productos.length === 0) {
       getContent().innerHTML = `
@@ -438,6 +654,9 @@ async function editarProductos() {
     }
 
     let html = `<h2>Editar Excursiones Web</h2>`;
+
+    window.__productosCache = {};
+    productos.forEach(p => { window.__productosCache[p.id] = p; });
 
     productos.forEach((p) => {
       const horariosTexto = Array.isArray(p.horarios)
@@ -478,6 +697,23 @@ async function editarProductos() {
               <div>
                 <label style="font-size:13px; color:#94a3b8;">Precio niño</label>
                 <input type="number" value="${p.nino || 0}" id="nino-${p.id}">
+              </div>
+            </div>
+
+            <label style="display:flex; align-items:center; gap:8px; font-size:14px; margin-top:6px;">
+              <input type="checkbox" id="promo-${p.id}" ${p.en_promocion ? "checked" : ""} style="width:auto; margin:0;">
+              🔥 En promoción
+            </label>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div>
+                <label style="font-size:13px; color:#94a3b8;">Precio promo adulto</label>
+                <input type="number" value="${p.precio_promo_adulto || ""}" id="promo-adulto-${p.id}" placeholder="Ej: 69">
+              </div>
+
+              <div>
+                <label style="font-size:13px; color:#94a3b8;">Precio promo niño</label>
+                <input type="number" value="${p.precio_promo_nino || ""}" id="promo-nino-${p.id}" placeholder="Ej: 35">
               </div>
             </div>
 
@@ -536,6 +772,28 @@ async function editarProductos() {
               <div>
                 <label style="font-size:13px; color:#94a3b8;">Family (solo lectura)</label>
                 <input type="text" value="${p.family || ""}" readonly style="background:#1f2937; color:#9ca3af;">
+              </div>
+            </div>
+
+            <label style="font-size:13px; color:#94a3b8;">Proveedor</label>
+            <select id="proveedor-${p.id}">
+              <option value="">Sin proveedor asignado</option>
+              ${proveedores.map(prov => `
+                <option value="${prov.id}" ${p.proveedor_id === prov.id ? "selected" : ""}>
+                  ${prov.nombre}
+                </option>
+              `).join("")}
+            </select>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div>
+                <label style="font-size:13px; color:#94a3b8;">Costo neto adulto (a proveedor)</label>
+                <input type="number" step="0.01" min="0" id="costo-neto-adulto-${p.id}" value="${p.costo_neto_adulto ?? ""}" placeholder="Ej: 45">
+              </div>
+
+              <div>
+                <label style="font-size:13px; color:#94a3b8;">Costo neto niño (a proveedor)</label>
+                <input type="number" step="0.01" min="0" id="costo-neto-nino-${p.id}" value="${p.costo_neto_nino ?? ""}" placeholder="Ej: 25">
               </div>
             </div>
 
@@ -610,6 +868,9 @@ async function actualizarProducto(id) {
   const adulto = parseFloat(document.getElementById(`adulto-${id}`).value) || 0;
   const nino = parseFloat(document.getElementById(`nino-${id}`).value) || 0;
   const activo_web = document.getElementById(`activo-${id}`).checked;
+  const en_promocion = document.getElementById(`promo-${id}`).checked;
+  const precio_promo_adulto = parseFloat(document.getElementById(`promo-adulto-${id}`).value) || null;
+  const precio_promo_nino = parseFloat(document.getElementById(`promo-nino-${id}`).value) || null;
 
   const horariosInput = document.getElementById(`horarios-${id}`).value.trim();
 
@@ -648,6 +909,20 @@ const fechas_bloqueadas = fechasInput
 const capacidad_maxima =
   parseInt(document.getElementById(`capacidad-${id}`)?.value) || 0;
 
+const proveedorSelect = document.getElementById(`proveedor-${id}`)?.value || "";
+const proveedor_id = proveedorSelect ? parseInt(proveedorSelect) : null;
+
+const costoNetoAdultoInput = document.getElementById(`costo-neto-adulto-${id}`)?.value;
+const costoNetoNinoInput = document.getElementById(`costo-neto-nino-${id}`)?.value;
+
+const costo_neto_adulto = costoNetoAdultoInput !== "" && costoNetoAdultoInput != null
+  ? parseFloat(costoNetoAdultoInput)
+  : null;
+
+const costo_neto_nino = costoNetoNinoInput !== "" && costoNetoNinoInput != null
+  ? parseFloat(costoNetoNinoInput)
+  : null;
+
 try {
   const { error } = await supabaseClient
     .from("productos")
@@ -660,7 +935,13 @@ try {
       dias_disponibles,
       hora_limite_reserva,
       fechas_bloqueadas,
-      capacidad_maxima
+      capacidad_maxima,
+      en_promocion,
+      precio_promo_adulto,
+      precio_promo_nino,
+      proveedor_id,
+      costo_neto_adulto,
+      costo_neto_nino
     })
     .eq("id", id);
 
@@ -1218,6 +1499,7 @@ async function mostrarReservas() {
             <th>Cliente</th>
             <th>Teléfono</th>
             <th>Hotel</th>
+            <th>Habitación</th>
             <th>Excursión</th>
             <th>Pickup</th>
             <th>Fecha</th>
@@ -1250,6 +1532,7 @@ async function mostrarReservas() {
             <td>${r.cliente}</td>
             <td>${r.telefono}</td>
             <td>${r.hotel}</td>
+            <td>${r.habitacion}</td>
             <td>${r.excursion}</td>
             <td>${r.pickup}</td>
             <td>${r.fecha}</td>
@@ -1402,9 +1685,12 @@ function normalizePanelReservation(r) {
     telefono: r.telefono || "-",
     email: r.email || "-",
     hotel: r.hotel || "-",
+    habitacion: r.habitacion || "-",
     excursion: r.excursion || "-",
     pickup: r.pickup || "-",
     fecha: r.fecha || "-",
+    adultos: r.adultos || 0,
+    ninos: r.ninos || 0,
     precio: r.precio || 0,
     estado: "manual",
     fuente: "panel"
@@ -1419,9 +1705,12 @@ function normalizeWebReservation(r) {
     telefono: r.phone || "-",
     email: r.email || "-",
     hotel: r.hotel_name || "-",
+    habitacion: r.room_number || r.habitacion || "-",
     excursion: r.tour_name || r.tour_slug || "-",
     pickup: r.pickup_time || "-",
     fecha: r.selected_date || "-",
+    adultos: r.adults || 0,
+    ninos: r.children || 0,
     precio: r.total || 0,
     estado: r.status || "pending",
     fuente: r.source || "web"
@@ -1517,6 +1806,17 @@ async function guardarEdicionReserva(id) {
 
     if (error) throw error;
 
+    notificarCliente("editada", {
+      to: reservaActualizada.email,
+      cliente: reservaActualizada.cliente,
+      excursion: reservaActualizada.excursion,
+      fecha: reservaActualizada.fecha,
+      hotel: reservaActualizada.hotel,
+      adultos: reservaActualizada.adultos,
+      ninos: reservaActualizada.ninos,
+      precio: reservaActualizada.precio
+    });
+
     alert("Reserva actualizada ✅");
     mostrarReservas();
 
@@ -1602,6 +1902,20 @@ async function guardarEdicionReservaWeb(id, originalTourSlug) {
 
     if (error) throw error;
 
+    notificarCliente(
+      reservaActualizada.status === "cancelled" ? "cancelada" : "editada",
+      {
+        to: reservaActualizada.email,
+        cliente: reservaActualizada.client_name,
+        excursion: reservaActualizada.tour_name,
+        fecha: reservaActualizada.selected_date,
+        hotel: reservaActualizada.hotel_name,
+        adultos: reservaActualizada.adults,
+        ninos: reservaActualizada.children,
+        precio: reservaActualizada.total
+      }
+    );
+
     alert("Reserva web actualizada ✅");
     mostrarReservas();
 
@@ -1615,12 +1929,25 @@ async function eliminarReserva(id) {
   if (!confirm("¿Seguro que quieres eliminar esta reserva?")) return;
 
   try {
+    const { data: reservaAEliminar } = await supabaseClient
+      .from("reservas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
     const { error } = await supabaseClient
       .from("reservas")
       .delete()
       .eq("id", id);
 
     if (error) throw error;
+
+    if (reservaAEliminar) {
+      notificarCliente("cancelada", {
+        to: reservaAEliminar.email,
+        cliente: reservaAEliminar.cliente
+      });
+    }
 
     alert("Reserva eliminada ✅");
     mostrarReservas();
@@ -1758,33 +2085,55 @@ async function reporteVentas() {
 
 async function verContactos() {
   try {
-    const { data, error } = await supabaseClient
-      .from("reservas")
-      .select("cliente, telefono, email, fecha")
-      .order("fecha", { ascending: false });
+    const [{ data: reservasPanel, error: errorPanel }, { data: reservasWeb, error: errorWeb }] =
+      await Promise.all([
+        supabaseClient
+          .from("reservas")
+          .select("cliente, telefono, email, fecha")
+          .order("fecha", { ascending: false }),
+        supabaseClient
+          .from("reservations")
+          .select("client_name, phone, email, selected_date")
+          .order("selected_date", { ascending: false }),
+      ]);
 
-    if (error) throw error;
+    if (errorPanel) throw errorPanel;
+    if (errorWeb) throw errorWeb;
 
-    const reservas = data || [];
+    // Normalizamos ambas fuentes al mismo formato antes de juntarlas
+    const todas = [
+      ...(reservasPanel || []).map(r => ({
+        nombre: r.cliente || "",
+        telefono: r.telefono || "",
+        email: r.email || "",
+        fecha: r.fecha || "",
+      })),
+      ...(reservasWeb || []).map(r => ({
+        nombre: r.client_name || "",
+        telefono: r.phone || "",
+        email: r.email || "",
+        fecha: r.selected_date || "",
+      })),
+    ];
 
-    if (reservas.length === 0) {
+    if (todas.length === 0) {
       getContent().innerHTML = "<h2>No hay contactos aún</h2>";
       return;
     }
 
+    // Ordenamos por fecha más reciente primero (juntando ambas fuentes)
+    todas.sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+
     const contactosMap = new Map();
 
-    reservas.forEach(r => {
-      const key = (r.telefono || r.email || r.cliente || "").trim().toLowerCase();
+    todas.forEach(r => {
+      const key = (r.telefono || r.email || r.nombre || "").trim().toLowerCase();
       if (!key) return;
 
+      // Como ya viene ordenado por fecha desc, el primero que aparece
+      // por cada contacto es su reserva más reciente
       if (!contactosMap.has(key)) {
-        contactosMap.set(key, {
-          nombre: r.cliente || "",
-          telefono: r.telefono || "",
-          email: r.email || "",
-          fecha: r.fecha || ""
-        });
+        contactosMap.set(key, r);
       }
     });
 
@@ -2290,7 +2639,7 @@ async function compartirImagen(id) {
 async function menuUsuarios() {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
 
-  if (!currentUser || currentUser.role !== "admin") {
+  if (!currentUser || currentUser.rol !== "admin") {
     getContent().innerHTML = `
       <h2>Acceso denegado</h2>
       <p>Solo el administrador puede gestionar usuarios.</p>
@@ -2300,26 +2649,18 @@ async function menuUsuarios() {
 
   try {
     const { data, error } = await supabaseClient
-      .from("usuarios")
+      .from("perfiles")
       .select("*")
-      .order("username", { ascending: true });
+      .order("nombre", { ascending: true });
 
     if (error) throw error;
 
     let html = `
-      <h2>Usuarios</h2>
-
-      <form id="userForm" style="margin-bottom:20px;">
-        <input type="text" id="newUsername" placeholder="Nuevo usuario" required>
-        <input type="password" id="newPassword" placeholder="Contraseña" required>
-
-        <select id="newRole">
-          <option value="seller">Vendedor</option>
-          <option value="admin">Administrador</option>
-        </select>
-
-        <button type="submit">Agregar usuario</button>
-      </form>
+      <h2>Usuarios del panel</h2>
+      <p style="color:#666; font-size:0.9em;">
+        Para agregar a alguien nuevo: créale la cuenta en Supabase
+        (Authentication → Users → Add user) y pídeme que le asigne perfil.
+      </p>
 
       <h3>Lista de usuarios</h3>
     `;
@@ -2327,9 +2668,9 @@ async function menuUsuarios() {
     (data || []).forEach((u) => {
       html += `
         <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
-          <strong>${u.username}</strong> — ${u.role}
+          <strong>${u.nombre}</strong> — ${u.rol === "admin" ? "Administrador" : "Vendedor"}
           <div style="margin-top:10px;">
-            <button onclick="eliminarUsuario(${u.id})">❌ Eliminar</button>
+            <button onclick="eliminarUsuario('${u.id}')">❌ Quitar acceso</button>
           </div>
         </div>
       `;
@@ -2337,78 +2678,34 @@ async function menuUsuarios() {
 
     getContent().innerHTML = html;
 
-    document.getElementById("userForm").addEventListener("submit", guardarUsuario);
-
   } catch (err) {
     console.error("Error cargando usuarios:", err);
     alert("No se pudieron cargar los usuarios ⚠️");
   }
 }
 
-async function guardarUsuario(e) {
-  e.preventDefault();
-
-  const username = document.getElementById("newUsername").value.trim();
-  const password = document.getElementById("newPassword").value.trim();
-  const role = document.getElementById("newRole").value;
-
-  try {
-    const { data: existing, error: existingError } = await supabaseClient
-      .from("usuarios")
-      .select("*")
-      .eq("username", username);
-
-    if (existingError) throw existingError;
-
-    if (existing && existing.length > 0) {
-      alert("Ese usuario ya existe");
-      return;
-    }
-
-    const { error } = await supabaseClient
-      .from("usuarios")
-      .insert([{ username, password, role }]);
-
-    if (error) throw error;
-
-    alert("Usuario creado ✅");
-    menuUsuarios();
-  } catch (err) {
-    console.error("Error creando usuario:", err);
-    alert("No se pudo crear el usuario ⚠️");
-  }
-}
-
 async function eliminarUsuario(id) {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-  if (!confirm("¿Eliminar este usuario?")) return;
+  if (!confirm("¿Quitar el acceso al panel de este usuario?")) return;
+
+  if (currentUser && id === currentUser.id) {
+    alert("No puedes quitarte el acceso a ti mismo mientras estás logueado");
+    return;
+  }
 
   try {
-    const { data, error: userError } = await supabaseClient
-      .from("usuarios")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (userError) throw userError;
-
-    if (currentUser && data.username === currentUser.username) {
-      alert("No puedes eliminar tu propio usuario mientras estás logueado");
-      return;
-    }
-
     const { error } = await supabaseClient
-      .from("usuarios")
+      .from("perfiles")
       .delete()
       .eq("id", id);
 
     if (error) throw error;
 
-    alert("Usuario eliminado ✅");
+    alert("Acceso eliminado ✅");
     menuUsuarios();
   } catch (err) {
     console.error("Error eliminando usuario:", err);
-    alert("No se pudo eliminar el usuario ⚠️");
+    alert("No se pudo quitar el acceso ⚠️");
   }
 }
 
@@ -2660,7 +2957,819 @@ async function subirImagenProducto(productoId) {
     editarProductos();
 
   } catch (err) {
-    console.error(err);
-    alert("No se pudo subir la imagen ⚠️");
+    console.error("Error subiendo imagen:", err);
+    alert(
+      "No se pudo subir la imagen ⚠️\n\n" +
+      "Error: " + (err.message || JSON.stringify(err))
+    );
+  }
+}
+
+// =======================
+// 🚚 PROVEEDORES
+// =======================
+async function menuProveedores() {
+  getContent().innerHTML = `
+    <h2>Proveedores</h2>
+
+    <button onclick="crearProveedor()">➕ Crear Proveedor</button>
+    <button onclick="verProveedores()">📋 Ver Proveedores</button>
+    <button onclick="reporteProveedores()">📊 Reporte de Proveedores</button>
+  `;
+}
+
+function formularioProveedorHTML(p = {}) {
+  return `
+    <div style="display:grid; gap:10px; max-width:500px;">
+      <label style="font-size:13px; color:#94a3b8;">Nombre *</label>
+      <input type="text" id="prov-nombre" value="${p.nombre || ""}" placeholder="Ej: Island Action Tours" required>
+
+      <label style="font-size:13px; color:#94a3b8;">Teléfono</label>
+      <input type="text" id="prov-telefono" value="${p.telefono || ""}" placeholder="Ej: +1 809 000 0000">
+
+      <label style="font-size:13px; color:#94a3b8;">WhatsApp</label>
+      <input type="text" id="prov-whatsapp" value="${p.whatsapp || ""}" placeholder="Ej: +1 809 000 0000">
+
+      <label style="font-size:13px; color:#94a3b8;">Email</label>
+      <input type="email" id="prov-email" value="${p.email || ""}" placeholder="contacto@proveedor.com">
+
+      <label style="font-size:13px; color:#94a3b8;">Términos de pago</label>
+      <input type="text" id="prov-terminos" value="${p.terminos_pago || ""}" placeholder="Ej: Se paga semanal, los lunes">
+
+      <label style="font-size:13px; color:#94a3b8;">Notas internas</label>
+      <textarea id="prov-notas" rows="3" placeholder="Notas internas sobre este proveedor">${p.notas || ""}</textarea>
+
+      <label style="display:flex; align-items:center; gap:8px; font-size:14px;">
+        <input type="checkbox" id="prov-activo" ${p.id ? (p.activo ? "checked" : "") : "checked"} style="width:auto; margin:0;">
+        Proveedor activo
+      </label>
+    </div>
+  `;
+}
+
+function crearProveedor() {
+  getContent().innerHTML = `
+    <h2>Nuevo Proveedor</h2>
+
+    <form id="proveedorForm">
+      ${formularioProveedorHTML()}
+
+      <br>
+      <button type="submit">Guardar Proveedor</button>
+      <button type="button" onclick="menuProveedores()">⬅ Volver</button>
+    </form>
+  `;
+
+  document.getElementById("proveedorForm")
+    .addEventListener("submit", guardarProveedor);
+}
+
+function leerFormularioProveedor() {
+  return {
+    nombre: document.getElementById("prov-nombre").value.trim(),
+    telefono: document.getElementById("prov-telefono").value.trim() || null,
+    whatsapp: document.getElementById("prov-whatsapp").value.trim() || null,
+    email: document.getElementById("prov-email").value.trim() || null,
+    terminos_pago: document.getElementById("prov-terminos").value.trim() || null,
+    notas: document.getElementById("prov-notas").value.trim() || null,
+    activo: document.getElementById("prov-activo").checked
+  };
+}
+
+async function guardarProveedor(e) {
+  e.preventDefault();
+
+  const proveedor = leerFormularioProveedor();
+
+  if (!proveedor.nombre) {
+    alert("El nombre del proveedor es obligatorio");
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from("proveedores")
+      .insert([proveedor]);
+
+    if (error) throw error;
+
+    alert("Proveedor guardado ✅");
+    menuProveedores();
+  } catch (err) {
+    console.error("Error guardando proveedor:", err);
+    alert(
+      "No se pudo guardar el proveedor ⚠️\n\n" +
+      "Error: " + (err.message || JSON.stringify(err))
+    );
+  }
+}
+
+async function verProveedores() {
+  try {
+    const proveedores = await fetchProveedores();
+
+    if (proveedores.length === 0) {
+      getContent().innerHTML = `
+        <h2>No hay proveedores aún</h2>
+        <button onclick="menuProveedores()">⬅ Volver</button>
+      `;
+      return;
+    }
+
+    let html = `<h2>Proveedores</h2>`;
+
+    proveedores.forEach((p) => {
+      html += `
+        <div style="border:1px solid #334155; padding:14px; margin-bottom:12px; border-radius:10px; background:#111827;">
+          <h4 style="margin:0 0 6px 0;">
+            ${p.nombre} ${p.activo ? "" : "<span style='color:#f87171; font-size:12px;'>(inactivo)</span>"}
+          </h4>
+          <p style="margin:2px 0; font-size:13px; color:#94a3b8;">
+            📞 ${p.telefono || "—"} &nbsp; 💬 ${p.whatsapp || "—"} &nbsp; ✉️ ${p.email || "—"}
+          </p>
+          ${p.terminos_pago ? `<p style="margin:2px 0; font-size:13px; color:#94a3b8;">💰 ${p.terminos_pago}</p>` : ""}
+          ${p.notas ? `<p style="margin:2px 0; font-size:13px; color:#94a3b8;">📝 ${p.notas}</p>` : ""}
+
+          <div style="margin-top:8px;">
+            <button onclick="editarProveedor(${p.id})">✏️ Editar</button>
+            <button onclick="eliminarProveedor(${p.id})">❌ Eliminar</button>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `<button onclick="menuProveedores()">⬅ Volver</button>`;
+    getContent().innerHTML = html;
+  } catch (err) {
+    console.error("Error cargando proveedores:", err);
+    alert("No se pudieron cargar los proveedores ⚠️");
+  }
+}
+
+async function editarProveedor(id) {
+  try {
+    const { data: proveedor, error } = await supabaseClient
+      .from("proveedores")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    getContent().innerHTML = `
+      <h2>Editar Proveedor</h2>
+
+      <form id="proveedorForm">
+        ${formularioProveedorHTML(proveedor)}
+
+        <br>
+        <button type="submit">Guardar Cambios</button>
+        <button type="button" onclick="verProveedores()">⬅ Volver</button>
+      </form>
+    `;
+
+    document.getElementById("proveedorForm")
+      .addEventListener("submit", (e) => actualizarProveedor(e, id));
+
+  } catch (err) {
+    console.error("Error cargando proveedor:", err);
+    alert("No se pudo cargar el proveedor ⚠️");
+  }
+}
+
+async function actualizarProveedor(e, id) {
+  e.preventDefault();
+
+  const proveedor = leerFormularioProveedor();
+
+  if (!proveedor.nombre) {
+    alert("El nombre del proveedor es obligatorio");
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from("proveedores")
+      .update(proveedor)
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Proveedor actualizado ✅");
+    verProveedores();
+  } catch (err) {
+    console.error("Error actualizando proveedor:", err);
+    alert(
+      "No se pudo actualizar el proveedor ⚠️\n\n" +
+      "Error: " + (err.message || JSON.stringify(err))
+    );
+  }
+}
+
+async function eliminarProveedor(id) {
+  if (!confirm("¿Eliminar este proveedor? Los productos que lo tengan asignado quedarán sin proveedor.")) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from("proveedores")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    alert("Proveedor eliminado ✅");
+    verProveedores();
+  } catch (err) {
+    console.error("Error eliminando proveedor:", err);
+    alert("No se pudo eliminar el proveedor ⚠️");
+  }
+}
+
+// =======================
+// 📊 REPORTE DE PROVEEDORES
+// =======================
+
+// Encuentra el producto asociado a una reserva del panel (tabla "reservas")
+function matchProductoReservaPanel(r, productos) {
+  if (r.producto_id) {
+    const porId = productos.find(p => p.id === r.producto_id);
+    if (porId) return porId;
+  }
+  return productos.find(p => (p.slug || p.nombre) === r.excursion) || null;
+}
+
+// Encuentra el producto asociado a una reserva web (tabla "reservations")
+function matchProductoReservaWeb(r, productos) {
+  return productos.find(p => p.slug === r.tour_slug) || null;
+}
+
+async function reporteProveedores() {
+  try {
+    getContent().innerHTML = `<h2>Reporte de Proveedores</h2><p>Cargando datos...</p>`;
+
+    const [productos, proveedores, reservasPanel, reservasWeb] = await Promise.all([
+      fetchProductos(),
+      fetchProveedores(),
+      fetchReservas(),
+      fetchWebReservations()
+    ]);
+
+    getContent().innerHTML = `
+      <h2>Reporte de Proveedores</h2>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:20px;">
+        <div>
+          <label style="display:block; font-size:13px; color:#94a3b8;">Desde</label>
+          <input type="date" id="rep-prov-desde">
+        </div>
+        <div>
+          <label style="display:block; font-size:13px; color:#94a3b8;">Hasta</label>
+          <input type="date" id="rep-prov-hasta">
+        </div>
+        <button type="button" onclick="renderReporteProveedores()">🔍 Filtrar</button>
+        <button type="button" onclick="reporteProveedores()">↺ Limpiar</button>
+      </div>
+
+      <div id="reporteProveedoresWrap">Cargando...</div>
+    `;
+
+    window.__reporteProveedoresData = { productos, proveedores, reservasPanel, reservasWeb };
+    renderReporteProveedores();
+
+  } catch (err) {
+    console.error("Error generando reporte de proveedores:", err);
+    getContent().innerHTML = `<h2>Reporte de Proveedores</h2><p>⚠️ No se pudo generar el reporte.</p>`;
+  }
+}
+
+function renderReporteProveedores() {
+  const wrap = document.getElementById("reporteProveedoresWrap");
+  if (!wrap) return;
+
+  const { productos, proveedores, reservasPanel, reservasWeb } = window.__reporteProveedoresData || {};
+  if (!productos) return;
+
+  const desde = document.getElementById("rep-prov-desde")?.value || "";
+  const hasta = document.getElementById("rep-prov-hasta")?.value || "";
+
+  const dentroDeRango = (fechaStr) => {
+    if (!fechaStr) return true;
+    if (desde && fechaStr < desde) return false;
+    if (hasta && fechaStr > hasta) return false;
+    return true;
+  };
+
+  // Bucket por proveedor (incluye un bucket especial "sin_proveedor")
+  const buckets = {};
+
+  const getBucket = (proveedorId, nombre) => {
+    const key = proveedorId ?? "sin_proveedor";
+    if (!buckets[key]) {
+      buckets[key] = {
+        nombre: nombre || "Sin proveedor asignado",
+        reservas: 0,
+        adultos: 0,
+        ninos: 0,
+        totalVendido: 0,
+        totalAPagar: 0
+      };
+    }
+    return buckets[key];
+  };
+
+  (reservasPanel || []).forEach((r) => {
+    if (!dentroDeRango(r.fecha)) return;
+
+    const producto = matchProductoReservaPanel(r, productos);
+    const proveedor = producto?.proveedor_id
+      ? proveedores.find(p => p.id === producto.proveedor_id)
+      : null;
+
+    const bucket = getBucket(producto?.proveedor_id, proveedor?.nombre);
+    const adultos = Number(r.adultos) || 0;
+    const ninos = Number(r.ninos) || 0;
+
+    bucket.reservas += 1;
+    bucket.adultos += adultos;
+    bucket.ninos += ninos;
+    bucket.totalVendido += Number(r.precio) || 0;
+
+    if (producto) {
+      bucket.totalAPagar +=
+        (adultos * (Number(producto.costo_neto_adulto) || 0)) +
+        (ninos * (Number(producto.costo_neto_nino) || 0));
+    }
+  });
+
+  (reservasWeb || []).forEach((r) => {
+    if (!dentroDeRango(r.selected_date)) return;
+
+    const producto = matchProductoReservaWeb(r, productos);
+    const proveedor = producto?.proveedor_id
+      ? proveedores.find(p => p.id === producto.proveedor_id)
+      : null;
+
+    const bucket = getBucket(producto?.proveedor_id, proveedor?.nombre);
+    const adultos = Number(r.adults) || 0;
+    const ninos = Number(r.children) || 0;
+
+    bucket.reservas += 1;
+    bucket.adultos += adultos;
+    bucket.ninos += ninos;
+    bucket.totalVendido += Number(r.total) || 0;
+
+    if (producto) {
+      bucket.totalAPagar +=
+        (adultos * (Number(producto.costo_neto_adulto) || 0)) +
+        (ninos * (Number(producto.costo_neto_nino) || 0));
+    }
+  });
+
+  const filas = Object.entries(buckets)
+    .sort(([, a], [, b]) => b.totalVendido - a.totalVendido);
+
+  if (filas.length === 0) {
+    wrap.innerHTML = "<p>No hay reservas en este rango de fechas.</p>";
+    return;
+  }
+
+  let totalVendidoGeneral = 0;
+  let totalAPagarGeneral = 0;
+
+  let tabla = `
+    <table class="reservations-table">
+      <tr>
+        <th>Proveedor</th>
+        <th>Reservas</th>
+        <th>Adultos</th>
+        <th>Niños</th>
+        <th>Total Vendido</th>
+        <th>Total a Pagar</th>
+        <th>Margen</th>
+      </tr>
+  `;
+
+  filas.forEach(([key, b]) => {
+    const margen = b.totalVendido - b.totalAPagar;
+    totalVendidoGeneral += b.totalVendido;
+    totalAPagarGeneral += b.totalAPagar;
+
+    tabla += `
+      <tr ${key === "sin_proveedor" ? 'style="opacity:0.7;"' : ""}>
+        <td>${b.nombre}</td>
+        <td>${b.reservas}</td>
+        <td>${b.adultos}</td>
+        <td>${b.ninos}</td>
+        <td>$${b.totalVendido.toFixed(2)}</td>
+        <td>$${b.totalAPagar.toFixed(2)}</td>
+        <td>$${margen.toFixed(2)}</td>
+      </tr>
+    `;
+  });
+
+  tabla += `
+      <tr style="font-weight:bold; border-top:2px solid #334155;">
+        <td colspan="4">Total general</td>
+        <td>$${totalVendidoGeneral.toFixed(2)}</td>
+        <td>$${totalAPagarGeneral.toFixed(2)}</td>
+        <td>$${(totalVendidoGeneral - totalAPagarGeneral).toFixed(2)}</td>
+      </tr>
+    </table>
+  `;
+
+  wrap.innerHTML = tabla;
+}
+
+// =======================
+// 🗂️ CATÁLOGO DE RESERVAS (Beta, estilo NexusGo)
+// =======================
+async function menuCatalogoReservas() {
+  try {
+    getContent().innerHTML = `<h2>Catálogo de Excursiones</h2><p>Cargando...</p>`;
+
+    const productos = await fetchProductos();
+    window.__catalogoProductos = productos;
+
+    if (productos.length === 0) {
+      getContent().innerHTML = `<h2>Catálogo de Excursiones</h2><p>No hay excursiones creadas aún.</p>`;
+      return;
+    }
+
+    getContent().innerHTML = `
+      <h2>Catálogo de Excursiones</h2>
+      <input type="text" id="catalogo-buscar" placeholder="🔍 Buscar excursión..." style="margin-bottom:16px; max-width:320px;">
+      <div id="catalogoGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px;"></div>
+    `;
+
+    document.getElementById("catalogo-buscar").addEventListener("input", renderCatalogoGrid);
+    renderCatalogoGrid();
+
+  } catch (err) {
+    console.error("Error cargando catálogo:", err);
+    getContent().innerHTML = `<h2>Catálogo de Excursiones</h2><p>⚠️ No se pudo cargar el catálogo.</p>`;
+  }
+}
+
+function renderCatalogoGrid() {
+  const grid = document.getElementById("catalogoGrid");
+  if (!grid) return;
+
+  const productos = window.__catalogoProductos || [];
+  const filtro = (document.getElementById("catalogo-buscar")?.value || "").toLowerCase().trim();
+
+  const filtrados = filtro
+    ? productos.filter(p => (p.nombre || "").toLowerCase().includes(filtro))
+    : productos;
+
+  if (filtrados.length === 0) {
+    grid.innerHTML = "<p>No se encontraron excursiones.</p>";
+    return;
+  }
+
+  grid.innerHTML = filtrados.map(p => {
+    const horarios = Array.isArray(p.horarios) && p.horarios.length ? p.horarios : [];
+    const horaBadge = horarios[0] || "Horario libre";
+    const img = p.imagen_url || (Array.isArray(p.imagenes_urls) && p.imagenes_urls[0]) || "";
+
+    return `
+      <div class="catalogo-card" onclick="abrirReservaCatalogo(${p.id})" style="
+        cursor:pointer;
+        border:1px solid #334155;
+        border-radius:12px;
+        overflow:hidden;
+        background:#111827;
+      ">
+        <div style="
+          height:110px;
+          background:${img ? `url('${img}') center/cover no-repeat` : "#1f2937"};
+          position:relative;
+        ">
+          <span style="
+            position:absolute; top:8px; left:8px;
+            background:#ea580c; color:#fff; font-size:12px;
+            padding:3px 8px; border-radius:6px;
+          ">🕐 ${horaBadge}</span>
+        </div>
+
+        <div style="padding:10px;">
+          <h4 style="margin:0 0 8px 0; font-size:15px;">${p.nombre}</h4>
+          <div style="display:flex; justify-content:space-between; font-size:13px; color:#94a3b8;">
+            <span>Adulto: <strong style="color:#e2e8f0;">$${p.adulto ?? 0}</strong></span>
+            <span>Niño: <strong style="color:#e2e8f0;">$${p.nino ?? 0}</strong></span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function abrirReservaCatalogo(productoId) {
+  try {
+    const producto = (window.__catalogoProductos || []).find(p => p.id === productoId);
+    if (!producto) {
+      alert("No se encontró la excursión seleccionada");
+      return;
+    }
+
+    const hoteles = await fetchHoteles();
+    window.__catalogoHoteles = hoteles;
+    window.__catalogoProductoActual = producto;
+
+    const opcionesHoteles = hoteles.map(h => `<option value="${h.nombre}">${h.nombre}</option>`).join("");
+
+    const horariosProducto = Array.isArray(producto.horarios) && producto.horarios.length
+      ? producto.horarios
+      : [];
+
+    const turnoHTML = horariosProducto.length > 0 ? `
+      <label style="font-size:13px; color:#94a3b8;">Horario</label>
+      <select id="cat-turno">
+        ${horariosProducto.map(h => `<option value="${h}">${h}</option>`).join("")}
+      </select>
+    ` : "";
+
+    getContent().innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+        <button type="button" onclick="menuCatalogoReservas()">⬅ Volver al catálogo</button>
+        <h2 style="margin:0;">${producto.nombre}</h2>
+      </div>
+
+      <form id="catalogoReservaForm" style="display:grid; gap:10px; max-width:520px;">
+        <input type="text" id="cat-cliente" placeholder="Nombre del cliente" required>
+        <input type="tel" id="cat-telefono" placeholder="Teléfono" required>
+        <input type="email" id="cat-email" placeholder="Email" required>
+
+        <select id="cat-hotel" required>
+          <option value="">Seleccionar hotel</option>
+          ${opcionesHoteles}
+        </select>
+
+        <label style="font-size:13px; color:#94a3b8;">Número de habitación</label>
+        <input type="text" id="cat-habitacion" placeholder="Ej: 1204">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label style="font-size:13px; color:#94a3b8;">Adultos</label>
+            <input type="number" id="cat-adultos" min="1" value="1" required>
+          </div>
+          <div>
+            <label style="font-size:13px; color:#94a3b8;">Niños</label>
+            <input type="number" id="cat-ninos" min="0" value="0">
+          </div>
+        </div>
+
+        ${turnoHTML}
+
+        <label style="font-size:13px; color:#94a3b8;">Pick Up Time</label>
+        <select id="cat-pickup-select" style="display:none;"></select>
+        <input type="text" id="cat-pickup-nuevo" placeholder="Ej: 7:15 AM Lobby">
+        <small id="cat-pickup-hint" style="color:#64748b; font-size:12px; margin-top:-4px;"></small>
+
+        <label style="font-size:13px; color:#94a3b8;">Fecha</label>
+        <input type="date" id="cat-fecha" required>
+
+        <label style="font-size:13px; color:#94a3b8;">Descuento ($)</label>
+        <input type="number" id="cat-descuento" value="0" min="0">
+
+        <label style="font-size:13px; color:#94a3b8;">Precio total</label>
+        <input type="number" id="cat-precio" min="0" step="0.01">
+
+        <label style="display:flex; align-items:center; gap:8px; font-size:14px;">
+          <input type="checkbox" id="cat-precioManual" style="width:auto;">
+          🔒 Precio manual
+        </label>
+
+        <div style="font-size:18px; font-weight:bold; margin-top:6px;">
+          Total: $<span id="cat-total-preview">0.00</span>
+        </div>
+
+        <button type="submit">💾 Guardar Reserva</button>
+      </form>
+    `;
+
+    document.getElementById("cat-hotel").addEventListener("change", () => {
+      autoDatosCatalogo();
+      sugerirPickupCatalogo();
+    });
+    document.getElementById("cat-adultos").addEventListener("input", autoDatosCatalogo);
+    document.getElementById("cat-ninos").addEventListener("input", autoDatosCatalogo);
+    document.getElementById("cat-descuento").addEventListener("input", autoDatosCatalogo);
+    document.getElementById("cat-precioManual").addEventListener("change", autoDatosCatalogo);
+
+    document.getElementById("cat-turno")?.addEventListener("change", sugerirPickupCatalogo);
+
+    document.getElementById("cat-pickup-select")?.addEventListener("change", () => {
+      const select = document.getElementById("cat-pickup-select");
+      const nuevoInput = document.getElementById("cat-pickup-nuevo");
+      if (select.value === "__nuevo__") {
+        nuevoInput.style.display = "";
+        nuevoInput.value = "";
+        nuevoInput.focus();
+      } else {
+        nuevoInput.style.display = "none";
+      }
+    });
+
+    document.getElementById("catalogoReservaForm")
+      .addEventListener("submit", guardarReservaCatalogo);
+
+    autoDatosCatalogo();
+
+  } catch (err) {
+    console.error("Error abriendo formulario de catálogo:", err);
+    alert("No se pudo abrir el formulario ⚠️");
+  }
+}
+
+function autoDatosCatalogo() {
+  const producto = window.__catalogoProductoActual;
+  const hoteles = window.__catalogoHoteles || [];
+  if (!producto) return;
+
+  const hotelNombre = document.getElementById("cat-hotel")?.value || "";
+  const adultos = parseInt(document.getElementById("cat-adultos")?.value) || 0;
+  const ninos = parseInt(document.getElementById("cat-ninos")?.value) || 0;
+  const descuento = parseFloat(document.getElementById("cat-descuento")?.value) || 0;
+  const precioManual = document.getElementById("cat-precioManual")?.checked;
+
+  const precioInput = document.getElementById("cat-precio");
+  const totalPreview = document.getElementById("cat-total-preview");
+
+  let total = (adultos * (parseFloat(producto.adulto) || 0)) + (ninos * (parseFloat(producto.nino) || 0));
+  total = Math.max(0, total - descuento);
+
+  if (!precioManual && precioInput) {
+    precioInput.value = total;
+  }
+
+  if (totalPreview) {
+    const totalMostrado = precioManual ? (parseFloat(precioInput?.value) || 0) : total;
+    totalPreview.textContent = totalMostrado.toFixed(2);
+  }
+}
+
+// Devuelve el turno seleccionado en el formulario, o "default" si la
+// excursión no tiene turnos/horarios configurados
+function getTurnoActualCatalogo() {
+  return document.getElementById("cat-turno")?.value || "default";
+}
+
+// Busca TODOS los pickups guardados para hotel + excursión + turno específico
+// (se van acumulando cada vez que se usa uno nuevo en una reserva)
+function obtenerPickupsGuardados(hotel, excursionKey, turno) {
+  if (!hotel || !hotel.pickups || !hotel.pickups[excursionKey]) return [];
+
+  const guardado = hotel.pickups[excursionKey];
+  if (!guardado || typeof guardado !== "object") return [];
+
+  // Compatibilidad con datos viejos: antes se guardaba un solo string
+  // por turno en vez de una lista
+  const normalizarLista = (valor) => {
+    if (!valor) return [];
+    if (Array.isArray(valor)) return valor.filter(v => v && v.trim());
+    if (typeof valor === "string" && valor.trim()) return [valor.trim()];
+    return [];
+  };
+
+  const lista = normalizarLista(guardado[turno]);
+
+  // Si no hay nada para este turno pero sí un "default" (reservas hechas
+  // antes de tener turnos), lo sumamos como opción también
+  if (turno !== "default") {
+    normalizarLista(guardado.default).forEach(v => {
+      if (!lista.includes(v)) lista.push(v);
+    });
+  }
+
+  return lista;
+}
+
+// Rellena el desplegable con los pickups ya guardados para este
+// hotel+excursión+turno. Si no hay ninguno, muestra el campo de texto
+// para escribir uno nuevo (que quedará guardado para la próxima vez).
+function sugerirPickupCatalogo() {
+  const producto = window.__catalogoProductoActual;
+  const hoteles = window.__catalogoHoteles || [];
+  const select = document.getElementById("cat-pickup-select");
+  const nuevoInput = document.getElementById("cat-pickup-nuevo");
+  const hint = document.getElementById("cat-pickup-hint");
+  if (!producto || !select || !nuevoInput) return;
+
+  const hotelNombre = document.getElementById("cat-hotel")?.value || "";
+  const excursionKey = producto.slug || producto.nombre;
+  const turno = getTurnoActualCatalogo();
+  const hotel = hoteles.find(h => h.nombre === hotelNombre);
+
+  const guardados = obtenerPickupsGuardados(hotel, excursionKey, turno);
+
+  if (guardados.length > 0) {
+    select.innerHTML = guardados.map(p => `<option value="${p}">${p}</option>`).join("")
+      + `<option value="__nuevo__">➕ Otro / nuevo pickup...</option>`;
+    select.style.display = "";
+    select.value = guardados[0];
+    nuevoInput.style.display = "none";
+    nuevoInput.value = "";
+    if (hint) {
+      const plural = guardados.length > 1 ? "s" : "";
+      hint.textContent = `📌 ${guardados.length} pickup${plural} guardado${plural} para ${hotelNombre}${turno !== "default" ? ` (horario ${turno})` : ""}. Elige uno o agrega uno nuevo.`;
+    }
+  } else {
+    select.innerHTML = "";
+    select.style.display = "none";
+    nuevoInput.style.display = "";
+    nuevoInput.value = "";
+    if (hint) hint.textContent = hotelNombre ? "Sin pickup guardado aún para este horario, escríbelo y se recordará." : "";
+  }
+}
+
+async function guardarReservaCatalogo(e) {
+  e.preventDefault();
+
+  const producto = window.__catalogoProductoActual;
+  if (!producto) return;
+
+  const pickupSelect = document.getElementById("cat-pickup-select");
+  const pickupNuevo = document.getElementById("cat-pickup-nuevo");
+  const usandoSelect = pickupSelect && pickupSelect.style.display !== "none" && pickupSelect.value !== "__nuevo__";
+  const pickupFinal = usandoSelect ? pickupSelect.value : (pickupNuevo?.value.trim() || "");
+
+  if (!pickupFinal) {
+    alert("Debes indicar el pickup: selecciona uno guardado o escribe uno nuevo ⚠️");
+    return;
+  }
+
+  const reserva = {
+    cliente: document.getElementById("cat-cliente").value.trim(),
+    telefono: document.getElementById("cat-telefono").value.trim(),
+    email: document.getElementById("cat-email").value.trim(),
+    hotel: document.getElementById("cat-hotel").value,
+    habitacion: document.getElementById("cat-habitacion").value.trim() || null,
+    excursion: producto.slug || producto.nombre,
+    producto_id: producto.id,
+    adultos: parseInt(document.getElementById("cat-adultos").value) || 1,
+    ninos: parseInt(document.getElementById("cat-ninos").value) || 0,
+    pickup: pickupFinal,
+    fecha: document.getElementById("cat-fecha").value,
+    precio: parseFloat(document.getElementById("cat-precio").value) || 0,
+    descuento: parseFloat(document.getElementById("cat-descuento").value) || 0
+  };
+
+  try {
+    const { error } = await supabaseClient
+      .from("reservas")
+      .insert([reserva]);
+
+    if (error) throw error;
+
+    // Recuerda el pickup escrito a mano para la próxima vez que se use
+    // este mismo hotel + excursión + turno, hasta que alguien lo cambie manualmente.
+    await recordarPickupCatalogo(reserva.hotel, reserva.excursion, getTurnoActualCatalogo(), pickupFinal);
+
+    alert("Reserva guardada en la nube ✅");
+    mostrarReservas();
+  } catch (err) {
+    console.error("Error guardando reserva desde catálogo:", err);
+    alert(
+      "No se pudo guardar la reserva ⚠️\n\n" +
+      "Error: " + (err.message || JSON.stringify(err))
+    );
+  }
+}
+
+// Guarda/actualiza en hoteles.pickups el pickup usado para hotel+excursión+turno,
+// para que el próximo que reserve esa combinación (mismo turno) lo vea sugerido.
+async function recordarPickupCatalogo(hotelNombre, excursionKey, turno, pickupValue) {
+  if (!hotelNombre || !excursionKey || !pickupValue || !pickupValue.trim()) return;
+
+  try {
+    const hotel = (window.__catalogoHoteles || []).find(h => h.nombre === hotelNombre);
+    if (!hotel) return;
+
+    const pickupsActual = (hotel.pickups && typeof hotel.pickups === "object") ? hotel.pickups : {};
+    const pickupsExcursion = (pickupsActual[excursionKey] && typeof pickupsActual[excursionKey] === "object")
+      ? pickupsActual[excursionKey]
+      : {};
+
+    const nuevosPickups = {
+      ...pickupsActual,
+      [excursionKey]: {
+        ...pickupsExcursion,
+        [turno || "default"]: pickupValue.trim()
+      }
+    };
+
+    const { error } = await supabaseClient
+      .from("hoteles")
+      .update({ pickups: nuevosPickups })
+      .eq("id", hotel.id);
+
+    if (error) throw error;
+
+    // Actualiza la copia en memoria por si se hace otra reserva sin recargar
+    hotel.pickups = nuevosPickups;
+
+  } catch (err) {
+    // No bloqueamos el flujo de reserva por esto, solo lo dejamos en consola
+    console.error("No se pudo recordar el pickup para la próxima vez:", err);
   }
 }
